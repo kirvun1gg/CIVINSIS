@@ -51,6 +51,7 @@ $activeNav = 'faq';
       <button class="faq-tab" data-tab="cuenta"><i class="fas fa-user"></i> Cuenta</button>
       <button class="faq-tab" data-tab="propuestas"><i class="fas fa-lightbulb"></i> Propuestas</button>
       <button class="faq-tab" data-tab="comunidad"><i class="fas fa-users"></i> Comunidad</button>
+      <button class="faq-tab" data-tab="gamificacion"><i class="fas fa-trophy"></i> Gamificación</button>
       <button class="faq-tab" data-tab="tecnico"><i class="fas fa-cog"></i> Técnico</button>
     </div>
 
@@ -63,7 +64,7 @@ $activeNav = 'faq';
           <div class="faq-cat-label"><i class="fas fa-star"></i> General</div>
           <div class="faq-list" id="faqList">
 
-            <div class="faq-item reveal" data-keywords="civitas plataforma para quién juvenil">
+            <div class="faq-item reveal" data-keywords="civitas plataforma para quien juvenil que es">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Qué es CIVINSIS y para quién está diseñado?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
@@ -73,7 +74,7 @@ $activeNav = 'faq';
               </div>
             </div>
 
-            <div class="faq-item reveal" data-keywords="gratis costo precio registro">
+            <div class="faq-item reveal" data-keywords="gratis costo precio registro pago">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Es gratis usar CIVINSIS?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
@@ -83,7 +84,7 @@ $activeNav = 'faq';
               </div>
             </div>
 
-            <div class="faq-item reveal" data-keywords="impacto real propuestas llegan autoridades">
+            <div class="faq-item reveal" data-keywords="impacto real propuestas llegan autoridades cambio">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Las propuestas tienen impacto real?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
@@ -97,14 +98,33 @@ $activeNav = 'faq';
               </div>
             </div>
 
-            <div class="faq-item reveal" data-keywords="auris asistente chatbot robot">
+            <div class="faq-item reveal" data-keywords="civi asistente ia inteligencia artificial chatbot robot">
               <button class="faq-question" onclick="toggleFaq(this)">
-                <span>¿Qué es AURIS?</span>
+                <span>¿Qué es CIVI y cómo me ayuda?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
               </button>
               <div class="faq-answer">
-                <p>AURIS es el asistente virtual de CIVINSIS. Puede ayudarte a redactar propuestas, explicarte cómo funciona la plataforma, responder tus dudas y orientarte para que tu idea tenga el mayor impacto posible.</p>
-                <p style="margin-top:.75rem">Lo encontrarás en el botón flotante <span style="background:var(--verde-alpha);color:var(--verde);padding:.15rem .5rem;border-radius:4px;font-weight:600"><i class="fas fa-robot"></i></span> en la esquina inferior izquierda.</p>
+                <p>CIVI es el asistente de inteligencia artificial de CIVINSIS. No solo responde preguntas sobre la plataforma, sino también sobre política, historia, ciencia, tecnología y cultura general. Su especialidad es ayudarte a redactar propuestas ciudadanas más convincentes y responder cualquier duda que tengas.</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="moderacion automatica censurado contenido ia revision">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Cómo funciona la moderación automática?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>CIVINSIS usa inteligencia artificial para revisar automáticamente cada propuesta y comentario publicado. Si detecta contenido inapropiado como malas palabras, discurso de odio o spam, lo censura y envía una alerta al equipo de administración. El contenido no se borra — solo se censura hasta que un admin lo revise.</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="salvador el salvador pais local regional">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿CIVINSIS es solo para El Salvador?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>CIVINSIS nació en El Salvador con enfoque en la participación ciudadana juvenil salvadoreña, pero cualquier persona hispanohablante puede registrarse y participar. Las categorías y temas están orientados a la realidad local, aunque las ideas pueden inspirar a comunidades de cualquier país.</p>
               </div>
             </div>
 
@@ -116,7 +136,7 @@ $activeNav = 'faq';
           <div class="faq-cat-label"><i class="fas fa-user"></i> Cuenta</div>
           <div class="faq-list">
 
-            <div class="faq-item reveal" data-keywords="crear cuenta registro pasos">
+            <div class="faq-item reveal" data-keywords="crear cuenta registro pasos como registrarse">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Cómo me registro en CIVINSIS?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
@@ -126,7 +146,7 @@ $activeNav = 'faq';
               </div>
             </div>
 
-            <div class="faq-item reveal" data-keywords="foto perfil avatar cambiar imagen">
+            <div class="faq-item reveal" data-keywords="foto perfil avatar cambiar imagen subir">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Puedo subir una foto de perfil?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
@@ -136,23 +156,54 @@ $activeNav = 'faq';
               </div>
             </div>
 
-            <div class="faq-item reveal" data-keywords="contraseña cambiar olvidé actualizar">
+            <div class="faq-item reveal" data-keywords="contrasena cambiar olvide actualizar seguridad">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Cómo cambio mi contraseña?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
               </button>
               <div class="faq-answer">
-                <p>Dirígete a tu perfil → pestaña "Seguridad" → sección "Cambiar contraseña". Necesitas ingresar tu contraseña actual y la nueva. Las contraseñas deben tener mínimo 8 caracteres.</p>
+                <p>Dirígete a tu perfil → pestaña "Contraseña" → sección "Cambiar contraseña". Necesitas ingresar tu contraseña actual y la nueva. Las contraseñas deben tener mínimo 8 caracteres.</p>
               </div>
             </div>
 
-            <div class="faq-item reveal" data-keywords="datos privacidad seguridad personal">
+            <div class="faq-item reveal" data-keywords="datos privacidad seguridad personal informacion">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Mis datos personales están seguros?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
               </button>
               <div class="faq-answer">
                 <p>Absolutamente. Las contraseñas se almacenan encriptadas con bcrypt y nunca se guardan en texto plano. Tu correo electrónico es privado y solo se usa para autenticación. No compartimos tu información con terceros.</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="eliminar cuenta borrar perfil baja">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Puedo eliminar mi cuenta?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>Sí. Puedes solicitar la eliminación de tu cuenta contactando al equipo de administración desde la sección de Contacto. Ten en cuenta que esta acción es irreversible y elimina todas tus propuestas, comentarios y progreso de gamificación.</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="titulo marco fondo cosmetico personalizar perfil gamificacion apariencia">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Cómo personalizo mi perfil con cosméticos?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>Ve a tu perfil → pestaña <strong>Gamificación</strong> → sección <strong>Cosméticos</strong>. Ahí puedes equipar marcos de avatar y fondos de perfil que hayas desbloqueado al subir de nivel. También puedes cambiar tu título desde la sección <strong>Títulos</strong>.</p>
+                <div class="faq-tip"><i class="fas fa-palette"></i><span>Los cosméticos legendarios se desbloquean al alcanzar el nivel 20 o más.</span></div>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="dos cuentas multiples usuarios misma persona duplicada">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Puedo tener más de una cuenta?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>No está permitido crear múltiples cuentas para manipular votos o evadir suspensiones. Si detectamos cuentas duplicadas, ambas pueden ser suspendidas. Si tienes un problema con tu cuenta principal, contáctanos.</p>
               </div>
             </div>
 
@@ -164,7 +215,7 @@ $activeNav = 'faq';
           <div class="faq-cat-label"><i class="fas fa-lightbulb"></i> Propuestas</div>
           <div class="faq-list">
 
-            <div class="faq-item reveal" data-keywords="cuántas propuestas crear límite publicar">
+            <div class="faq-item reveal" data-keywords="cuantas propuestas crear limite publicar cantidad">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Cuántas propuestas puedo crear?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
@@ -174,7 +225,7 @@ $activeNav = 'faq';
               </div>
             </div>
 
-            <div class="faq-item reveal" data-keywords="imagen foto portada subir propuesta tarjeta">
+            <div class="faq-item reveal" data-keywords="imagen foto portada subir propuesta tarjeta personalizar">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Cómo agrego imagen y personalizo mi propuesta?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
@@ -189,7 +240,7 @@ $activeNav = 'faq';
               </div>
             </div>
 
-            <div class="faq-item reveal" data-keywords="votar voto vez única retirar">
+            <div class="faq-item reveal" data-keywords="votar voto vez unica retirar quitar">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Puedo votar varias veces por la misma propuesta?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
@@ -199,7 +250,7 @@ $activeNav = 'faq';
               </div>
             </div>
 
-            <div class="faq-item reveal" data-keywords="eliminar borrar propuesta propia">
+            <div class="faq-item reveal" data-keywords="eliminar borrar propuesta propia autor">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Puedo eliminar una propuesta que publiqué?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
@@ -209,7 +260,46 @@ $activeNav = 'faq';
               </div>
             </div>
 
-            <div class="faq-item reveal" data-keywords="categorías tipos propuesta">
+            <div class="faq-item reveal" data-keywords="editar modificar propuesta publicada cambiar actualizar">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Puedo editar una propuesta después de publicarla?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>Sí. Ve a la propuesta y haz clic en el botón <strong>Editar</strong> (visible solo si eres el autor). Los cambios se guardan inmediatamente y el contador de votos se mantiene intacto.</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="xp ganar puntos propuesta comentario voto gamificacion recompensa">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Cuánto XP gano por participar?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>El XP se distribuye así:</p>
+                <ul style="margin:.75rem 0;padding-left:1.5rem;line-height:2.2">
+                  <li>🚀 <strong>Crear propuesta</strong> — 80 XP</li>
+                  <li>💬 <strong>Comentar</strong> — 15 XP</li>
+                  <li>👍 <strong>Votar</strong> — 5 XP</li>
+                  <li>⭐ <strong>Recibir un voto</strong> — 10 XP</li>
+                  <li>🔥 <strong>Racha diaria</strong> — 10 XP</li>
+                  <li>✅ <strong>Completar misión diaria</strong> — 15 a 25 XP</li>
+                  <li>🏆 <strong>Completar misión semanal</strong> — 80 a 150 XP</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="propuesta revision censurada estado moderacion bloqueada">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Por qué mi propuesta está en revisión?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>El sistema de moderación automática detectó posible contenido inapropiado. Un administrador la revisará manualmente. Si fue un error del sistema, la propuesta volverá a estar activa. Puedes contactarnos si crees que fue un error.</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="categorias tipos propuesta temas">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Qué categorías existen?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
@@ -234,7 +324,7 @@ $activeNav = 'faq';
           <div class="faq-cat-label"><i class="fas fa-users"></i> Comunidad</div>
           <div class="faq-list">
 
-            <div class="faq-item reveal" data-keywords="comentar comentarios responder opinión">
+            <div class="faq-item reveal" data-keywords="comentar comentarios responder opinion debate">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Cómo comento en una propuesta?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
@@ -244,24 +334,147 @@ $activeNav = 'faq';
               </div>
             </div>
 
-            <div class="faq-item reveal" data-keywords="reportar contenido inapropiado normas">
+            <div class="faq-item reveal" data-keywords="reportar contenido inapropiado normas reglas">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Cómo reporto contenido inapropiado?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
               </button>
               <div class="faq-answer">
-                <p>Puedes contactar a los administradores a través de la sección de Contacto o escribirle directamente a AURIS explicando el problema. El equipo de moderación revisará el contenido y tomará las medidas necesarias.</p>
+                <p>Puedes contactar a los administradores a través de la sección de Contacto. El equipo de moderación revisará el contenido y tomará las medidas necesarias. También puedes usar el sistema automático de moderación que detecta contenido inapropiado.</p>
                 <a href="contacto.php?asunto=Reporte de contenido" class="btn btn-sm btn-outline" style="margin-top:.75rem"><i class="fas fa-flag"></i> Ir a Contacto</a>
               </div>
             </div>
 
-            <div class="faq-item reveal" data-keywords="bloqueo ban cuenta suspendida">
+            <div class="faq-item reveal" data-keywords="bloqueo ban cuenta suspendida sancion">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Por qué fue suspendida mi cuenta?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
               </button>
               <div class="faq-answer">
                 <p>Las cuentas son suspendidas cuando se violan las normas de la comunidad, como publicar spam, contenido ofensivo o información falsa. Si crees que fue un error, contáctanos y revisaremos tu caso.</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="normas reglas comunidad comportamiento conducta">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Cuáles son las normas de la comunidad?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>En CIVINSIS valoramos el debate respetuoso y constructivo. Las principales normas son:</p>
+                <ul style="margin:.75rem 0;padding-left:1.5rem;line-height:2">
+                  <li>No publicar contenido ofensivo, discriminatorio o violento</li>
+                  <li>No hacer spam ni publicidad no autorizada</li>
+                  <li>Respetar las opiniones diferentes a la tuya</li>
+                  <li>Publicar propuestas con sustento real y verificable</li>
+                  <li>No crear cuentas falsas ni manipular votos</li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- GAMIFICACIÓN -->
+        <div class="faq-category-group" data-cat="gamificacion" style="display:none">
+          <div class="faq-cat-label"><i class="fas fa-trophy"></i> Gamificación</div>
+          <div class="faq-list">
+
+            <div class="faq-item reveal" data-keywords="gamificacion xp nivel puntos reputacion logros insignias titulos que es">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Qué es el sistema de gamificación?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>CIVINSIS premia tu participación ciudadana con un sistema completo de gamificación. Al crear propuestas, comentar y votar ganas <strong>XP</strong> que te permiten subir de nivel. También tienes <strong>reputación</strong> independiente, logros desbloqueables, insignias, títulos y cosméticos para personalizar tu perfil.</p>
+                <div class="faq-tip"><i class="fas fa-trophy"></i><span>Crea tu primera propuesta y gana 80 XP de inmediato.</span></div>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="nivel subir xp experiencia como funciona niveles">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Cómo subo de nivel?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>Participando activamente en la plataforma. Cada acción te da XP y al acumular suficiente XP subes de nivel automáticamente. Hay 25 niveles en total, desde <strong>Ciudadano</strong> (nivel 1) hasta <strong>Leyenda de CIVINSIS</strong> (nivel 25). Puedes ver tu progreso en tu perfil → Gamificación.</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="reputacion que es diferencia xp independiente">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Qué es la reputación y en qué se diferencia del XP?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>El <strong>XP</strong> se gana con todas tus acciones y determina tu nivel. La <strong>reputación</strong> es independiente y refleja el reconocimiento de la comunidad — la ganas cuando otros votan tus propuestas. Puedes tener mucho XP pero poca reputación si participas poco en debates, y viceversa.</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="racha dias consecutivos bonus login acceso streak">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Qué es la racha de días?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>La racha cuenta los días consecutivos que inicias sesión en CIVINSIS. Cada día que entras ganas 10 XP de bonus. Si llegas a 7 días desbloqueas el logro <strong>"Semana Cívica"</strong> con 200 XP extra, y a 30 días el logro <strong>"Ciudadano del Mes"</strong> con 1000 XP. ¡No rompas la racha!</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="misiones diarias semanales completar recompensa objetivos tareas">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Cómo funcionan las misiones?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>Las misiones son objetivos que se renuevan automáticamente. Hay misiones <strong>diarias</strong> (se reinician cada día) y <strong>semanales</strong> (se reinician cada lunes). Ejemplos:</p>
+                <ul style="margin:.75rem 0;padding-left:1.5rem;line-height:2">
+                  <li>📅 <strong>Diaria:</strong> Publica 1 comentario — 25 XP</li>
+                  <li>📅 <strong>Diaria:</strong> Vota en 3 propuestas — 20 XP</li>
+                  <li>🗓️ <strong>Semanal:</strong> Crea 1 propuesta — 150 XP</li>
+                  <li>🗓️ <strong>Semanal:</strong> Comenta en 10 propuestas — 100 XP</li>
+                </ul>
+                <p>Ve a tu perfil → Gamificación → Misiones para ver tu progreso.</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="logros desbloquear como obtener requisitos condiciones">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Cómo desbloqueo logros?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>Los logros se desbloquean automáticamente cuando cumples sus condiciones. Por ejemplo, crear tu primera propuesta desbloquea "Primer Paso", acumular 100 votos desbloquea "Trending", etc. Hay 15 logros con rarezas comun, raro, épico y legendario. Los logros dan XP y reputación extra.</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="titulos equipar cambiar color nombre perfil">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Cómo obtengo y equipo títulos?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>Los títulos se desbloquean automáticamente al subir de nivel. Hay 9 títulos desde <strong>Ciudadano</strong> hasta <strong>Leyenda de CIVINSIS</strong>, cada uno con su propio color y rareza. Para equipar un título ve a tu perfil → Gamificación → Títulos y haz clic en el que quieras mostrar.</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="ranking top usuarios posicion clasificacion tabla">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Cómo funciona el ranking?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>El ranking muestra los usuarios más activos de CIVINSIS. Puedes verlo ordenado por <strong>XP total</strong>, <strong>reputación</strong> o <strong>nivel</strong>. Ve a tu perfil → Gamificación → Ranking para ver tu posición entre todos los ciudadanos de la plataforma.</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="cosmeticos marcos fondos desbloquear nivel avatar perfil">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Cómo desbloqueo cosméticos?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>Los cosméticos se desbloquean automáticamente al subir de nivel. Hay marcos de avatar y fondos de perfil con diferentes rarezas. Por ejemplo, el marco dorado se desbloquea en el nivel 5 y el marco legendario en el nivel 20. Ve a tu perfil → Gamificación → Cosméticos para equiparlos.</p>
               </div>
             </div>
 
@@ -273,7 +486,7 @@ $activeNav = 'faq';
           <div class="faq-cat-label"><i class="fas fa-cog"></i> Técnico</div>
           <div class="faq-list">
 
-            <div class="faq-item reveal" data-keywords="navegador compatible funciona soporte">
+            <div class="faq-item reveal" data-keywords="navegador compatible funciona soporte chrome firefox">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿En qué navegadores funciona CIVINSIS?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
@@ -283,7 +496,17 @@ $activeNav = 'faq';
               </div>
             </div>
 
-            <div class="faq-item reveal" data-keywords="imagen no carga error upload">
+            <div class="faq-item reveal" data-keywords="movil celular app android ios aplicacion telefono">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Hay aplicación móvil de CIVINSIS?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>Por ahora CIVINSIS es una plataforma web optimizada para móviles. Puedes usarla desde cualquier navegador en tu celular sin instalar nada. En el futuro planeamos lanzar apps nativas para Android e iOS.</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="imagen no carga error upload subir problema">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Por qué no puedo subir mi imagen?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
@@ -299,13 +522,41 @@ $activeNav = 'faq';
               </div>
             </div>
 
-            <div class="faq-item reveal" data-keywords="sesión cerrada expiró volver atrás">
+            <div class="faq-item reveal" data-keywords="sesion cerrada expiro volver atras seguridad">
               <button class="faq-question" onclick="toggleFaq(this)">
                 <span>¿Por qué me pide que inicie sesión de nuevo?</span>
                 <i class="fas fa-chevron-down faq-icon"></i>
               </button>
               <div class="faq-answer">
                 <p>Las sesiones expiran automáticamente por seguridad. Si cerraste sesión manualmente, el sistema asegura que no puedas regresar a páginas protegidas con el botón "Atrás". Solo inicia sesión nuevamente para continuar.</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="lento carga lentitud rendimiento velocidad problema demora">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>La plataforma carga lento, ¿qué hago?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>Prueba estos pasos:</p>
+                <ul style="margin:.75rem 0;padding-left:1.5rem;line-height:2">
+                  <li>Limpia la caché del navegador con Ctrl+Shift+R</li>
+                  <li>Verifica tu conexión a internet</li>
+                  <li>Prueba con otro navegador</li>
+                  <li>Desactiva extensiones que puedan bloquear recursos</li>
+                </ul>
+                <p>Si el problema persiste, contáctanos indicando el navegador y sistema operativo que usas.</p>
+              </div>
+            </div>
+
+            <div class="faq-item reveal" data-keywords="error pagina no carga problema tecnico bug fallo">
+              <button class="faq-question" onclick="toggleFaq(this)">
+                <span>¿Qué hago si veo un error en la página?</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+              </button>
+              <div class="faq-answer">
+                <p>Toma una captura de pantalla y contáctanos indicando qué estabas haciendo cuando ocurrió el error. Nuestro equipo técnico lo revisará a la brevedad.</p>
+                <a href="contacto.php?asunto=Problema técnico" class="btn btn-sm btn-outline" style="margin-top:.75rem"><i class="fas fa-bug"></i> Reportar error</a>
               </div>
             </div>
 
@@ -332,9 +583,9 @@ $activeNav = 'faq';
           <a href="contacto.php" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:1.25rem">
             <i class="fas fa-envelope"></i> Contactar equipo
           </a>
-          <button onclick="Auris.togglePanel()" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:.5rem">
-            <i class="fas fa-robot"></i> Preguntar a AURIS
-          </button>
+          <a href="contacto.php" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:.5rem">
+            <i class="fas fa-envelope"></i> Escribir al equipo
+          </a>
         </div>
 
         <div class="faq-sidebar-card faq-sidebar-stats">
@@ -346,6 +597,10 @@ $activeNav = 'faq';
           <div class="faq-stat-row">
             <span class="faq-stat-num">8</span>
             <span class="faq-stat-label">Categorías activas</span>
+          </div>
+          <div class="faq-stat-row">
+            <span class="faq-stat-num">25</span>
+            <span class="faq-stat-label">Niveles de ciudadanía</span>
           </div>
           <div class="faq-stat-row">
             <span class="faq-stat-num">100%</span>
@@ -380,7 +635,6 @@ $activeNav = 'faq';
 
 <?php echo view('layouts.footer')->render(); ?>
 
-
 <div class="toast-container"></div>
 <script src="js/app.js"></script>
 <script>
@@ -407,14 +661,12 @@ searchInput.addEventListener('input', function() {
   const q = this.value.trim().toLowerCase();
   clearBtn.style.display = q ? 'flex' : 'none';
   if (!q) {
-    // Restaurar
     tabBtns.forEach(b => b.classList.remove('active'));
     tabBtns[0].classList.add('active');
     groups.forEach((g,i) => g.style.display = i===0 ? 'block' : 'none');
     document.getElementById('faqNoResults').style.display = 'none';
     return;
   }
-  // Buscar en todos los grupos
   let found = 0;
   groups.forEach(g => {
     g.style.display = 'block';
@@ -451,9 +703,14 @@ clearBtn.addEventListener('click', () => {
 const tips = [
   "Cada voto en CIVINSIS representa una persona real que cree que el cambio es posible. ¡Tu voz cuenta!",
   "Las propuestas con imágenes y formato reciben en promedio 3x más votos.",
-  "AURIS puede ayudarte a mejorar el texto de tu propuesta para que sea más persuasiva.",
+  "CIVI puede ayudarte a mejorar el texto de tu propuesta para que sea más persuasiva.",
   "Puedes personalizar tu tarjeta de foro con 8 estilos visuales distintos.",
   "Los comentarios constructivos aumentan la visibilidad de las propuestas en el ranking.",
+  "Crea una propuesta y gana 80 XP de inmediato. ¡Sube de nivel participando!",
+  "Inicia sesión cada día para mantener tu racha y ganar XP extra.",
+  "Completa misiones diarias y semanales para acelerar tu progreso en CIVINSIS.",
+  "Los logros legendarios dan hasta 3000 XP de recompensa.",
+  "Tu reputación es independiente del XP — se gana con el apoyo de la comunidad.",
 ];
 let tipIdx = 0;
 setInterval(() => {
@@ -462,6 +719,14 @@ setInterval(() => {
   el.style.opacity = 0;
   setTimeout(() => { el.textContent = tips[tipIdx]; el.style.opacity = 1; el.style.transition = 'opacity .5s'; }, 300);
 }, 5000);
+
+// Toggle FAQ
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
 </script>
 </body>
 </html>

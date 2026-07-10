@@ -110,19 +110,13 @@ $activeNav = '';
     </aside>
 
     <main class="legal-content">
-
-      <div class="legal-highlight">
-        <i class="fas fa-info-circle"></i>
-        <div>Este documento contiene texto de ejemplo (<em>Lorem ipsum</em>). Personaliza cada sección con las normas reales de tu comunidad antes de lanzar la plataforma.</div>
-      </div>
-
       <div class="legal-section" id="bienvenida">
         <div class="legal-section-header">
           <div class="legal-section-icon green"><i class="fas fa-door-open"></i></div>
           <div><div class="legal-section-num">Sección 01</div><h2>Bienvenida a CIVINSIS</h2></div>
         </div>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. CIVINSIS es un espacio donde la juventud puede proponer, debatir y votar ideas que transformen la comunidad. Para que este espacio funcione necesitamos que todos sigamos unas normas básicas de convivencia.</p>
-        <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        <p>CIVINSIS es un espacio donde la juventud puede proponer, debatir y votar ideas que transformen la comunidad. Para que este espacio funcione necesitamos que todos sigamos unas normas básicas de convivencia que aseguren un entorno seguro, inclusivo y enfocado en el desarrollo social.</p>
+        <p>Al ingresar a esta plataforma te unes a una red activa de ciudadanos comprometidos con el cambio positivo. Tu voz, tus propuestas de mejora comunitaria y tus interacciones respetuosas con otros usuarios constituyen el pilar fundamental para construir un diálogo democrático constructivo y transparente.</p>
       </div>
 
       <div class="legal-section" id="valores">
@@ -130,14 +124,14 @@ $activeNav = '';
           <div class="legal-section-icon orange"><i class="fas fa-heart"></i></div>
           <div><div class="legal-section-num">Sección 02</div><h2>Nuestros valores</h2></div>
         </div>
-        <p>Lorem ipsum dolor sit amet. La comunidad CIVINSIS se rige por los siguientes valores fundamentales:</p>
+        <p>La comunidad CIVINSIS se rige por los siguientes valores fundamentales:</p>
         <div class="values-grid">
-          <div class="value-card"><div class="vi">🤝</div><strong>Respeto</strong><span>Lorem ipsum todas las personas merecen un trato digno.</span></div>
-          <div class="value-card"><div class="vi">💡</div><strong>Creatividad</strong><span>Lorem ipsum fomentamos ideas originales e innovadoras.</span></div>
-          <div class="value-card"><div class="vi">🌍</div><strong>Inclusión</strong><span>Lorem ipsum todas las voces tienen valor aquí.</span></div>
-          <div class="value-card"><div class="vi">⚖️</div><strong>Honestidad</strong><span>Lorem ipsum la transparencia nos hace más fuertes.</span></div>
-          <div class="value-card"><div class="vi">🚀</div><strong>Acción</strong><span>Lorem ipsum transformamos ideas en propuestas reales.</span></div>
-          <div class="value-card"><div class="vi">🛡️</div><strong>Seguridad</strong><span>Lorem ipsum un espacio libre de acoso y odio.</span></div>
+          <div class="value-card"><div class="vi">🤝</div><strong>Respeto</strong><span>Todas las personas merecen un trato digno.</span></div>
+          <div class="value-card"><div class="vi">💡</div><strong>Creatividad</strong><span>Fomentamos ideas originales e innovadoras.</span></div>
+          <div class="value-card"><div class="vi">🌍</div><strong>Inclusión</strong><span>Todas las voces tienen valor aquí.</span></div>
+          <div class="value-card"><div class="vi">⚖️</div><strong>Honestidad</strong><span>La transparencia nos hace más fuertes.</span></div>
+          <div class="value-card"><div class="vi">🚀</div><strong>Acción</strong><span>Transformamos ideas en propuestas reales.</span></div>
+          <div class="value-card"><div class="vi">🛡️</div><strong>Seguridad</strong><span>Un espacio libre de acoso y odio.</span></div>
         </div>
       </div>
 
@@ -146,7 +140,7 @@ $activeNav = '';
           <div class="legal-section-icon green"><i class="fas fa-file-alt"></i></div>
           <div><div class="legal-section-num">Sección 03</div><h2>Normas para propuestas</h2></div>
         </div>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Para que tu propuesta sea válida y útil para la comunidad, debe cumplir con lo siguiente:</p>
+        <p>Para que tu propuesta sea válida y útil para la comunidad, debe cumplir con lo siguiente:</p>
         <ul>
           <li>El título debe ser claro, descriptivo y reflejar fielmente el contenido.</li>
           <li>La descripción debe explicar el problema y la solución propuesta de forma ordenada.</li>
@@ -156,7 +150,7 @@ $activeNav = '';
         </ul>
         <div class="legal-highlight">
           <i class="fas fa-lightbulb"></i>
-          <div>Lorem ipsum: las mejores propuestas son aquellas que presentan un problema real, una solución concreta y un beneficio claro para la comunidad.</div>
+          <div>Las mejores propuestas son aquellas que presentan un problema real, una solución concreta y un beneficio claro para la comunidad.</div>
         </div>
       </div>
 
@@ -165,7 +159,7 @@ $activeNav = '';
           <div class="legal-section-icon orange"><i class="fas fa-comments"></i></div>
           <div><div class="legal-section-num">Sección 04</div><h2>Normas para comentarios</h2></div>
         </div>
-        <p>Lorem ipsum dolor sit amet. Los comentarios son el corazón del debate en CIVINSIS. Para que el diálogo sea enriquecedor:</p>
+        <p>Los comentarios son el corazón del debate en CIVINSIS. Para que el diálogo sea enriquecedor:</p>
         <ul>
           <li>Comenta de forma constructiva, aportando argumentos o sugerencias.</li>
           <li>Dirígete a las ideas, no a las personas que las proponen.</li>
@@ -180,7 +174,7 @@ $activeNav = '';
           <div class="legal-section-icon green"><i class="fas fa-check-circle"></i></div>
           <div><div class="legal-section-num">Sección 05</div><h2>Conducta esperada</h2></div>
         </div>
-        <p>Lorem ipsum dolor sit amet, esperamos que todos los miembros de la comunidad CIVINSIS:</p>
+        <p>Esperamos que todos los miembros de la comunidad CIVINSIS:</p>
         <ul>
           <li>Usen un lenguaje respetuoso e inclusivo en todas sus interacciones.</li>
           <li>Acepten la diversidad de opiniones y perspectivas.</li>
@@ -195,7 +189,7 @@ $activeNav = '';
           <div class="legal-section-icon red"><i class="fas fa-ban"></i></div>
           <div><div class="legal-section-num">Sección 06</div><h2>Conducta prohibida</h2></div>
         </div>
-        <p>Lorem ipsum dolor sit amet. Están <strong style="color:#e74c3c">estrictamente prohibidas</strong> las siguientes conductas:</p>
+        <p>Están <strong style="color:#e74c3c">estrictamente prohibidas</strong> las siguientes conductas:</p>
         <ul class="warn">
           <li>Acoso, intimidación o amenazas hacia otros usuarios en cualquier forma.</li>
           <li>Discurso de odio por raza, género, orientación sexual, religión u origen.</li>
@@ -207,7 +201,7 @@ $activeNav = '';
         </ul>
         <div class="legal-highlight danger">
           <i class="fas fa-exclamation-circle"></i>
-          <div>Lorem ipsum: el incumplimiento de estas normas puede resultar en la eliminación inmediata del contenido y la suspensión permanente de la cuenta.</div>
+          <div>El incumplimiento de estas normas puede resultar en la eliminación inmediata del contenido y la suspensión permanente de la cuenta.</div>
         </div>
       </div>
 
@@ -216,14 +210,14 @@ $activeNav = '';
           <div class="legal-section-icon orange"><i class="fas fa-shield-alt"></i></div>
           <div><div class="legal-section-num">Sección 07</div><h2>Moderación</h2></div>
         </div>
-        <p>Lorem ipsum dolor sit amet. El equipo de moderación de CIVINSIS trabaja para mantener la plataforma segura y útil para todos. Los moderadores tienen la capacidad de:</p>
+        <p>El equipo de moderación de CIVINSIS trabaja para mantener la plataforma segura y útil para todos. Los moderadores tienen la capacidad de:</p>
         <ul>
           <li>Editar o eliminar contenido que viole estas normas.</li>
           <li>Suspender temporalmente cuentas con comportamiento inapropiado.</li>
           <li>Escalar casos graves al equipo de administración.</li>
           <li>Responder a reportes de los usuarios en un plazo razonable.</li>
         </ul>
-        <p>Nulla porttitor accumsan tincidunt. Las decisiones de moderación se toman de forma justa e imparcial.</p>
+        <p>Las decisiones de moderación se toman de forma justa e imparcial.</p>
       </div>
 
       <div class="legal-section" id="sanciones">
@@ -231,7 +225,7 @@ $activeNav = '';
           <div class="legal-section-icon red"><i class="fas fa-gavel"></i></div>
           <div><div class="legal-section-num">Sección 08</div><h2>Sistema de sanciones</h2></div>
         </div>
-        <p>Lorem ipsum dolor sit amet. Las sanciones se aplican de forma progresiva según la gravedad y reincidencia:</p>
+        <p>Las sanciones se aplican de forma progresiva según la gravedad y reincidencia:</p>
         <ul>
           <li><strong style="color:var(--text)">Advertencia:</strong> aviso formal para infracciones leves o primeras faltas.</li>
           <li><strong style="color:var(--text)">Restricción temporal:</strong> limitación de funciones por 7 a 30 días.</li>
@@ -240,7 +234,7 @@ $activeNav = '';
         </ul>
         <div class="legal-highlight warn">
           <i class="fas fa-info-circle"></i>
-          <div>Lorem ipsum: puedes apelar cualquier sanción contactando al equipo de administración con una explicación detallada de tu caso.</div>
+          <div>Puedes apelar cualquier sanción contactando al equipo de administración con una explicación detallada de tu caso.</div>
         </div>
       </div>
 
@@ -249,13 +243,13 @@ $activeNav = '';
           <div class="legal-section-icon green"><i class="fas fa-flag"></i></div>
           <div><div class="legal-section-num">Sección 09</div><h2>Cómo reportar</h2></div>
         </div>
-        <p>Lorem ipsum dolor sit amet. Si encuentras contenido o comportamiento que viole estas normas, ayúdanos reportándolo:</p>
+        <p>Si encuentras contenido o comportamiento que viole estas normas, ayúdanos reportándolo:</p>
         <ul>
           <li>Usa el botón de reporte disponible en cada propuesta y comentario.</li>
           <li>Escríbenos directamente a través de nuestra <a href="contacto.php?asunto=Reporte" style="color:var(--verde);text-decoration:underline">página de contacto</a>.</li>
           <li>Proporciona el mayor contexto posible para agilizar la revisión.</li>
         </ul>
-        <p>Lorem ipsum: agradecemos a todos los ciudadanos que contribuyen a mantener CIVINSIS como un espacio seguro y constructivo.</p>
+        <p>Agradecemos a todos los ciudadanos que contribuyen a mantener CIVINSIS como un espacio seguro y constructivo.</p>
       </div>
 
       <div class="legal-related">

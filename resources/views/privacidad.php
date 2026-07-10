@@ -106,18 +106,14 @@ $activeNav = '';
 
     <main class="legal-content">
 
-      <div class="legal-highlight">
-        <i class="fas fa-info-circle"></i>
-        <div>Este documento contiene texto de ejemplo (<em>Lorem ipsum</em>). Reemplaza cada sección con tu política de privacidad real, redactada conforme a la legislación aplicable en tu país.</div>
-      </div>
 
       <div class="legal-section" id="introduccion">
         <div class="legal-section-header">
           <div class="legal-section-icon orange"><i class="fas fa-info-circle"></i></div>
           <div><div class="legal-section-num">Sección 01</div><h2>Introducción</h2></div>
         </div>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. CIVINSIS se compromete a proteger y respetar tu privacidad. Esta política explica cómo recopilamos, usamos y protegemos tu información personal cuando utilizas nuestra plataforma.</p>
-        <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate.</p>
+        <p>CIVINSIS se compromete a proteger y respetar tu privacidad. Esta política explica cómo recopilamos, usamos y protegemos tu información personal cuando utilizas nuestra plataforma ciudadana, asegurando un tratamiento transparente de los datos dentro del marco legal aplicable.</p>
+        <p>Al registrarte y hacer uso de las herramientas de participación, aceptas las prácticas descritas en este documento. Nos aseguramos de implementar medidas técnicas y organizativas rigurosas para salvaguardar tu identidad, evitar accesos no autorizados y mantener la confidencialidad de cada miembro de nuestra comunidad.</p>
       </div>
 
       <div class="legal-section" id="datos-recopilados">
@@ -138,7 +134,7 @@ $activeNav = '';
             <tr><td><strong>Cookies</strong></td><td>Sesión, preferencias de tema</td><td>Mejorar la experiencia de usuario</td></tr>
           </tbody>
         </table>
-        <p>Nulla porttitor accumsan tincidunt. Vivamus suscipit tortor eget felis porttitor volutpat.</p>
+        <p>La recopilación de estos datos resulta estrictamente necesaria para asegurar el correcto funcionamiento técnico de las herramientas de participación. El equipo administrador garantiza que esta información no será procesada para fines ajenos a los objetivos cívicos y comunitarios del sistema.</p>
       </div>
 
       <div class="legal-section" id="uso-datos">
@@ -154,7 +150,7 @@ $activeNav = '';
           <li>Analizar el uso de la plataforma para mejorar funcionalidades.</li>
           <li>Cumplir con obligaciones legales y regulatorias aplicables.</li>
         </ul>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur aliquet quam id dui posuere blandit.</p>
+        <p>El empleo de los datos se limita estrictamente a las finalidades descritas, asegurando que el desarrollo de la plataforma se mantenga alineado con los principios de transparencia y seguridad. Las métricas de análisis obtenidas se procesan con el fin único de optimizar los algoritmos de gamificación y la experiencia de participación de la juventud salvadoreña.</p>
       </div>
 
       <div class="legal-section" id="base-legal">
@@ -162,7 +158,7 @@ $activeNav = '';
           <div class="legal-section-icon green"><i class="fas fa-gavel"></i></div>
           <div><div class="legal-section-num">Sección 04</div><h2>Base legal del tratamiento</h2></div>
         </div>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. El tratamiento de tus datos personales se fundamenta en las siguientes bases jurídicas según la legislación aplicable:</p>
+        <p>El tratamiento de tus datos personales se fundamenta en las siguientes bases jurídicas según la legislación aplicable:</p>
         <ul>
           <li><strong style="color:var(--text)">Consentimiento:</strong> para el envío de comunicaciones opcionales y cookies no esenciales.</li>
           <li><strong style="color:var(--text)">Ejecución del contrato:</strong> para gestionar tu cuenta y prestarte los servicios.</li>
@@ -176,7 +172,7 @@ $activeNav = '';
           <div class="legal-section-icon orange"><i class="fas fa-share-alt"></i></div>
           <div><div class="legal-section-num">Sección 05</div><h2>Compartir datos con terceros</h2></div>
         </div>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. No vendemos, alquilamos ni comercializamos tu información personal. Podemos compartir datos en los siguientes casos limitados:</p>
+        <p>No vendemos, alquilamos ni comercializamos tu información personal. Podemos compartir datos en los siguientes casos limitados:</p>
         <ul>
           <li>Con proveedores de servicios que nos ayudan a operar la plataforma.</li>
           <li>Cuando sea requerido por ley o por orden judicial.</li>
@@ -184,7 +180,7 @@ $activeNav = '';
         </ul>
         <div class="legal-highlight">
           <i class="fas fa-shield-alt"></i>
-          <div>Lorem ipsum: todos los terceros con acceso a tus datos están sujetos a acuerdos de confidencialidad y solo pueden usar la información para los fines autorizados.</div>
+          <div>Todos los terceros con acceso a tus datos están sujetos a acuerdos de confidencialidad y solo pueden usar la información para los fines autorizados.</div>
         </div>
       </div>
 
@@ -210,7 +206,7 @@ $activeNav = '';
           <div class="legal-section-icon orange"><i class="fas fa-user-shield"></i></div>
           <div><div class="legal-section-num">Sección 07</div><h2>Tus derechos</h2></div>
         </div>
-        <p>Lorem ipsum dolor sit amet, tienes los siguientes derechos respecto a tus datos personales:</p>
+        <p>Tienes los siguientes derechos respecto a tus datos personales:</p>
         <ul>
           <li><strong style="color:var(--text)">Acceso:</strong> solicitar una copia de los datos que tenemos sobre ti.</li>
           <li><strong style="color:var(--text)">Rectificación:</strong> corregir datos inexactos o incompletos.</li>
@@ -226,8 +222,8 @@ $activeNav = '';
           <div class="legal-section-icon green"><i class="fas fa-clock"></i></div>
           <div><div class="legal-section-num">Sección 08</div><h2>Retención de datos</h2></div>
         </div>
-        <p>Lorem ipsum dolor sit amet, conservamos tus datos personales durante el tiempo que mantengas una cuenta activa en CIVINSIS. Una vez que elimines tu cuenta, eliminaremos o anonimizaremos tu información en un plazo de 30 días, salvo que tengamos una obligación legal de conservarla por más tiempo.</p>
-        <p>Pellentesque in ipsum id orci porta dapibus. Nulla quis lorem ut libero malesuada feugiat.</p>
+        <p>Conservamos tus datos personales durante el tiempo que mantengas una cuenta activa en CIVINSIS. Una vez que elimines tu cuenta, eliminaremos o anonimizaremos tu información en un plazo de treinta días, salvo que tengamos una obligación legal de conservarla por más tiempo.</p>
+        <p>Esta medida asegura la depuración oportuna de nuestros sistemas de almacenamiento y bases de datos locales. La retención temporal extendida se aplicará de forma estricta únicamente cuando exista un requerimiento regulatorio o judicial vigente en el país.</p>
       </div>
 
       <div class="legal-section" id="seguridad">
@@ -235,7 +231,7 @@ $activeNav = '';
           <div class="legal-section-icon orange"><i class="fas fa-lock"></i></div>
           <div><div class="legal-section-num">Sección 09</div><h2>Seguridad de los datos</h2></div>
         </div>
-        <p>Lorem ipsum dolor sit amet, implementamos medidas técnicas y organizativas apropiadas para proteger tus datos personales contra pérdida, uso indebido o acceso no autorizado:</p>
+        <p>Implementamos medidas técnicas y organizativas apropiadas para proteger tus datos personales contra pérdida, uso indebido o acceso no autorizado:</p>
         <ul>
           <li>Contraseñas almacenadas con cifrado bcrypt de alta seguridad.</li>
           <li>Conexiones protegidas mediante HTTPS/TLS.</li>
@@ -249,9 +245,8 @@ $activeNav = '';
           <div class="legal-section-icon green"><i class="fas fa-envelope"></i></div>
           <div><div class="legal-section-num">Sección 10</div><h2>Contacto y DPO</h2></div>
         </div>
-        <p>Para cualquier consulta relacionada con esta política de privacidad o el tratamiento de tus datos personales, puedes contactar con nuestro Delegado de Protección de Datos (DPO):</p>
-        <p><strong style="color:var(--text)">privacidad@civitas.com</strong></p>
-        <p>O a través de nuestra <a href="contacto.php" style="color:var(--naranja);text-decoration:underline">página de contacto</a>.</p>
+        <p>Para cualquier consulta relacionada con esta política de privacidad o el tratamiento de tus datos personales, puedes contactar a través de nuestra <a href="contacto.php" style="color:var(--naranja);text-decoration:underline">página de contacto</a>.</p> </p>
+      
       </div>
 
       <div class="legal-related">

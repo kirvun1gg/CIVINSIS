@@ -226,11 +226,6 @@ $activeNav = '';
     <!-- Main content -->
     <main class="legal-content">
 
-      <div class="legal-highlight">
-        <i class="fas fa-info-circle"></i>
-        <div>Este documento contiene texto de ejemplo (<em>Lorem ipsum</em>) como marcador de posición. Antes de publicar la plataforma, reemplaza cada sección con tus términos legales reales, revisados por un profesional.</div>
-      </div>
-
       <div class="legal-section" id="aceptacion">
         <div class="legal-section-header">
           <div class="legal-section-icon green"><i class="fas fa-check-circle"></i></div>
@@ -239,9 +234,8 @@ $activeNav = '';
             <h2>Aceptación de los términos</h2>
           </div>
         </div>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-        <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+        <p>Bienvenido a CIVINSIS, el Sistema Innovador de Participación Ciudadana. Los presentes Términos y Condiciones de Uso, referidos desde ahora como los Términos, constituyen un acuerdo legalmente vinculante entre el usuario, denominado en este documento como el Usuario, y los desarrolladores de la plataforma, identificados como Grupo N° 4, quienes serán llamados CIVINSIS o los Administradores, un proyecto tecnológico de desarrollo de software enfocado en la innovación cívica y social en la República de El Salvador.</p>
+
       </div>
 
       <div class="legal-section" id="uso-plataforma">
@@ -252,15 +246,15 @@ $activeNav = '';
             <h2>Uso de la plataforma</h2>
           </div>
         </div>
-        <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet:</p>
+        <p>El uso de CIVINSIS debe ser correcto, lícito y orientado al bienestar comunitario. Los administradores se reservan el derecho de suspender de forma inmediata las cuentas que violen estas normas de convivencia.</p>
         <ul>
-          <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit et temporibus.</li>
-          <li>Ut labore et dolore magnam aliquam quaerat voluptatem aut odit fugit.</li>
-          <li>Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse.</li>
-          <li>Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis.</li>
-          <li>Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil.</li>
+          <li>Registro obligatorio con correo válido y verificación para evitar perfiles falsos.</li>
+          <li>Credenciales personales e intransferibles bajo el cuidado exclusivo de cada usuario.</li>
+          <li>Publicación de propuestas verídicas estructuradas con título, descripción y categoría.</li>
+          <li>Sistema democrático de un voto único por propuesta sin manipulaciones técnicas.</li>
+          <li>Límite de veinticuatro horas para editar o eliminar el contenido publicado.</li>
         </ul>
-        <p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati.</p>
+        <p>Al terminar el plazo de veinticuatro horas el contenido será definitivo. Esto garantiza la total transparencia e integridad de los debates ciudadanos.</p>
       </div>
 
       <div class="legal-section" id="cuentas">
@@ -271,14 +265,14 @@ $activeNav = '';
             <h2>Cuentas de usuario</h2>
           </div>
         </div>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Quis ipsum suspendisse ultrices gravida risus commodo viverra.</p>
+        <p>El registro en CIVINSIS otorga la condición de usuario e implica la obligación de administrar la cuenta de manera responsable. Los administradores se reservan el derecho de suspender los perfiles que pongan en riesgo la seguridad de la comunidad digital.</p>
         <ul>
           <li>Proporcionar información veraz, precisa y completa durante el registro.</li>
           <li>Mantener la confidencialidad de tu contraseña y datos de acceso.</li>
           <li>Notificar de inmediato cualquier uso no autorizado de tu cuenta.</li>
           <li>Ser responsable de toda actividad realizada desde tu cuenta.</li>
         </ul>
-        <p>Nulla porttitor accumsan tincidunt. Vivamus suscipit tortor eget felis porttitor volutpat. Praesent sapien massa, convallis a pellentesque nec, egestas non nisi.</p>
+        <p>La protección de las credenciales es fundamental para garantizar un entorno de participación transparente. El descuido en la seguridad de la cuenta facultará al equipo técnico para restringir el acceso a la plataforma de forma definitiva.</p>
       </div>
 
       <div class="legal-section" id="contenido">
@@ -289,8 +283,8 @@ $activeNav = '';
             <h2>Contenido publicado</h2>
           </div>
         </div>
-        <p>Curabitur aliquet quam id dui posuere blandit. Vivamus magna justo, lacinia eget consectetur sed, convallis at tellus. Cras ultricies ligula sed magna dictum porta.</p>
-        <p>Pellentesque in ipsum id orci porta dapibus. Nulla quis lorem ut libero malesuada feugiat. Sed porttitor lectus nibh. Donec sollicitudin molestie malesuada:</p>
+        <p>Todo contenido publicado en CIVINSIS debe promover el diálogo democrático y constructivo. El usuario retiene la autoría de sus ideas pero otorga a la plataforma una licencia gratuita para su difusión cívica.</p>
+        <p>Al interactuar o subir material a la plataforma se deben cumplir de forma obligatoria las siguientes directrices de publicación:</p>
         <ul>
           <li>El contenido debe ser original o contar con los permisos necesarios.</li>
           <li>No se permite publicar información falsa, engañosa o difamatoria.</li>
@@ -299,7 +293,7 @@ $activeNav = '';
         </ul>
         <div class="legal-highlight">
           <i class="fas fa-exclamation-triangle" style="color:var(--naranja)"></i>
-          <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. CIVINSIS se reserva el derecho de eliminar contenido que viole estas normas sin previo aviso.</div>
+          <div>CIVINSIS utiliza herramientas de inteligencia artificial para la moderación automatizada y se reserva el derecho de eliminar contenido que viole estas normas sin previo aviso.</div>
         </div>
       </div>
 
@@ -311,8 +305,8 @@ $activeNav = '';
             <h2>Propiedad intelectual</h2>
           </div>
         </div>
-        <p>Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Donec velit neque, auctor sit amet aliquam vel, ullamcorper sit amet ligula. Cras ultricies ligula sed magna dictum porta.</p>
-        <p>Nulla quis lorem ut libero malesuada feugiat. Sed porttitor lectus nibh. Donec rutrum congue leo eget malesuada. Curabitur aliquet quam id dui posuere blandit.</p>
+        <p>Todos los elementos gráficos, logotipos, interfaces, diseños, bases de datos y el código fuente general de CIVINSIS pertenecen de forma exclusiva a los desarrolladores del Grupo N° 4. Queda terminantemente prohibida su reproducción, copia, distribución o ingeniería inversa con fines comerciales o ajenos al proyecto sin una autorización previa por escrito.</p>
+        <p>Por su parte, el usuario conserva la propiedad intelectual de las propuestas e ideas de mejora ciudadana que decida publicar en la plataforma. No obstante, por el hecho de registrarse y compartir dicho contenido, otorga a CIVINSIS una licencia de uso gratuita, no exclusiva y de ámbito nacional para exhibir el material dentro del sistema con propósitos exclusivamente educativos, sociales y de debate cívico.</p>
       </div>
 
       <div class="legal-section" id="prohibiciones">
@@ -323,7 +317,7 @@ $activeNav = '';
             <h2>Conductas prohibidas</h2>
           </div>
         </div>
-        <p>Praesent sapien massa, convallis a pellentesque nec, egestas non nisi. Vestibulum ac diam sit amet quam vehicula elementum sed sit amet dui:</p>
+        <p>CIVINSIS promueve un espacio digital constructivo, seguro y de respeto mutuo. Queda terminantemente prohibido el uso de la plataforma para realizar cualquiera de las acciones detalladas en el siguiente listado:</p>
         <ul>
           <li>Acosar, amenazar o intimidar a otros usuarios de la plataforma.</li>
           <li>Publicar contenido odioso, discriminatorio o que incite a la violencia.</li>
@@ -342,8 +336,8 @@ $activeNav = '';
             <h2>Privacidad y datos</h2>
           </div>
         </div>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. El tratamiento de tus datos personales se rige por nuestra <a href="privacidad.php" style="color:var(--verde);text-decoration:underline">Política de Privacidad</a>, la cual forma parte integral de estos términos.</p>
-        <p>Curabitur non nulla sit amet nisl tempus convallis quis ac lectus. Donec sollicitudin molestie malesuada. Nulla porttitor accumsan tincidunt.</p>
+        <p>El tratamiento de tus datos personales se rige por nuestra Política de Privacidad, la cual forma parte integral de estos términos. CIVINSIS se compromete a proteger la información recopilada durante el registro y la verificación para asegurar que el entorno cívico sea confiable y seguro para la juventud salvadoreña.<a href="privacidad.php" style="color:var(--verde);text-decoration:underline">Política de Privacidad</a>, la cual forma parte integral de estos términos.</p>
+        <p>Los datos recolectados, tales como el correo electrónico y el nombre de usuario, se procesarán exclusivamente para el funcionamiento interno de la plataforma, el control de las votaciones democráticas y la personalización del sistema de insignias. Bajo ninguna circunstancia se venderá o transferirá esta información a terceras entidades sin el consentimiento expreso del titular.</p>
       </div>
 
       <div class="legal-section" id="responsabilidad">
@@ -354,8 +348,8 @@ $activeNav = '';
             <h2>Limitación de responsabilidad</h2>
           </div>
         </div>
-        <p>Vivamus magna justo, lacinia eget consectetur sed, convallis at tellus. Cras ultricies ligula sed magna dictum porta. Nulla quis lorem ut libero malesuada feugiat.</p>
-        <p>Sed porttitor lectus nibh. Donec rutrum congue leo eget malesuada. Pellentesque in ipsum id orci porta dapibus. Quisque velit nisi, pretium ut lacinia in, elementum id enim.</p>
+        <p>CIVINSIS se proporciona en el estado técnico en que se encuentra y según su disponibilidad para fines estrictamente académicos y sociales. Los desarrolladores no garantizan la ausencia total de fallos de conectividad, interrupciones del servidor local o imprecisiones derivadas de las herramientas de inteligencia artificial empleadas para la moderación automatizada y la asistencia en la redacción cívica de propuestas.</p>
+        <p>Por tanto, el equipo administrador no asume ninguna responsabilidad legal por las opiniones vertidas por los usuarios, las consecuencias de accesos no autorizados por descuidos en las credenciales individuales, los falsos positivos de los filtros automáticos de comentarios, ni por la falta de ejecución material de las propuestas comunitarias por parte de las autoridades reales del país.</p>
       </div>
 
       <div class="legal-section" id="modificaciones">
@@ -366,8 +360,8 @@ $activeNav = '';
             <h2>Modificaciones</h2>
           </div>
         </div>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. CIVINSIS se reserva el derecho de modificar estos Términos de Uso en cualquier momento. Los cambios entrarán en vigor tras su publicación en la plataforma.</p>
-        <p>Donec sollicitudin molestie malesuada. Nulla porttitor accumsan tincidunt. Vivamus suscipit tortor eget felis porttitor volutpat.</p>
+        <p>CIVINSIS se reserva el derecho de modificar estos Términos de Uso en cualquier momento. Los cambios entrarán en vigor de forma inmediata tras su publicación oficial en esta sección de la plataforma, por lo que se recomienda revisarlos periódicamente.</p>
+        <p>El uso continuo de los servicios y herramientas de participación cívica con posterioridad a la publicación de las reformas constituirá la aceptación tácita y obligatoria de los nuevos términos establecidos por el equipo administrador del sistema.</p>
       </div>
 
       <div class="legal-section" id="contacto">
@@ -378,8 +372,7 @@ $activeNav = '';
             <h2>Contacto</h2>
           </div>
         </div>
-        <p>Si tienes preguntas o dudas sobre estos Términos de Uso, puedes contactarnos a través de nuestra página de <a href="contacto.php" style="color:var(--verde);text-decoration:underline">Contacto</a> o escribir directamente a:</p>
-        <p><strong style="color:var(--text)">legal@civitas.com</strong></p>
+        <p>Si tienes preguntas o dudas sobre estos Términos de Uso, puedes contactarnos a través de nuestra página de <a href="contacto.php" style="color:var(--verde);text-decoration:underline">Contacto</a></p>
       </div>
 
       <!-- Related pages -->

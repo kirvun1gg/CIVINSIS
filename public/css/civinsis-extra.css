@@ -1,0 +1,236 @@
+/* ============================================================
+   CIVINSIS · Extras
+   - Efectos hover por categoría (#5)
+   - Diseños de tarjeta ampliados + autor con avatar (#2 #3)
+   - Personalización de perfil (#2)
+   - Widget de IA "CIVI" (#4)
+   ============================================================ */
+
+/* ── Avatar del autor dentro de la tarjeta (#3) ───────────── */
+.card-author {
+  display: flex; align-items: center; gap: .5rem;
+  margin-top: .65rem;
+}
+.card-author .author-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  object-fit: cover; flex: 0 0 26px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .7rem; font-weight: 700; color: #fff;
+  background: var(--grad-primary);
+  border: 2px solid var(--bg-card); box-shadow: var(--shadow);
+}
+.card-author .author-name { font-size: .78rem; color: var(--text-muted); font-weight: 600; }
+
+/* Avatar en comentarios (#3) */
+.comment-avatar {
+  width: 38px; height: 38px; border-radius: 50%; object-fit: cover;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 700; color: #fff; background: var(--grad-primary);
+  flex: 0 0 38px; border: 2px solid var(--bg-card);
+}
+
+/* ============================================================
+   #5 · EFECTOS HOVER POR CATEGORÍA
+   La tarjeta lleva data-cat-effect="<efecto>". El JS inyecta
+   partículas dentro de .cat-fx-layer; el CSS las anima.
+   ============================================================ */
+.proposal-card { position: relative; overflow: hidden; }
+.cat-fx-layer {
+  position: absolute; inset: 0; pointer-events: none;
+  overflow: hidden; z-index: 2; border-radius: inherit;
+}
+.cat-particle {
+  position: absolute; left: var(--x, 50%); bottom: -24px;
+  font-size: var(--size, 16px); opacity: 0;
+  will-change: transform, opacity;
+  animation: catFloat var(--dur, 2.4s) ease-in forwards;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes catFloat {
+  0%   { opacity: 0; transform: translateY(0) translateX(0) rotate(0deg) scale(.6); }
+  15%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(var(--rise, -180px)) translateX(var(--drift, 0px)) rotate(var(--spin, 360deg)) scale(1); }
+}
+
+/* Glow superior temático al pasar el cursor */
+.proposal-card[data-cat-effect]::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; border-radius: inherit;
+  opacity: 0; transition: opacity .4s ease; pointer-events: none;
+  background: radial-gradient(120% 80% at 50% 0%, var(--fx-glow, transparent) 0%, transparent 60%);
+}
+.proposal-card[data-cat-effect]:hover::before { opacity: 1; }
+
+/* Colores de glow por efecto */
+.proposal-card[data-cat-effect="medio-ambiente"]  { --fx-glow: rgba(34,197,94,.22); }
+.proposal-card[data-cat-effect="educacion"]        { --fx-glow: rgba(59,130,246,.20); }
+.proposal-card[data-cat-effect="salud"]            { --fx-glow: rgba(239,68,68,.20); }
+.proposal-card[data-cat-effect="tecnologia"]       { --fx-glow: rgba(6,182,212,.22); }
+.proposal-card[data-cat-effect="cultura"]          { --fx-glow: rgba(168,85,247,.22); }
+.proposal-card[data-cat-effect="deporte"]          { --fx-glow: rgba(249,115,22,.22); }
+.proposal-card[data-cat-effect="seguridad"]        { --fx-glow: rgba(234,179,8,.22); }
+.proposal-card[data-cat-effect="infraestructura"]  { --fx-glow: rgba(100,116,139,.22); }
+
+/* Movimiento sutil de la tarjeta al hover */
+.proposal-card[data-cat-effect]:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Efecto especial tecnología: barrido de "escáner" */
+.proposal-card[data-cat-effect="tecnologia"]:hover .cat-fx-layer::after {
+  content: ""; position: absolute; left: 0; right: 0; top: -40%; height: 40%;
+  background: linear-gradient(180deg, transparent, rgba(6,182,212,.25), transparent);
+  animation: techScan 1.4s linear infinite;
+}
+@keyframes techScan { from { top: -40%; } to { top: 120%; } }
+
+/* Efecto especial salud: latido del borde */
+.proposal-card[data-cat-effect="salud"]:hover { animation: heartBeat 1.1s ease-in-out infinite; }
+@keyframes heartBeat {
+  0%,100% { transform: translateY(-6px) scale(1); }
+  30%     { transform: translateY(-6px) scale(1.015); }
+  45%     { transform: translateY(-6px) scale(.995); }
+}
+
+/* ============================================================
+   #2 · DISEÑOS DE TARJETA AMPLIADOS
+   (se suman a los ya existentes: dark, gradient, minimal, neon...)
+   ============================================================ */
+.card-design-aurora {
+  background: linear-gradient(135deg,#1a2980,#26d0ce) !important;
+  border-color: rgba(255,255,255,.25) !important; color: #fff;
+}
+.card-design-aurora .card-title,
+.card-design-aurora .card-desc { color: #fff !important; }
+.card-design-aurora::after {
+  content:""; position:absolute; inset:0; opacity:.4; mix-blend-mode:overlay; pointer-events:none;
+  background: linear-gradient(120deg,#ff6ec4,#7873f5,#4ade80,#ff6ec4);
+  background-size: 300% 300%; animation: auroraShift 6s ease infinite;
+}
+@keyframes auroraShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+.card-design-cyber {
+  background: #0a0e27 !important; border: 1px solid #00f0ff !important; color: #c8faff;
+  box-shadow: 0 0 18px rgba(0,240,255,.25), inset 0 0 18px rgba(0,240,255,.06);
+}
+.card-design-cyber .card-title { color: #00f0ff !important; text-shadow: 0 0 8px rgba(0,240,255,.6); }
+.card-design-cyber .card-desc  { color: #8bb6c4 !important; }
+
+.card-design-pastel {
+  background: linear-gradient(135deg,#ffe5ec,#e0f7fa) !important;
+  border-color: rgba(0,0,0,.06) !important;
+}
+
+/* Tarjeta destacada (glow) */
+.proposal-card.is-destacada {
+  box-shadow: 0 0 0 2px var(--naranja-400), var(--shadow-lg);
+}
+.proposal-card.is-destacada::after {
+  content: "★ Destacada"; position: absolute; top: 10px; right: 10px; z-index: 4;
+  font-size: .65rem; font-weight: 700; color: #fff; padding: .2rem .5rem;
+  border-radius: 999px; background: var(--naranja-500);
+}
+
+/* Selector visual de diseños y efectos en crear.php */
+.design-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:.6rem; }
+.design-swatch {
+  cursor:pointer; border:2px solid var(--border); border-radius:var(--radius);
+  padding:.7rem .5rem; text-align:center; font-size:.72rem; font-weight:600;
+  color:var(--text-2); transition:var(--trans); position:relative; overflow:hidden;
+}
+.design-swatch:hover { transform:translateY(-2px); }
+.design-swatch.active { border-color:var(--verde); box-shadow:0 0 0 3px var(--verde-alpha); color:var(--text); }
+.design-swatch .swatch-preview { height:34px; border-radius:8px; margin-bottom:.4rem; }
+
+/* ============================================================
+   #2 · PERSONALIZACIÓN DE PERFIL
+   ============================================================ */
+.theme-grid { display:flex; flex-wrap:wrap; gap:.6rem; }
+.theme-chip {
+  width:44px; height:44px; border-radius:50%; cursor:pointer;
+  border:3px solid transparent; transition:var(--trans); position:relative;
+}
+.theme-chip.active { border-color:var(--text); transform:scale(1.08); }
+.theme-chip[data-tema="verde"]   { background:#36c0a1; }
+.theme-chip[data-tema="naranja"] { background:#ef7e22; }
+.theme-chip[data-tema="azul"]    { background:#3b82f6; }
+.theme-chip[data-tema="morado"]  { background:#a855f7; }
+.theme-chip[data-tema="rosa"]    { background:#ec4899; }
+.theme-chip[data-tema="dark"]    { background:#1f2937; }
+
+/* Marcos de avatar */
+.frame-grid { display:flex; gap:.7rem; flex-wrap:wrap; }
+.frame-opt {
+  width:54px; height:54px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  background:var(--grad-primary); color:#fff; font-weight:700; border:2px solid var(--border);
+  transition:var(--trans);
+}
+.frame-opt.active { outline:3px solid var(--verde-alpha2); }
+.frame-circulo  { border-radius:50%; }
+.frame-cuadrado { border-radius:10px; }
+.frame-hexagono { clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); border-radius:0; }
+.frame-estrella { clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%); border-radius:0; }
+
+/* Aplicar el marco al avatar grande del perfil */
+.profile-avatar.marco-cuadrado { border-radius:14px !important; }
+.profile-avatar.marco-hexagono { clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); border-radius:0 !important; }
+.profile-avatar.marco-estrella { clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%); border-radius:0 !important; }
+
+.profile-insignia {
+  display:inline-flex; align-items:center; justify-content:center;
+  font-size:1.1rem; margin-left:.35rem;
+}
+.profile-frase { font-style:italic; color:var(--text-muted); margin-top:.3rem; }
+
+/* ============================================================
+   #4 · WIDGET DE IA "CIVI"
+   ============================================================ */
+.civi-fab {
+  position:fixed; bottom:24px; right:24px; z-index:9998;
+  width:60px; height:60px; border-radius:50%; border:none; cursor:pointer;
+  background:var(--grad-primary); color:#fff; font-size:1.5rem;
+  box-shadow:var(--shadow-lg); display:flex; align-items:center; justify-content:center;
+  transition:var(--trans);
+}
+.civi-fab:hover { transform:scale(1.08) rotate(6deg); }
+.civi-fab .civi-pulse {
+  position:absolute; inset:0; border-radius:50%; background:var(--verde);
+  opacity:.5; animation:civiPulse 2s ease-out infinite;
+}
+@keyframes civiPulse { 0%{transform:scale(1);opacity:.5} 100%{transform:scale(1.8);opacity:0} }
+
+.civi-panel {
+  position:fixed; bottom:96px; right:24px; z-index:9999;
+  width:min(380px, calc(100vw - 32px)); height:min(560px, calc(100vh - 130px));
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-lg); display:flex; flex-direction:column; overflow:hidden;
+  transform:translateY(20px) scale(.96); opacity:0; pointer-events:none; transition:var(--trans);
+}
+.civi-panel.open { transform:translateY(0) scale(1); opacity:1; pointer-events:auto; }
+.civi-head {
+  background:var(--grad-primary); color:#fff; padding:1rem 1.1rem;
+  display:flex; align-items:center; gap:.7rem;
+}
+.civi-head .civi-ava {
+  width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;font-size:1.1rem;
+}
+.civi-head h4 { font-family:var(--font-display); font-weight:700; font-size:1rem; margin:0; }
+.civi-head small { opacity:.85; font-size:.72rem; }
+.civi-close { margin-left:auto; background:none; border:none; color:#fff; font-size:1.1rem; cursor:pointer; opacity:.85; }
+.civi-body { flex:1; overflow-y:auto; padding:1rem; display:flex; flex-direction:column; gap:.7rem; background:var(--bg); }
+.civi-msg { max-width:85%; padding:.6rem .85rem; border-radius:14px; font-size:.86rem; line-height:1.45; white-space:pre-wrap; }
+.civi-msg.bot  { background:var(--bg-card); border:1px solid var(--border); align-self:flex-start; border-bottom-left-radius:4px; }
+.civi-msg.user { background:var(--grad-primary); color:#fff; align-self:flex-end; border-bottom-right-radius:4px; }
+.civi-typing { align-self:flex-start; color:var(--text-muted); font-size:.8rem; }
+.civi-chips { display:flex; gap:.4rem; flex-wrap:wrap; padding:.5rem 1rem 0; }
+.civi-chip {
+  font-size:.72rem; padding:.3rem .6rem; border-radius:999px; cursor:pointer;
+  background:var(--verde-alpha); color:var(--verde-700); border:1px solid var(--verde-alpha2);
+}
+.civi-input { display:flex; gap:.5rem; padding:.75rem 1rem; border-top:1px solid var(--border); background:var(--bg-card); }
+.civi-input input { flex:1; border:1px solid var(--border); border-radius:999px; padding:.55rem .9rem; font-size:.85rem; background:var(--bg); color:var(--text); outline:none; }
+.civi-input input:focus { border-color:var(--verde); }
+.civi-input button { border:none; background:var(--grad-primary); color:#fff; width:40px; height:40px; border-radius:50%; cursor:pointer; }
+
+[data-theme="dark"] .civi-chip { color:var(--verde-200); }

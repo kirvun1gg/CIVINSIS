@@ -1,0 +1,409 @@
+/* ════════════════════════════════════════════════════════════
+   CIVINSIS — Sistema de Gamificación
+   Diseño cívico-moderno: verdes, naranjas, partículas y niveles
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Variables de rareza ─────────────────────────────────── */
+:root {
+  --r-comun:      #8892a4;
+  --r-raro:       #4a9eff;
+  --r-epico:      #9b59b6;
+  --r-legendario: #ffe066;
+  --xp-verde:     #36c0a1;
+  --xp-naranja:   #ef7e22;
+}
+
+/* ══ BARRA DE NIVEL / XP ════════════════════════════════════ */
+.nivel-widget {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  position: relative; overflow: hidden;
+}
+.nivel-widget::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--grad-primary);
+}
+.nivel-header {
+  display: flex; align-items: center; gap: .75rem;
+  margin-bottom: .85rem;
+}
+.nivel-badge {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--grad-primary);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-size: 1.1rem; font-weight: 800;
+  color: #fff; flex-shrink: 0;
+  box-shadow: 0 0 16px rgba(54,192,161,.35);
+}
+.nivel-info { flex: 1; }
+.nivel-nombre {
+  font-size: .78rem; font-weight: 700;
+  color: var(--verde); text-transform: uppercase; letter-spacing: .08em;
+}
+.nivel-num {
+  font-family: var(--font-display); font-size: 1.4rem; font-weight: 800;
+  color: var(--text); line-height: 1.1;
+}
+.xp-bar-wrap { position: relative; }
+.xp-bar-track {
+  height: 8px; background: var(--surface);
+  border-radius: 100px; overflow: hidden;
+}
+.xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #36c0a1, #ef7e22);
+  border-radius: 100px;
+  transition: width .8s cubic-bezier(.34,1.56,.64,1);
+  position: relative;
+}
+.xp-bar-fill::after {
+  content: '';
+  position: absolute; top: 0; right: 0; bottom: 0; width: 20px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.4));
+  animation: xpShine 2s ease-in-out infinite;
+}
+@keyframes xpShine {
+  0%,100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+.xp-labels {
+  display: flex; justify-content: space-between;
+  font-size: .7rem; color: var(--text-muted);
+  margin-top: .35rem;
+}
+.xp-pct {
+  font-size: .7rem; font-weight: 700;
+  color: var(--verde);
+}
+
+/* ── Stats de reputación y racha ─────────────────────────── */
+.gam-stats-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: .75rem;
+  margin-top: .85rem;
+}
+.gam-stat-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .75rem 1rem;
+  text-align: center;
+}
+.gam-stat-box .icon {
+  font-size: 1.3rem; display: block; margin-bottom: .25rem;
+}
+.gam-stat-box .val {
+  font-family: var(--font-display); font-size: 1.3rem; font-weight: 800;
+  color: var(--text);
+}
+.gam-stat-box .lbl {
+  font-size: .68rem; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--text-muted);
+}
+
+/* ══ TÍTULO EQUIPADO ════════════════════════════════════════ */
+.titulo-chip {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .25rem .75rem; border-radius: 100px;
+  font-size: .75rem; font-weight: 700; letter-spacing: .05em;
+  border: 1px solid currentColor; opacity: .9;
+  text-transform: uppercase;
+}
+.titulo-chip.legendario {
+  background: rgba(255,224,102,.12);
+  animation: tituloGlow 2.5s ease-in-out infinite;
+}
+@keyframes tituloGlow {
+  0%,100% { box-shadow: 0 0 6px rgba(255,224,102,.4); }
+  50% { box-shadow: 0 0 16px rgba(255,224,102,.7); }
+}
+.titulo-chip.epico { background: rgba(155,89,182,.12); }
+.titulo-chip.raro  { background: rgba(74,158,255,.12); }
+.titulo-chip.comun { background: rgba(136,146,164,.08); }
+
+/* ══ INSIGNIAS ══════════════════════════════════════════════ */
+.insignias-grid {
+  display: flex; flex-wrap: wrap; gap: .6rem;
+}
+.insignia-item {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; cursor: pointer; position: relative;
+  transition: transform .25s, box-shadow .25s;
+  background: var(--surface); border: 2px solid var(--border);
+}
+.insignia-item:hover { transform: scale(1.2); }
+.insignia-item.comun      { border-color: var(--r-comun); }
+.insignia-item.raro       { border-color: var(--r-raro); box-shadow: 0 0 8px rgba(74,158,255,.3); }
+.insignia-item.epico      { border-color: var(--r-epico); box-shadow: 0 0 8px rgba(155,89,182,.3); }
+.insignia-item.legendario {
+  border-color: var(--r-legendario);
+  box-shadow: 0 0 12px rgba(255,224,102,.5);
+  animation: insGlow 2s ease-in-out infinite;
+}
+@keyframes insGlow { 0%,100%{box-shadow:0 0 8px rgba(255,224,102,.4)}50%{box-shadow:0 0 18px rgba(255,224,102,.7)} }
+
+.insignia-tooltip {
+  position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%);
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: .4rem .7rem;
+  font-size: .7rem; font-weight: 600; white-space: nowrap;
+  color: var(--text); pointer-events: none;
+  opacity: 0; transition: opacity .2s; z-index: 10;
+  box-shadow: var(--shadow-lg);
+}
+.insignia-item:hover .insignia-tooltip { opacity: 1; }
+
+/* ══ LOGROS ═════════════════════════════════════════════════ */
+.logros-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;
+}
+.logro-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1rem;
+  display: flex; gap: .85rem; align-items: flex-start;
+  transition: var(--trans); position: relative; overflow: hidden;
+}
+.logro-card:not(.bloqueado):hover {
+  transform: translateY(-2px); box-shadow: var(--shadow-lg);
+  border-color: var(--verde-200);
+}
+.logro-card.bloqueado { opacity: .45; filter: grayscale(.6); }
+.logro-card.legendario::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,224,102,.05) 0%, transparent 60%);
+  pointer-events: none;
+}
+.logro-icono {
+  font-size: 2rem; line-height: 1; flex-shrink: 0;
+  width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface); border-radius: var(--radius);
+}
+.logro-nombre {
+  font-size: .85rem; font-weight: 700; color: var(--text); margin-bottom: .2rem;
+}
+.logro-desc {
+  font-size: .75rem; color: var(--text-muted); line-height: 1.5;
+}
+.logro-xp {
+  font-size: .7rem; font-weight: 700; color: var(--xp-verde);
+  margin-top: .35rem;
+}
+.rareza-dot {
+  display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  margin-right: .35rem;
+}
+.rareza-dot.comun      { background: var(--r-comun); }
+.rareza-dot.raro       { background: var(--r-raro); }
+.rareza-dot.epico      { background: var(--r-epico); }
+.rareza-dot.legendario { background: var(--r-legendario); }
+
+/* ══ MISIONES ═══════════════════════════════════════════════ */
+.mision-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1rem 1.25rem;
+  display: flex; gap: 1rem; align-items: center;
+  transition: var(--trans); margin-bottom: .6rem;
+}
+.mision-card.completada { border-color: var(--verde-200); background: var(--verde-alpha); }
+.mision-icon {
+  width: 40px; height: 40px; border-radius: var(--radius);
+  background: var(--grad-primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0; color: #fff;
+}
+.mision-card.completada .mision-icon { background: var(--verde); }
+.mision-info { flex: 1; min-width: 0; }
+.mision-nombre { font-size: .85rem; font-weight: 700; color: var(--text); }
+.mision-desc   { font-size: .75rem; color: var(--text-muted); }
+.mision-progress {
+  height: 5px; background: var(--surface); border-radius: 100px;
+  margin-top: .5rem; overflow: hidden;
+}
+.mision-progress-fill {
+  height: 100%; background: var(--grad-primary);
+  border-radius: 100px; transition: width .5s ease;
+}
+.mision-xp {
+  font-size: .8rem; font-weight: 700; color: var(--xp-naranja);
+  white-space: nowrap; flex-shrink: 0;
+}
+.mision-check {
+  color: var(--verde); font-size: 1.2rem; flex-shrink: 0;
+}
+.mision-tipo-badge {
+  display: inline-flex; align-items: center;
+  padding: .15rem .5rem; border-radius: 100px;
+  font-size: .65rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; margin-right: .4rem;
+}
+.mision-tipo-badge.diaria  { background: rgba(54,192,161,.15); color: var(--verde); }
+.mision-tipo-badge.semanal { background: rgba(239,126,34,.15); color: var(--naranja-400); }
+
+/* ══ COSMÉTICOS ═════════════════════════════════════════════ */
+.cosmeticos-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .85rem;
+}
+.cosmetico-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: .85rem;
+  text-align: center; cursor: pointer;
+  transition: var(--trans); position: relative;
+}
+.cosmetico-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.cosmetico-card.equipado { border-color: var(--verde); background: var(--verde-alpha); }
+.cosmetico-card.bloqueado { opacity: .4; filter: grayscale(.7); cursor: not-allowed; }
+.cosmetico-preview {
+  width: 64px; height: 64px; border-radius: 50%;
+  margin: 0 auto .6rem; background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+}
+.cosmetico-nombre {
+  font-size: .78rem; font-weight: 700; color: var(--text); margin-bottom: .2rem;
+}
+.cosmetico-rareza {
+  font-size: .65rem; text-transform: uppercase;
+  letter-spacing: .07em;
+}
+.cosmetico-req {
+  font-size: .65rem; color: var(--text-muted);
+  margin-top: .25rem;
+}
+.cosmetico-equipado-badge {
+  position: absolute; top: .4rem; right: .4rem;
+  background: var(--verde); color: #fff; border-radius: 50%;
+  width: 18px; height: 18px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .6rem;
+}
+
+/* ══ MARCOS DE AVATAR ══════════════════════════════════════ */
+.avatar-wrap.marco-basico      { border: 3px solid #36c0a1 !important; }
+.avatar-wrap.marco-dorado      { border: 3px solid #ffe066 !important; box-shadow: 0 0 14px rgba(255,224,102,.5); }
+.avatar-wrap.marco-epico       { border: 3px solid transparent !important; background: linear-gradient(var(--bg-card),var(--bg-card)) padding-box, linear-gradient(135deg,#36c0a1,#ef7e22,#9b59b6) border-box; }
+.avatar-wrap.marco-legendario  { border: 3px solid #ffe066 !important; box-shadow: 0 0 20px rgba(255,224,102,.6), 0 0 40px rgba(255,224,102,.2); animation: legendFrame 2s ease-in-out infinite; }
+.avatar-wrap.marco-hexagono    { border: 3px solid #4a9eff !important; clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); }
+@keyframes legendFrame { 0%,100%{box-shadow:0 0 16px rgba(255,224,102,.5)}50%{box-shadow:0 0 28px rgba(255,224,102,.8),0 0 50px rgba(255,224,102,.3)} }
+
+/* ══ FONDOS DE PERFIL ═══════════════════════════════════════ */
+.profile-hero.fondo-oscuro  { background: linear-gradient(135deg,#0f1c19,#1a3a30) !important; }
+.profile-hero.fondo-aurora  { background: linear-gradient(135deg,#0f1c19 0%,#1a3a30 40%,#0d2a20 100%) !important; }
+.profile-hero.fondo-fuego   { background: linear-gradient(135deg,#1c1000,#3a1a00,#1c0800) !important; }
+.profile-hero.fondo-cosmo   { background: linear-gradient(135deg,#0a0a1a,#1a0a3a,#0a1a2a) !important; }
+.profile-hero.fondo-leyenda { background: linear-gradient(135deg,#1a1200,#3a2a00,#1a0a00) !important; }
+
+/* ══ RANKING ════════════════════════════════════════════════ */
+.ranking-table {
+  width: 100%; border-collapse: collapse;
+}
+.ranking-table th {
+  font-size: .72rem; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--text-muted); padding: .5rem .75rem; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.ranking-table td {
+  padding: .75rem; border-bottom: 1px solid var(--border);
+  vertical-align: middle; font-size: .85rem;
+}
+.ranking-table tr:hover td { background: var(--surface); }
+.ranking-pos {
+  font-family: var(--font-display); font-size: 1.1rem; font-weight: 800;
+  color: var(--text-muted); min-width: 32px;
+}
+.ranking-pos.gold   { color: #ffe066; }
+.ranking-pos.silver { color: #c0c0c0; }
+.ranking-pos.bronze { color: #cd7f32; }
+.ranking-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--grad-primary); display: flex; align-items: center;
+  justify-content: center; font-weight: 700; color: #fff; font-size: .85rem;
+}
+.ranking-nombre { font-weight: 600; color: var(--text); }
+
+/* ══ NOTIFICACIÓN DE SUBIDA DE NIVEL ════════════════════════ */
+.nivel-up-toast {
+  position: fixed; top: 80px; right: 1.5rem; z-index: 9999;
+  background: linear-gradient(135deg, #0f1c19, #1a3a30);
+  border: 1px solid var(--verde);
+  border-radius: var(--radius-lg); padding: 1.25rem 1.5rem;
+  box-shadow: 0 0 30px rgba(54,192,161,.3), var(--shadow-xl);
+  min-width: 280px; max-width: 360px;
+  animation: nivelUpIn .5s cubic-bezier(.34,1.56,.64,1) both;
+  color: #fff;
+}
+@keyframes nivelUpIn {
+  0%   { transform: translateX(120%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+.nivel-up-toast.saliendo {
+  animation: nivelUpOut .4s ease forwards;
+}
+@keyframes nivelUpOut {
+  to { transform: translateX(120%); opacity: 0; }
+}
+.nivel-up-title {
+  font-family: var(--font-display); font-size: 1.1rem; font-weight: 800;
+  color: var(--xp-verde); margin-bottom: .3rem;
+}
+.nivel-up-desc { font-size: .82rem; opacity: .8; }
+
+/* ══ LOGRO DESBLOQUEADO TOAST ════════════════════════════ */
+.logro-toast {
+  position: fixed; bottom: 2rem; left: 1.5rem; z-index: 9999;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: .85rem 1.1rem;
+  display: flex; gap: .85rem; align-items: center;
+  box-shadow: var(--shadow-xl);
+  animation: logroIn .4s cubic-bezier(.34,1.56,.64,1) both;
+  max-width: 300px;
+}
+@keyframes logroIn {
+  0%   { transform: translateY(60px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.logro-toast-icono { font-size: 2rem; }
+.logro-toast-titulo {
+  font-size: .7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--xp-naranja);
+}
+.logro-toast-nombre { font-size: .88rem; font-weight: 700; color: var(--text); }
+
+/* ══ TABS DE GAMIFICACIÓN ════════════════════════════════ */
+.gam-tabs {
+  display: flex; gap: .35rem; flex-wrap: wrap;
+  border-bottom: 1px solid var(--border); margin-bottom: 1.5rem;
+}
+.gam-tab {
+  padding: .55rem 1rem; border-radius: var(--radius) var(--radius) 0 0;
+  border: none; background: transparent; cursor: pointer;
+  font-size: .82rem; font-weight: 600; color: var(--text-muted);
+  transition: var(--trans); border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.gam-tab.active {
+  color: var(--verde); border-bottom-color: var(--verde);
+  background: var(--verde-alpha);
+}
+.gam-tab:hover:not(.active) { color: var(--text); background: var(--surface); }
+
+/* ══ HISTORIAL DE XP ════════════════════════════════════ */
+.xp-historial-item {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .6rem 0; border-bottom: 1px solid var(--border);
+  font-size: .82rem;
+}
+.xp-historial-item:last-child { border-bottom: none; }
+.xp-amount { font-weight: 800; color: var(--xp-verde); min-width: 52px; text-align: right; }
+.xp-amount.neg { color: #e74c3c; }
+
+/* ══ RESPONSIVE ══════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .logros-grid { grid-template-columns: 1fr; }
+  .cosmeticos-grid { grid-template-columns: repeat(2, 1fr); }
+  .gam-stats-row { grid-template-columns: 1fr 1fr; }
+}

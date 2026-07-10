@@ -17,7 +17,7 @@ $esAdminNav   = in_array($usuarioRol ?? '', ['admin','moderador']);
 <nav class="navbar" id="navbar">
   <div class="container nav-inner">
     <a href="index.php" class="nav-logo">
-      <div class="nav-logo-box"><img src="" alt="">></div>
+      <div class="nav-logo-box"><img src="/media/logo.png" alt="">></div>
       <span class="nav-logo-text">CIVINSIS</span>
     </a>
     <div class="nav-links">

@@ -168,11 +168,9 @@ input, textarea, select { font-family: inherit; }
 }
 /* Cuadro de logo */
 .nav-logo-box {
-  width: 40px; height: 40px; border-radius: 10px;
-  border: 2px dashed var(--verde-400);
+  width: 75px; height: 75px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden; flex-shrink: 0;
-  background: var(--grad-soft);
   position: relative;
 }
 /* LOGO AQUÍ */

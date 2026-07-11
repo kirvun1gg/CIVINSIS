@@ -24,6 +24,7 @@ Route::get('/dashboard.php',  [PageController::class, 'dashboard']);
 Route::get('/crear.php',      [PageController::class, 'crear']);
 Route::get('/propuesta.php',  [PageController::class, 'propuesta']);
 Route::get('/perfil.php',     [PageController::class, 'perfil']);
+Route::get('/usuario.php',    [PageController::class, 'usuario']);
 Route::get('/faq.php',        [PageController::class, 'faq']);
 Route::get('/contacto.php',   [PageController::class, 'contacto']);
 Route::get('/comunidad.php',  [PageController::class, 'comunidad']);

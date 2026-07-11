@@ -22,6 +22,14 @@ class PageController extends Controller
         return view('perfil');
     }
 
+    public function usuario()
+    {
+        // Perfil público de otro usuario (no requiere ser el dueño)
+        $id = (int) request('id');
+        if (!$id) return redirect('/dashboard.php');
+        return view('usuario', ['perfilId' => $id]);
+    }
+
     public function admin()
     {
         if (!Auth::check() || !Auth::user()->esAdmin()) {

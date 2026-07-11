@@ -204,111 +204,6 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
       </div>
     </div>
 
-    <!-- Tab: Gamificación -->
-    <div class="profile-section" id="tab-gamificacion">
-
-      <!-- Widget nivel + XP -->
-      <div class="nivel-widget" id="gamNivelWidget" style="margin-bottom:1.25rem">
-        <div class="nivel-header">
-          <div class="nivel-badge" id="gamNivelBadge">1</div>
-          <div class="nivel-info">
-            <div class="nivel-nombre">Nivel de ciudadanía</div>
-            <div class="nivel-num">Nivel <span id="gamNivel">1</span></div>
-          </div>
-          <div id="gamTituloWrap"></div>
-        </div>
-        <div class="xp-bar-wrap">
-          <div class="xp-bar-track">
-            <div class="xp-bar-fill" id="gamXpFill" style="width:0%"></div>
-          </div>
-          <div class="xp-labels">
-            <span id="gamXpActual">0 XP</span>
-            <span class="xp-pct" id="gamXpPct">0%</span>
-            <span id="gamXpSig">100 XP</span>
-          </div>
-        </div>
-        <div class="gam-stats-row">
-          <div class="gam-stat-box">
-            <span class="icon">⭐</span>
-            <div class="val" id="gamRepVal">0</div>
-            <div class="lbl">Reputación</div>
-          </div>
-          <div class="gam-stat-box">
-            <span class="icon">🔥</span>
-            <div class="val" id="gamRachaVal">0</div>
-            <div class="lbl">Racha días</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabs internos -->
-      <div class="gam-tabs">
-        <button class="gam-tab active" data-gam="misiones"><i class="fas fa-tasks"></i> Misiones</button>
-        <button class="gam-tab" data-gam="logros"><i class="fas fa-medal"></i> Logros</button>
-        <button class="gam-tab" data-gam="insignias"><i class="fas fa-shield-alt"></i> Insignias</button>
-        <button class="gam-tab" data-gam="titulos"><i class="fas fa-crown"></i> Títulos</button>
-        <button class="gam-tab" data-gam="cosmeticos"><i class="fas fa-palette"></i> Cosméticos</button>
-        <button class="gam-tab" data-gam="ranking"><i class="fas fa-list-ol"></i> Ranking</button>
-        <button class="gam-tab" data-gam="historial"><i class="fas fa-history"></i> Historial XP</button>
-      </div>
-
-      <div id="gam-misiones" class="gam-panel">
-        <div style="display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap">
-          <button class="btn btn-sm btn-outline" onclick="Gam.filtrarMisiones('diaria')" id="btnDiaria">Diarias</button>
-          <button class="btn btn-sm btn-ghost" onclick="Gam.filtrarMisiones('semanal')" id="btnSemanal">Semanales</button>
-        </div>
-        <div id="gamMisionesList"><div class="skeleton" style="height:64px;border-radius:12px;margin-bottom:.5rem"></div></div>
-      </div>
-
-      <div id="gam-logros" class="gam-panel" style="display:none">
-        <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap" id="gamLogrosFiltros">
-          <button class="btn btn-sm btn-outline" onclick="Gam.filtrarLogros('todos')">Todos</button>
-          <button class="btn btn-sm btn-ghost" onclick="Gam.filtrarLogros('propuestas')">Propuestas</button>
-          <button class="btn btn-sm btn-ghost" onclick="Gam.filtrarLogros('comunidad')">Comunidad</button>
-          <button class="btn btn-sm btn-ghost" onclick="Gam.filtrarLogros('racha')">Racha</button>
-          <button class="btn btn-sm btn-ghost" onclick="Gam.filtrarLogros('nivel')">Nivel</button>
-        </div>
-        <div class="logros-grid" id="gamLogrosList"></div>
-      </div>
-
-      <div id="gam-insignias" class="gam-panel" style="display:none">
-        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem">Insignias desbloqueadas. Haz clic para equipar.</p>
-        <div class="insignias-grid" id="gamInsigniasList"></div>
-      </div>
-
-      <div id="gam-titulos" class="gam-panel" style="display:none">
-        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem">Elige el título que aparece en tu perfil.</p>
-        <div style="display:flex;flex-wrap:wrap;gap:.6rem" id="gamTitulosList"></div>
-      </div>
-
-      <div id="gam-cosmeticos" class="gam-panel" style="display:none">
-        <div style="display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap">
-          <button class="btn btn-sm btn-outline" onclick="Gam.filtrarCosmeticos('marco_avatar')" id="btnMarco">Marcos</button>
-          <button class="btn btn-sm btn-ghost" onclick="Gam.filtrarCosmeticos('fondo_perfil')" id="btnFondo">Fondos</button>
-        </div>
-        <div class="cosmeticos-grid" id="gamCosmeticosList"></div>
-      </div>
-
-      <div id="gam-ranking" class="gam-panel" style="display:none">
-        <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap">
-          <button class="btn btn-sm btn-outline" onclick="Gam.cargarRanking('xp')">Por XP</button>
-          <button class="btn btn-sm btn-ghost" onclick="Gam.cargarRanking('reputacion')">Por Reputación</button>
-          <button class="btn btn-sm btn-ghost" onclick="Gam.cargarRanking('nivel')">Por Nivel</button>
-        </div>
-        <div class="table-wrap" style="overflow-x:auto">
-          <table class="ranking-table">
-            <thead><tr><th>#</th><th>Usuario</th><th>Nivel</th><th>XP</th><th>Reputación</th><th>Título</th></tr></thead>
-            <tbody id="gamRankingBody"><tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted)">Cargando...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div id="gam-historial" class="gam-panel" style="display:none">
-        <div id="gamHistorialList"><div class="skeleton" style="height:40px;margin-bottom:.5rem"></div></div>
-      </div>
-
-    </div>
-
     <!-- Tab: Contraseña -->
     <div class="profile-section" id="tab-seguridad">
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem">
@@ -647,6 +542,19 @@ const Gam = {
           ${d.titulo.nombre}
         </span>`;
     }
+
+    // Aplicar marco equipado al avatar del perfil
+    const ava = document.getElementById('profileAvatarDisplay');
+    if (ava && d.marco_equipado) {
+      ava.classList.remove('marco-basico','marco-dorado','marco-epico','marco-legendario','marco-hexagono');
+      ava.classList.add(d.marco_equipado);
+    }
+    // Aplicar fondo equipado al hero del perfil
+    const hero = document.querySelector('.profile-hero');
+    if (hero && d.fondo_equipado) {
+      hero.classList.remove('fondo-oscuro','fondo-aurora','fondo-fuego','fondo-cosmo','fondo-leyenda');
+      hero.classList.add(d.fondo_equipado);
+    }
   },
 
   // ── Misiones ─────────────────────────────────────────────
@@ -804,6 +712,7 @@ const Gam = {
     if (d.success) {
       if (window.Toast) Toast.show('¡Ítem equipado!', 'success');
       await this.init();
+      this.renderWidget();
       this.renderTitulos();
       this.renderCosmeticos(this.cosmeticoFiltro);
     } else {

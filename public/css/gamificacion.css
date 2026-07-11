@@ -407,3 +407,43 @@
   .cosmeticos-grid { grid-template-columns: repeat(2, 1fr); }
   .gam-stats-row { grid-template-columns: 1fr 1fr; }
 }
+
+/* ══ LABELS EN COMENTARIOS Y PROPUESTAS ═════════════════════ */
+.label-titulo {
+  display: inline-flex; align-items: center;
+  padding: .1rem .5rem; border-radius: 100px;
+  font-size: .62rem; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase;
+  border: 1px solid currentColor; line-height: 1.4;
+  vertical-align: middle;
+}
+.label-titulo.legendario { background: rgba(255,224,102,.12); animation: tituloGlow 2.5s ease-in-out infinite; }
+.label-titulo.epico { background: rgba(155,89,182,.12); }
+.label-titulo.raro  { background: rgba(74,158,255,.12); }
+.label-titulo.comun { background: rgba(136,146,164,.1); }
+
+.label-nivel {
+  display: inline-flex; align-items: center;
+  padding: .1rem .45rem; border-radius: 100px;
+  font-size: .62rem; font-weight: 800;
+  background: var(--grad-primary); color: #fff;
+  letter-spacing: .03em; line-height: 1.4;
+  vertical-align: middle;
+}
+
+/* Avatar de comentario con marco (hereda clases marco-*) */
+.comment-avatar.marco-dorado     { border: 2px solid #ffe066 !important; box-shadow: 0 0 8px rgba(255,224,102,.5); }
+.comment-avatar.marco-epico      { border: 2px solid #9b59b6 !important; }
+.comment-avatar.marco-legendario { border: 2px solid #ffe066 !important; box-shadow: 0 0 10px rgba(255,224,102,.6); }
+.comment-avatar.marco-hexagono   { border: 2px solid #4a9eff !important; }
+.comment-avatar.marco-basico     { border: 2px solid #36c0a1 !important; }
+
+/* Perfil: sección de cosméticos equipados visibles */
+.equipados-showcase {
+  display: flex; gap: 1rem; flex-wrap: wrap;
+  align-items: center; margin-top: 1rem;
+}
+.equipado-item {
+  display: flex; flex-direction: column; align-items: center;
+  gap: .35rem; font-size: .72rem; color: var(--text-muted);
+}

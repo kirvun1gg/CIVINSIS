@@ -542,7 +542,8 @@ const Proposals = {
     var avaInner = (p.autor_avatar && p.autor_avatar.indexOf('data:') === 0)
       ? '<img class="author-avatar" src="' + p.autor_avatar + '" alt="">'
       : '<span class="author-avatar">' + ((p.autor||'?').charAt(0).toUpperCase()) + '</span>';
-    html += '<div class="card-author">' + avaInner + '<span class="author-name">' + (p.autor||'Anónimo') + '</span></div>';
+    var authorClass = p.autor_marco ? p.autor_marco : '';
+    html += '<div class="card-author">' + avaInner + '<span class="author-name">' + (p.autor||'Anónimo') + '</span>' + (p.autor_titulo ? ' <span class="label-titulo ' + p.autor_titulo.rareza + '" style="color:' + p.autor_titulo.color + ';border-color:' + p.autor_titulo.color + '">' + p.autor_titulo.nombre + '</span>' : '') + '</div>';
     html += '</div>';
     html += '<div class="card-footer">';
     html += '<div class="card-meta"><span><i class="fas fa-eye"></i>' + p.vistas + '</span><span><i class="fas fa-calendar"></i>' + p.fecha_formateada + '</span></div>';
@@ -650,7 +651,7 @@ const ProposalDetail = {
         </div>
         <h1 class="detail-title">${p.titulo}</h1>
         <div class="detail-meta">
-          <span><i class="fas fa-user"></i>${p.autor}</span>
+          <a href="${p.autor_id ? 'usuario.php?id='+p.autor_id : '#'}" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:.35rem"><i class="fas fa-user"></i>${p.autor}${p.autor_titulo ? ` <span class="label-titulo ${p.autor_titulo.rareza}" style="color:${p.autor_titulo.color};border-color:${p.autor_titulo.color}">${p.autor_titulo.nombre}</span>` : ''}</a>
           <span><i class="fas fa-calendar"></i>${p.fecha_formateada}</span>
           <span><i class="fas fa-eye"></i>${p.vistas} vistas</span>
         </div>
@@ -1061,7 +1062,7 @@ document.addEventListener('DOMContentLoaded', () => {
    ═══════════════════════════════════════════════════════════ */
 
 // ── Avatar en comentarios ────────────────────────────────────
-// Patch ProposalDetail.commentHTML para incluir avatar
+// Patch ProposalDetail.commentHTML para incluir avatar, marco, título y enlace al perfil
 (function() {
   const origCommentHTML = ProposalDetail.commentHTML.bind(ProposalDetail);
   ProposalDetail.commentHTML = function(c) {
@@ -1070,12 +1071,25 @@ document.addEventListener('DOMContentLoaded', () => {
       ? `<img src="${c.avatar}" alt="${c.autor}">`
       : initials;
     const hasPhoto = c.avatar ? 'comment-avatar-has-photo' : '';
+    const marcoClass = c.autor_marco ? c.autor_marco : '';
+    const perfilUrl = c.autor_id ? `usuario.php?id=${c.autor_id}` : '#';
+
+    // Título en pequeño
+    let tituloChip = '';
+    if (c.autor_titulo) {
+      tituloChip = `<span class="label-titulo ${c.autor_titulo.rareza}" style="color:${c.autor_titulo.color};border-color:${c.autor_titulo.color}">${c.autor_titulo.nombre}</span>`;
+    }
+    // Nivel badge
+    const nivelBadge = c.autor_nivel ? `<span class="label-nivel">Nv.${c.autor_nivel}</span>` : '';
+
     return `
       <div class="comment">
-        <div class="comment-avatar ${hasPhoto}">${avatarContent}</div>
+        <a href="${perfilUrl}" class="comment-avatar ${hasPhoto} ${marcoClass}" style="text-decoration:none;flex-shrink:0" title="Ver perfil de ${c.autor}">${avatarContent}</a>
         <div class="comment-content">
-          <div>
-            <span class="comment-author">${c.autor}</span>
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+            <a href="${perfilUrl}" class="comment-author" style="text-decoration:none;color:inherit">${c.autor}</a>
+            ${nivelBadge}
+            ${tituloChip}
             <span class="comment-date">${c.fecha_formateada}</span>
           </div>
           <p class="comment-text">${c.contenido}</p>

@@ -19,6 +19,7 @@ class GamificacionController extends Controller
         $accion = $request->input('accion', '');
         return match($accion) {
             'perfil'         => $this->perfil(),
+            'perfil_publico' => $this->perfilPublico($request),
             'equipar'        => $this->equipar($request),
             'misiones'       => $this->misiones(),
             'logros'         => $this->logros(),
@@ -32,6 +33,41 @@ class GamificacionController extends Controller
     {
         if (!Auth::check()) return $this->json(false, 'No autenticado');
         $data = $this->gam->perfilCompleto(Auth::user());
+        return $this->json(true, 'OK', $data);
+    }
+
+    private function perfilPublico(Request $request)
+    {
+        $id = (int) $request->input('id');
+        if (!$id) return $this->json(false, 'ID inválido');
+
+        $user = \App\Models\User::find($id);
+        if (!$user) return $this->json(false, 'Usuario no encontrado');
+
+        // Datos completos de gamificación
+        $data = $this->gam->perfilCompleto($user);
+
+        // Datos básicos del usuario (públicos)
+        $data['usuario'] = [
+            'id'      => $user->id,
+            'nombre'  => trim($user->nombre . ' ' . $user->apellido),
+            'avatar'  => $user->avatar,
+            'bio'     => $user->bio,
+            'rol'     => $user->rol_nombre ?? 'usuario',
+            'miembro_desde' => optional($user->created_at)->format('M Y'),
+        ];
+
+        // Estadísticas públicas
+        $data['stats'] = [
+            'propuestas' => \App\Models\Proposal::where('usuario_id', $id)->count(),
+            'votos'      => \App\Models\Proposal::where('usuario_id', $id)->sum('votos'),
+            'comentarios'=> \App\Models\Comentario::where('usuario_id', $id)->count(),
+        ];
+
+        // Solo mostrar insignias/logros/cosméticos equipados (no todo el inventario privado)
+        // Los logros sí son públicos, las misiones no
+        unset($data['misiones']);
+
         return $this->json(true, 'OK', $data);
     }
 

@@ -69,6 +69,9 @@ class ProposalController extends Controller
             'autor_id'         => $p->usuario_id,
             'autor_avatar'     => $autor->avatar ?? null,
             'autor_bio'        => $autor->bio ?? null,
+            'autor_nivel'      => $autor->nivel ?? 1,
+            'autor_titulo'     => $this->tituloData($autor),
+            'autor_marco'      => $autor->marco_equipado ?? null,
             'fecha_creacion'   => optional($p->fecha_creacion)->toDateTimeString(),
             'fecha_formateada' => optional($p->fecha_creacion ?? $p->created_at)->format('d/m/Y'),
         ];
@@ -302,9 +305,20 @@ class ProposalController extends Controller
             'autor'            => $u ? trim($u->nombre . ' ' . $u->apellido) : 'Anónimo',
             'autor_id'         => $c->usuario_id,
             'avatar'           => $u->avatar ?? null,
+            'autor_nivel'      => $u->nivel ?? 1,
+            'autor_titulo'     => $this->tituloData($u),
+            'autor_marco'      => $u->marco_equipado ?? null,
             'fecha_creacion'   => optional($c->fecha_creacion ?? $c->created_at)->toDateTimeString(),
             'fecha_formateada' => optional($c->fecha_creacion ?? $c->created_at)->format('d/m/Y H:i'),
         ];
+    }
+
+    /** Devuelve datos del título equipado de un usuario (nombre + color). */
+    private function tituloData($u): ?array
+    {
+        if (!$u || !$u->titulo_equipado) return null;
+        $t = \App\Models\Titulo::where('clave', $u->titulo_equipado)->first();
+        return $t ? ['nombre' => $t->nombre, 'color' => $t->color, 'rareza' => $t->rareza] : null;
     }
 
     private function top(Request $request)

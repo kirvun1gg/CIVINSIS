@@ -543,7 +543,9 @@ const Proposals = {
       ? '<img class="author-avatar" src="' + p.autor_avatar + '" alt="">'
       : '<span class="author-avatar">' + ((p.autor||'?').charAt(0).toUpperCase()) + '</span>';
     var authorClass = p.autor_marco ? p.autor_marco : '';
-    html += '<div class="card-author">' + avaInner + '<span class="author-name">' + (p.autor||'Anónimo') + '</span>' + (p.autor_titulo ? ' <span class="label-titulo ' + p.autor_titulo.rareza + '" style="color:' + p.autor_titulo.color + ';border-color:' + p.autor_titulo.color + '">' + p.autor_titulo.nombre + '</span>' : '') + '</div>';
+    var tituloHtml = p.autor_titulo ? '<div class="autor-titulo-row"><span class="label-titulo ' + p.autor_titulo.rareza + '" style="color:' + p.autor_titulo.color + ';border-color:' + p.autor_titulo.color + '">' + p.autor_titulo.nombre + '</span></div>' : '';
+    var nivelHtml = p.autor_nivel ? ' <span class="label-nivel">Nv.' + p.autor_nivel + '</span>' : '';
+    html += '<div class="card-author"><div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">' + avaInner + '<span class="author-name">' + (p.autor||'Anónimo') + '</span>' + nivelHtml + '</div>' + tituloHtml + '</div>';
     html += '</div>';
     html += '<div class="card-footer">';
     html += '<div class="card-meta"><span><i class="fas fa-eye"></i>' + p.vistas + '</span><span><i class="fas fa-calendar"></i>' + p.fecha_formateada + '</span></div>';
@@ -651,7 +653,7 @@ const ProposalDetail = {
         </div>
         <h1 class="detail-title">${p.titulo}</h1>
         <div class="detail-meta">
-          <a href="${p.autor_id ? 'usuario.php?id='+p.autor_id : '#'}" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:.35rem"><i class="fas fa-user"></i>${p.autor}${p.autor_titulo ? ` <span class="label-titulo ${p.autor_titulo.rareza}" style="color:${p.autor_titulo.color};border-color:${p.autor_titulo.color}">${p.autor_titulo.nombre}</span>` : ''}</a>
+          <a href="${p.autor_id ? 'usuario.php?id='+p.autor_id : '#'}" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:.35rem"><i class="fas fa-user"></i>${p.autor}</a>${p.autor_nivel ? ` <span class="label-nivel">Nv.${p.autor_nivel}</span>` : ''}${p.autor_titulo ? `<span class="label-titulo ${p.autor_titulo.rareza}" style="color:${p.autor_titulo.color};border-color:${p.autor_titulo.color};margin-left:.4rem">${p.autor_titulo.nombre}</span>` : ''}
           <span><i class="fas fa-calendar"></i>${p.fecha_formateada}</span>
           <span><i class="fas fa-eye"></i>${p.vistas} vistas</span>
         </div>
@@ -1089,9 +1091,9 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
             <a href="${perfilUrl}" class="comment-author" style="text-decoration:none;color:inherit">${c.autor}</a>
             ${nivelBadge}
-            ${tituloChip}
             <span class="comment-date">${c.fecha_formateada}</span>
           </div>
+          ${tituloChip ? `<div class="autor-titulo-row">${tituloChip}</div>` : ''}
           <p class="comment-text">${c.contenido}</p>
         </div>
       </div>`;

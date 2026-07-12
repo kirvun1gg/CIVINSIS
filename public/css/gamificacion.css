@@ -409,25 +409,33 @@
 }
 
 /* ══ LABELS EN COMENTARIOS Y PROPUESTAS ═════════════════════ */
+/* Fila del título (debajo del nombre) */
+.autor-titulo-row {
+  margin-top: .3rem;
+  margin-bottom: .15rem;
+}
+
+/* Caja de título con color por rareza (pill como en el perfil) */
 .label-titulo {
   display: inline-flex; align-items: center;
-  padding: .1rem .5rem; border-radius: 100px;
-  font-size: .62rem; font-weight: 700;
-  letter-spacing: .04em; text-transform: uppercase;
-  border: 1px solid currentColor; line-height: 1.4;
-  vertical-align: middle;
+  padding: .24rem .75rem; border-radius: 100px;
+  font-size: .68rem; font-weight: 700;
+  letter-spacing: .05em; text-transform: uppercase;
+  border: 1.5px solid currentColor; line-height: 1.3;
 }
-.label-titulo.legendario { background: rgba(255,224,102,.12); animation: tituloGlow 2.5s ease-in-out infinite; }
-.label-titulo.epico { background: rgba(155,89,182,.12); }
-.label-titulo.raro  { background: rgba(74,158,255,.12); }
-.label-titulo.comun { background: rgba(136,146,164,.1); }
+.label-titulo.legendario { background: rgba(255,224,102,.14); animation: tituloGlow 2.5s ease-in-out infinite; }
+.label-titulo.epico { background: rgba(155,89,182,.14); }
+.label-titulo.raro  { background: rgba(74,158,255,.14); }
+.label-titulo.comun { background: rgba(136,146,164,.12); }
 
+/* Nivel: cajita gris pequeña */
 .label-nivel {
   display: inline-flex; align-items: center;
-  padding: .1rem .45rem; border-radius: 100px;
-  font-size: .62rem; font-weight: 800;
-  background: var(--grad-primary); color: #fff;
-  letter-spacing: .03em; line-height: 1.4;
+  padding: .1rem .42rem; border-radius: 6px;
+  font-size: .6rem; font-weight: 700;
+  background: var(--surface); color: var(--text-muted);
+  border: 1px solid var(--border);
+  letter-spacing: .02em; line-height: 1.3;
   vertical-align: middle;
 }
 
@@ -446,4 +454,20 @@
 .equipado-item {
   display: flex; flex-direction: column; align-items: center;
   gap: .35rem; font-size: .72rem; color: var(--text-muted);
+}
+
+/* ══ FIX: Layout de autor en tarjetas de propuesta ══════════ */
+.card-author {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: .3rem !important;
+}
+.card-author > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+.card-author .autor-titulo-row {
+  margin-top: .1rem;
 }

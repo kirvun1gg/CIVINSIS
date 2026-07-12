@@ -4,6 +4,8 @@ $activeNav    = $activeNav ?? '';
 $navLinks = [
   ['href'=>'index.php','icon'=>'fa-home','label'=>'Inicio','key'=>'inicio'],
   ['href'=>'dashboard.php','icon'=>'fa-layer-group','label'=>'Propuestas','key'=>'propuestas'],
+  ['href'=>'debates.php','icon'=>'fa-comments','label'=>'Debates','key'=>'debates'],
+  ['href'=>'desafios.php','icon'=>'fa-flag-checkered','label'=>'Desafíos','key'=>'desafios'],
 ];
 if (!empty($usuarioLogueado)) {
   $navLinks[] = ['href'=>'crear.php','icon'=>'fa-plus-circle','label'=>'Crear','key'=>'crear'];
@@ -33,6 +35,23 @@ $esAdminNav   = in_array($usuarioRol ?? '', ['admin','moderador']);
       <?php endif; ?>
     </div>
     <div class="nav-actions">
+      <?php if (!empty($usuarioLogueado)): ?>
+      <div class="notif-bell-wrap" id="notifBellWrap">
+        <button class="notif-bell-btn" id="notifBellBtn" aria-label="Notificaciones">
+          <i class="fas fa-bell"></i>
+          <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+        </button>
+        <div class="notif-dropdown" id="notifDropdown">
+          <div class="notif-dropdown-header">
+            <span>Notificaciones</span>
+            <button class="notif-mark-all" id="notifMarkAll">Marcar todas como leídas</button>
+          </div>
+          <div class="notif-dropdown-list" id="notifDropdownList">
+            <div class="notif-empty">Cargando...</div>
+          </div>
+        </div>
+      </div>
+      <?php endif; ?>
       <div class="dark-toggle-wrap">
         <i class="fas fa-sun"></i>
         <button class="dark-toggle" data-dark-toggle aria-label="Cambiar tema"></button>

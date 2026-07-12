@@ -20,6 +20,7 @@ class GamificacionService
     const XP_ACCIONES = [
         'crear_propuesta'=>80,'comentar'=>15,'votar'=>5,'recibir_voto'=>10,
         'racha_diaria'=>10,'logro_desbloqueado'=>0,
+        'crear_debate'=>30,'responder_debate'=>12,'recibir_voto_respuesta'=>4,
     ];
 
     public function otorgarXP(User $user, string $accion, ?int $refId=null, ?int $xpCustom=null): array
@@ -213,9 +214,12 @@ class GamificacionService
 
     private function descAccion(string $a): string {
         return match($a) {
-            'crear_propuesta'=>'Creaste una propuesta','comentar'=>'Participaste en debate',
+            'crear_propuesta'=>'Creaste una propuesta','comentar'=>'Comentaste una propuesta',
             'votar'=>'Votaste en propuesta','recibir_voto'=>'Tu propuesta recibió un voto',
             'racha_diaria'=>'Bonus racha diaria','logro_desbloqueado'=>'Recompensa por logro',
+            'crear_debate'=>'Iniciaste un debate','responder_debate'=>'Participaste en un debate',
+            'recibir_voto_respuesta'=>'Tu respuesta recibió un voto',
+            'completar_desafio'=>'Completaste un desafío',
             default=>ucfirst(str_replace('_',' ',$a)),
         };
     }

@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Comentario;
+use App\Models\Desafio;
 use App\Models\ModeracionAlerta;
+use App\Models\Notificacion;
 use App\Models\Proposal;
+use App\Models\PropuestaProgreso;
+use App\Models\UsuarioDesafio;
 use App\Models\Voto;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
@@ -19,6 +23,23 @@ class ProposalController extends Controller
 {
     use ApiResponse;
 
+    /** Metadata visual de cada fase del ciclo de vida de una propuesta. */
+    const PROGRESO_STAGES = [
+        'idea'      => ['label' => 'Idea',      'color' => '#8892a4', 'icono' => 'fas fa-lightbulb',
+            'descripcion' => 'La propuesta fue publicada y espera ser descubierta por la comunidad.'],
+        'discusion' => ['label' => 'Discusión',  'color' => '#4a9eff', 'icono' => 'fas fa-comments',
+            'descripcion' => 'La comunidad está comentando y debatiendo sobre la propuesta.'],
+        'mejoras'   => ['label' => 'Mejoras',    'color' => '#ef7e22', 'icono' => 'fas fa-pen-ruler',
+            'descripcion' => 'Se están incorporando sugerencias para fortalecer la propuesta.'],
+        'votacion'  => ['label' => 'Votación',   'color' => '#36c0a1', 'icono' => 'fas fa-square-poll-vertical',
+            'descripcion' => 'La propuesta está abierta a votación ciudadana.'],
+        'destacada' => ['label' => 'Destacada',  'color' => '#ffe066', 'icono' => 'fas fa-star',
+            'descripcion' => 'Un moderador destacó esta propuesta por su calidad e impacto.'],
+    ];
+
+    /** Cantidad de comentarios de la comunidad (sin contar al autor) para sugerirle mejorar o pasar a votación. */
+    const UMBRAL_SUGERENCIA_MEJORA = 5;
+
     public function handle(Request $request)
     {
         $accion = $request->input('accion', '');
@@ -28,6 +49,8 @@ class ProposalController extends Controller
             'detalle'            => $this->detalle($request),
             'crear'              => $this->crear($request),
             'editar'             => $this->editar($request),
+            'cambiar_progreso'   => $this->cambiarProgreso($request),
+            'decidir_fase'       => $this->decidirFase($request),
             'eliminar'           => $this->eliminar($request),
             'votar'              => $this->votar($request),
             'comentar'           => $this->comentar($request),
@@ -59,6 +82,8 @@ class ProposalController extends Controller
             'icono_extra'      => $p->icono_extra,
             'efecto_categoria' => (bool) $p->efecto_categoria,
             'destacada'        => (bool) $p->destacada,
+            'progreso'         => $p->progreso ?: 'idea',
+            'progreso_label'   => self::PROGRESO_STAGES[$p->progreso ?? 'idea']['label'] ?? 'Idea',
             'imagen'           => $p->imagen,
             'categoria_id'     => $p->categoria_id,
             'categoria'        => $cat->nombre ?? '',
@@ -138,8 +163,42 @@ class ProposalController extends Controller
             $data['es_autor'] = ($p->usuario_id === Auth::id());
         }
         $data['fecha_formateada'] = optional($p->fecha_creacion ?? $p->created_at)->format('d/m/Y \a \l\a\s H:i');
+        $data['progreso_timeline'] = $this->timelineProgreso($p);
+
+        // ¿Corresponde mostrarle al autor la sugerencia de "mejorar o pasar a votación"?
+        $data['comentarios_comunidad'] = Comentario::where('propuesta_id', $p->id)
+            ->where('usuario_id', '!=', $p->usuario_id)->where('censurado', false)->count();
+        $data['mostrar_decision_mejora'] = ($data['es_autor'] ?? false)
+            && $p->progreso === 'discusion'
+            && $data['comentarios_comunidad'] >= self::UMBRAL_SUGERENCIA_MEJORA;
 
         return $this->json(true, 'OK', ['propuesta' => $data]);
+    }
+
+    /** Arma el timeline completo (5 fases) marcando cuáles se alcanzaron y cuándo. */
+    private function timelineProgreso(Proposal $p): array
+    {
+        $historial = PropuestaProgreso::where('propuesta_id', $p->id)->orderBy('fecha')->get()->keyBy('progreso');
+        $orden = array_keys(self::PROGRESO_STAGES);
+        $actualIdx = array_search($p->progreso ?: 'idea', $orden);
+        if ($actualIdx === false) $actualIdx = 0;
+
+        $timeline = [];
+        foreach ($orden as $i => $clave) {
+            $meta = self::PROGRESO_STAGES[$clave];
+            $entrada = $historial->get($clave);
+            $timeline[] = [
+                'clave'       => $clave,
+                'label'       => $meta['label'],
+                'color'       => $meta['color'],
+                'icono'       => $meta['icono'],
+                'descripcion' => $meta['descripcion'],
+                'alcanzada'   => $i <= $actualIdx,
+                'actual'      => $i === $actualIdx,
+                'fecha'       => $entrada ? optional($entrada->fecha)->format('d/m/Y') : null,
+            ];
+        }
+        return $timeline;
     }
 
     private function crear(Request $request)
@@ -152,6 +211,7 @@ class ProposalController extends Controller
         $categoria   = (int) $request->input('categoria_id');
         $diseno      = (string) $request->input('diseno', 'default');
         $imagen      = (string) $request->input('imagen_base64', '');
+        $desafioId   = $request->input('desafio_id') ? (int) $request->input('desafio_id') : null;
 
         if ($titulo === '' || $descripcion === '' || !$categoria)
             return $this->json(false, 'Por favor completa todos los campos obligatorios');
@@ -165,6 +225,7 @@ class ProposalController extends Controller
             'contenido'        => $contenido,
             'categoria_id'     => $categoria,
             'usuario_id'       => Auth::id(),
+            'desafio_id'       => $desafioId,
             'diseno'           => $diseno,
             'color_acento'     => $request->input('color_acento'),
             'icono_extra'      => $request->input('icono_extra'),
@@ -176,6 +237,9 @@ class ProposalController extends Controller
         // Moderación automática con IA
         $this->moderarConIA('propuesta', $p->id, $titulo . ' ' . $descripcion);
 
+        // Ciclo de vida: arranca en fase "Idea"
+        PropuestaProgreso::create(['propuesta_id' => $p->id, 'progreso' => 'idea', 'usuario_id' => null, 'fecha' => now()]);
+
         // Gamificación: XP + reputación por crear propuesta
         try {
             $gam = app(GamificacionService::class);
@@ -183,7 +247,41 @@ class ProposalController extends Controller
             $gam->otorgarReputacion(Auth::user(), 'Creaste una propuesta', 5, null, $p->id);
         } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::error('Gam error: '.$e->getMessage()); }
 
+        // Completar desafío vinculado (si esta propuesta nació de uno)
+        if ($desafioId) $this->completarDesafio($desafioId, $p);
+
         return $this->json(true, '¡Propuesta publicada exitosamente!', ['id' => $p->id]);
+    }
+
+    /** Marca el desafío como completado por el usuario y otorga sus recompensas (solo la primera vez). */
+    private function completarDesafio(int $desafioId, Proposal $p): void
+    {
+        $desafio = Desafio::find($desafioId);
+        if (!$desafio) return;
+
+        $progreso = UsuarioDesafio::firstOrCreate(
+            ['usuario_id' => Auth::id(), 'desafio_id' => $desafioId],
+            ['completado' => false]
+        );
+        if ($progreso->completado) return; // ya se había completado antes
+
+        $progreso->completado     = true;
+        $progreso->completado_at  = now();
+        $progreso->propuesta_id   = $p->id;
+        $progreso->save();
+
+        try {
+            $gam = app(GamificacionService::class);
+            $gam->otorgarXP(Auth::user(), 'completar_desafio', $desafioId, $desafio->xp_recompensa);
+            if ($desafio->reputacion_recompensa > 0) {
+                $gam->otorgarReputacion(Auth::user(), 'Completaste un desafío', $desafio->reputacion_recompensa, null, $desafioId);
+            }
+            if ($desafio->insignia_id) {
+                \Illuminate\Support\Facades\DB::table('usuario_insignias')->insertOrIgnore([
+                    'usuario_id' => Auth::id(), 'insignia_id' => $desafio->insignia_id, 'desbloqueado_at' => now(),
+                ]);
+            }
+        } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::error('Gam error (desafío): '.$e->getMessage()); }
     }
 
     private function editar(Request $request)
@@ -274,6 +372,29 @@ class ProposalController extends Controller
         // Moderación automática con IA
         $this->moderarConIA('comentario', $c->id, $contenido);
 
+        // Progreso automático: el primer comentario de alguien que NO sea el autor
+        // mueve la propuesta de "Idea" a "Discusión" (los comentarios del propio
+        // autor no cuentan para esto).
+        $p = Proposal::find($pid);
+        if ($p && $p->usuario_id !== Auth::id() && $p->progreso === 'idea') {
+            $p->progreso = 'discusion';
+            $p->progreso_actualizado_at = now();
+            $p->save();
+
+            PropuestaProgreso::create([
+                'propuesta_id' => $p->id, 'progreso' => 'discusion', 'usuario_id' => null, 'fecha' => now(),
+            ]);
+
+            $meta = self::PROGRESO_STAGES['discusion'];
+            try {
+                Notificacion::crear(
+                    $p->usuario_id, 'progreso_propuesta',
+                    "¡Tu propuesta «{$p->titulo}» recibió su primer comentario y pasó a la fase \"Discusión\"!",
+                    'propuesta.php?id=' . $p->id, $meta['icono'], $meta['color']
+                );
+            } catch (\Throwable $e) {}
+        }
+
         // Gamificación: XP por comentar
         try {
             $gam = app(GamificacionService::class);
@@ -361,6 +482,86 @@ class ProposalController extends Controller
         if (!$id) return $this->json(false, 'ID inválido');
         Comentario::where('id', $id)->delete();
         return $this->json(true, 'Comentario eliminado');
+    }
+
+    /** Cambia la fase del ciclo de vida de una propuesta (acción de admin/moderador). */
+    private function cambiarProgreso(Request $request)
+    {
+        if (!Auth::check() || !in_array(Auth::user()->rol_nombre, ['admin', 'moderador']))
+            return $this->json(false, 'Sin permisos');
+
+        $id       = (int) $request->input('id');
+        $progreso = (string) $request->input('progreso');
+
+        if (!array_key_exists($progreso, self::PROGRESO_STAGES)) return $this->json(false, 'Fase inválida');
+
+        $p = Proposal::find($id);
+        if (!$p) return $this->json(false, 'Propuesta no encontrada');
+
+        if ($p->progreso === $progreso) {
+            return $this->json(true, 'La propuesta ya estaba en esa fase', ['progreso' => $progreso]);
+        }
+
+        $p->progreso = $progreso;
+        $p->progreso_actualizado_at = now();
+        $p->progreso_visto = false; // dispara la notificación al autor la próxima vez que la vea
+        // "Destacada" es a la vez la última fase y el efecto visual de tarjeta destacada
+        $p->destacada = ($progreso === 'destacada');
+        $p->save();
+
+        PropuestaProgreso::create([
+            'propuesta_id' => $p->id, 'progreso' => $progreso, 'usuario_id' => Auth::id(), 'fecha' => now(),
+        ]);
+
+        $meta = self::PROGRESO_STAGES[$progreso];
+        Notificacion::crear(
+            $p->usuario_id,
+            'progreso_propuesta',
+            "Tu propuesta «{$p->titulo}» avanzó a la fase \"{$meta['label']}\"",
+            'propuesta.php?id=' . $p->id,
+            $meta['icono'],
+            $meta['color']
+        );
+
+        $label = self::PROGRESO_STAGES[$progreso]['label'];
+        return $this->json(true, "Propuesta movida a la fase «{$label}»", ['progreso' => $progreso]);
+    }
+
+    /**
+     * El AUTOR (no solo admin/moderador) decide qué hacer cuando ya hay
+     * suficientes comentarios de la comunidad: mejorar la propuesta o
+     * dejarla como está y pasar directo a votación.
+     */
+    private function decidirFase(Request $request)
+    {
+        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
+
+        $id      = (int) $request->input('id');
+        $destino = (string) $request->input('destino'); // 'mejoras' | 'votacion'
+
+        if (!in_array($destino, ['mejoras', 'votacion'], true)) return $this->json(false, 'Opción inválida');
+
+        $p = Proposal::find($id);
+        if (!$p) return $this->json(false, 'Propuesta no encontrada');
+        if ($p->usuario_id !== Auth::id()) return $this->json(false, 'Solo el autor puede decidir esto');
+        if ($p->progreso !== 'discusion') return $this->json(false, 'Esta propuesta ya no está en fase de discusión');
+
+        $comentariosComunidad = Comentario::where('propuesta_id', $p->id)
+            ->where('usuario_id', '!=', $p->usuario_id)->where('censurado', false)->count();
+        if ($comentariosComunidad < self::UMBRAL_SUGERENCIA_MEJORA) {
+            return $this->json(false, 'Todavía no hay suficientes comentarios de la comunidad para esta decisión');
+        }
+
+        $p->progreso = $destino;
+        $p->progreso_actualizado_at = now();
+        $p->save();
+
+        PropuestaProgreso::create([
+            'propuesta_id' => $p->id, 'progreso' => $destino, 'usuario_id' => Auth::id(), 'fecha' => now(),
+        ]);
+
+        $label = self::PROGRESO_STAGES[$destino]['label'];
+        return $this->json(true, "¡Listo! Tu propuesta pasó a la fase «{$label}»", ['progreso' => $destino]);
     }
 
     private function adminEditar(Request $request)

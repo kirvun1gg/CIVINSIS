@@ -30,6 +30,152 @@
 }
 
 /* ============================================================
+   SISTEMA DE PROGRESO DE PROPUESTAS (ciclo de vida)
+   ============================================================ */
+.progreso-timeline-wrap { padding-bottom: 1.5rem; }
+.progreso-timeline { display: flex; flex-direction: column; gap: 0; margin-top: .5rem; }
+
+.progreso-step {
+  display: flex; gap: 1rem; position: relative; padding-bottom: 1.75rem;
+  opacity: .45; filter: grayscale(.4);
+}
+.progreso-step.alcanzada { opacity: 1; filter: none; }
+.progreso-step:last-child { padding-bottom: 0; }
+
+/* Línea conectora */
+.progreso-step:not(:last-child)::before {
+  content: ''; position: absolute; left: 18px; top: 40px; bottom: 0;
+  width: 2px; background: var(--border);
+}
+.progreso-step.alcanzada:not(:last-child)::before { background: var(--verde-alpha2); }
+
+.progreso-dot {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface); color: var(--text-muted);
+  border: 2px solid var(--border); font-size: .9rem; z-index: 1;
+  transition: var(--trans);
+}
+.progreso-step.alcanzada .progreso-dot {
+  background: color-mix(in srgb, var(--stage-color) 16%, transparent);
+  color: var(--stage-color); border-color: var(--stage-color);
+}
+.progreso-step.actual .progreso-dot {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--stage-color) 20%, transparent);
+}
+
+.progreso-info { flex: 1; padding-top: .3rem; }
+.progreso-label { font-family: var(--font-display); font-weight: 700; font-size: .92rem; color: var(--text); }
+.progreso-step:not(.alcanzada) .progreso-label { color: var(--text-muted); }
+.progreso-desc { font-size: .82rem; color: var(--text-muted); margin-top: .2rem; line-height: 1.5; }
+.progreso-fecha { font-size: .74rem; color: var(--text-muted); margin-top: .4rem; display: flex; align-items: center; gap: .3rem; }
+
+/* Panel de admin/moderador para mover la propuesta de fase */
+.progreso-admin-panel {
+  margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border);
+}
+.progreso-admin-label {
+  font-size: .78rem; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .04em; margin-bottom: .75rem;
+  display: flex; align-items: center; gap: .4rem;
+}
+.progreso-admin-buttons { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+/* Cuadro de decisión del autor: mejorar o pasar a votación */
+.decision-mejora-box {
+  margin-top: 1.5rem; padding: 1.25rem 1.4rem; border-radius: var(--radius-lg);
+  background: var(--grad-soft); border: 1px solid var(--verde-alpha2);
+}
+.decision-mejora-header {
+  font-family: var(--font-display); font-weight: 700; font-size: .92rem; color: var(--text);
+  display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem;
+}
+.decision-mejora-header i { color: var(--verde-500); }
+.decision-mejora-desc { font-size: .85rem; color: var(--text-2); line-height: 1.6; margin-bottom: 1rem; }
+.decision-mejora-buttons { display: flex; gap: .6rem; flex-wrap: wrap; }
+
+.civi-sugerencias-loading {
+  margin-top: 1rem; font-size: .82rem; color: var(--text-muted);
+  display: flex; align-items: center; gap: .5rem;
+}
+.civi-sugerencias-card {
+  margin-top: 1rem; background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1rem 1.2rem;
+}
+.civi-sugerencias-header {
+  font-weight: 700; font-size: .82rem; color: var(--verde-600); margin-bottom: .5rem;
+  display: flex; align-items: center; gap: .4rem;
+}
+.civi-sugerencias-text { font-size: .86rem; color: var(--text-2); line-height: 1.7; }
+
+/* ============================================================
+   Campana de notificaciones
+   ============================================================ */
+.notif-bell-wrap { position: relative; }
+.notif-bell-btn {
+  position: relative; width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--bg-card); color: var(--text-2);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  font-size: .95rem; transition: var(--trans);
+}
+.notif-bell-btn:hover { background: var(--verde-alpha); color: var(--verde-600); border-color: var(--verde-alpha2); }
+.notif-badge {
+  position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px;
+  border-radius: 100px; background: #e74c3c; color: #fff; font-size: .65rem; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center; padding: 0 .3rem;
+  box-shadow: 0 0 0 2px var(--bg-card);
+}
+
+.notif-dropdown {
+  position: absolute; top: calc(100% + .75rem); right: 0; width: 340px; max-width: 90vw;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg); opacity: 0; visibility: hidden; transform: translateY(-8px);
+  transition: var(--trans); z-index: 200; overflow: hidden;
+}
+.notif-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+
+.notif-dropdown-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .9rem 1.1rem; border-bottom: 1px solid var(--border);
+  font-family: var(--font-display); font-weight: 700; font-size: .88rem; color: var(--text);
+}
+.notif-mark-all { background: none; border: none; color: var(--verde-600); font-size: .74rem; font-weight: 600; cursor: pointer; }
+.notif-mark-all:hover { text-decoration: underline; }
+
+.notif-dropdown-list { max-height: 380px; overflow-y: auto; }
+.notif-empty { padding: 2rem 1rem; text-align: center; color: var(--text-muted); font-size: .85rem; }
+
+.notif-item {
+  display: flex; gap: .75rem; padding: .85rem 1.1rem; text-decoration: none;
+  border-bottom: 1px solid var(--border); transition: var(--trans); position: relative;
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: var(--surface); }
+.notif-item.unread { background: var(--verde-alpha); }
+.notif-item-icon {
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: .85rem;
+}
+.notif-item-body { flex: 1; min-width: 0; }
+.notif-item-msg { font-size: .83rem; color: var(--text); line-height: 1.45; }
+.notif-item-fecha { font-size: .72rem; color: var(--text-muted); margin-top: .25rem; }
+.notif-item-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--verde-500); flex-shrink: 0; margin-top: .3rem; }
+
+/* Toast de notificación con acciones (Ver / Cerrar) */
+.toast.toast-notif { align-items: flex-start; padding-right: .6rem; }
+.toast-notif-actions { display: flex; align-items: center; gap: .6rem; margin-left: .5rem; flex-shrink: 0; }
+.toast-notif-link {
+  font-size: .78rem; font-weight: 700; color: var(--verde-500); text-decoration: none;
+  white-space: nowrap;
+}
+.toast-notif-link:hover { text-decoration: underline; }
+.toast-notif-close {
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  font-size: .8rem; padding: .2rem; line-height: 1;
+}
+.toast-notif-close:hover { color: var(--text); }
+
+/* ============================================================
    #5 · EFECTOS HOVER POR CATEGORÍA
    La tarjeta lleva data-cat-effect="<efecto>". El JS inyecta
    partículas dentro de .cat-fx-layer; el CSS las anima.
@@ -124,11 +270,17 @@
 /* Tarjeta destacada (glow) */
 .proposal-card.is-destacada {
   box-shadow: 0 0 0 2px var(--naranja-400), var(--shadow-lg);
+  animation: destacadaPulse 2.6s ease-in-out infinite;
 }
 .proposal-card.is-destacada::after {
   content: "★ Destacada"; position: absolute; top: 10px; right: 10px; z-index: 4;
   font-size: .65rem; font-weight: 700; color: #fff; padding: .2rem .5rem;
   border-radius: 999px; background: var(--naranja-500);
+  box-shadow: 0 0 12px rgba(239,126,34,.5);
+}
+@keyframes destacadaPulse {
+  0%, 100% { box-shadow: 0 0 0 2px var(--naranja-400), var(--shadow-lg); }
+  50%      { box-shadow: 0 0 0 2px var(--naranja-400), 0 0 28px rgba(239,126,34,.35), var(--shadow-lg); }
 }
 
 /* Selector visual de diseños y efectos en crear.php */

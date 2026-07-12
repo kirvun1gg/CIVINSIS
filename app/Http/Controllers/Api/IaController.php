@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Categoria;
 use App\Models\Comentario;
+use App\Models\Debate;
+use App\Models\DebateRespuesta;
 use App\Models\ModeracionAlerta;
 use App\Models\Proposal;
 use App\Support\ApiResponse;
@@ -25,9 +27,11 @@ class IaController extends Controller
             'chat'              => $this->chat($request),
             'mejorar'           => $this->mejorar($request),
             'ideas'             => $this->ideas($request),
+            'sugerir_mejoras'   => $this->sugerirMejoras($request),
             'moderar'           => $this->moderar($request),
             'alertas'           => $this->alertas($request),
             'marcar_revisado'   => $this->marcarRevisado($request),
+            'aprobar'           => $this->aprobar($request),
             default             => $this->json(false, 'Acción no reconocida'),
         };
     }
@@ -118,8 +122,43 @@ TXT;
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  MODERACIÓN — analiza y censura contenido inapropiado
+    //  SUGERIR MEJORAS — CIVI analiza la propuesta + comentarios de
+    //  la comunidad y sugiere cómo mejorarla. Solo el autor puede pedirlo.
     // ─────────────────────────────────────────────────────────────
+    private function sugerirMejoras(Request $request)
+    {
+        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
+
+        $id = (int) $request->input('id');
+        $p  = Proposal::find($id);
+        if (!$p) return $this->json(false, 'Propuesta no encontrada');
+        if ($p->usuario_id !== Auth::id()) return $this->json(false, 'Solo el autor puede pedir sugerencias para esta propuesta');
+
+        $comentarios = \App\Models\Comentario::where('propuesta_id', $id)->where('censurado', false)
+            ->orderByDesc('fecha_creacion')->limit(15)->pluck('contenido')->implode("\n- ");
+        if ($comentarios === '') $comentarios = '(todavía no hay comentarios de la comunidad)';
+
+        $prompt = <<<TXT
+Esta es una propuesta ciudadana en CIVINSIS:
+Título: {$p->titulo}
+Descripción: {$p->descripcion}
+Contenido: {$p->contenido}
+
+Estos son los comentarios que la comunidad ha dejado sobre ella:
+- {$comentarios}
+
+Basándote en la propuesta y en los comentarios, dame de 2 a 4 sugerencias concretas y breves
+de cómo el autor podría mejorarla antes de pasar a votación. Ve directo a las sugerencias,
+sin introducción ni despedida, en formato de lista corta. Tono cercano y motivador.
+TXT;
+
+        $messages = [
+            ['role' => 'system', 'content' => $this->systemPrompt()],
+            ['role' => 'user',   'content' => $prompt],
+        ];
+        $respuesta = $this->llamarGroq($messages, 500);
+        return $this->json(true, 'OK', ['sugerencias' => $respuesta['texto'], 'fuente' => $respuesta['fuente']]);
+    }
     private function moderar(Request $request)
     {
         // Solo admins y moderadores pueden llamar esto manualmente,
@@ -285,6 +324,68 @@ TXT;
         $alerta->save();
 
         return $this->json(true, 'Alerta marcada como revisada');
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  APROBAR — publica/restaura el contenido pese a la alerta de IA
+    //  (ej. una propuesta que quedó en revisión, un comentario que
+    //  quedó censurado, etc.) y cierra la alerta.
+    // ─────────────────────────────────────────────────────────────
+    private function aprobar(Request $request)
+    {
+        if (!Auth::check() || !in_array(Auth::user()->rol_nombre, ['admin', 'moderador']))
+            return $this->json(false, 'Sin permisos');
+
+        $id = (int) $request->input('id'); // ID de la alerta (no del contenido)
+        $alerta = ModeracionAlerta::find($id);
+        if (!$alerta) return $this->json(false, 'Alerta no encontrada');
+
+        switch ($alerta->tipo) {
+            case 'propuesta':
+                $item = Proposal::find($alerta->referencia_id);
+                if (!$item) return $this->json(false, 'La propuesta ya no existe');
+                $item->censurada     = false;
+                $item->razon_censura = null;
+                $item->estado        = 'activa';
+                $item->save();
+                break;
+
+            case 'comentario':
+                $item = Comentario::find($alerta->referencia_id);
+                if (!$item) return $this->json(false, 'El comentario ya no existe');
+                $item->censurado      = false;
+                $item->razon_censura  = null;
+                $item->contenido      = $item->contenido_original ?: $item->contenido;
+                $item->save();
+                break;
+
+            case 'debate':
+                $item = Debate::find($alerta->referencia_id);
+                if (!$item) return $this->json(false, 'El debate ya no existe');
+                $item->censurado     = false;
+                $item->razon_censura = null;
+                $item->save();
+                break;
+
+            case 'debate_respuesta':
+                $item = DebateRespuesta::find($alerta->referencia_id);
+                if (!$item) return $this->json(false, 'La respuesta ya no existe');
+                $item->censurado      = false;
+                $item->razon_censura  = null;
+                $item->contenido      = $item->contenido_original ?: $item->contenido;
+                $item->save();
+                break;
+
+            default:
+                return $this->json(false, 'Tipo de contenido no reconocido');
+        }
+
+        $alerta->revisado      = true;
+        $alerta->revisado_at   = now();
+        $alerta->revisado_por  = Auth::id();
+        $alerta->save();
+
+        return $this->json(true, 'Contenido publicado. La alerta quedó cerrada.');
     }
 
     // ─────────────────────────────────────────────────────────────

@@ -13,6 +13,17 @@ class PageController extends Controller
     public function faq()        { return view('faq'); }
     public function contacto()   { return view('contacto'); }
     public function comunidad()  { return view('comunidad'); }
+
+    public function debates() { return view('debates'); }
+
+    public function debate()
+    {
+        $id = (int) request('id');
+        if (!$id) return redirect('/debates.php');
+        return view('debate', ['debateId' => $id]);
+    }
+
+    public function desafios() { return view('desafios'); }
     public function privacidad() { return view('privacidad'); }
     public function terminos()   { return view('terminos'); }
 

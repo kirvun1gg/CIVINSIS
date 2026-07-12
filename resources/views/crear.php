@@ -11,6 +11,7 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/desafios.css">
 </head>
 <body>
 
@@ -36,6 +37,7 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
       <!-- Formulario principal -->
       <div>
         <form id="createForm" class="animate-fade-up">
+          <input type="hidden" id="desafioIdInput" name="desafio_id" value="">
 
           <!-- Título -->
           <div class="form-group">
@@ -336,6 +338,9 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
           </div>
         </div>
 
+        <!-- Desafío sugerido / vinculado -->
+        <div id="desafioSugeridoBox" style="background:var(--naranja-alpha);border:1px solid var(--naranja-200);border-radius:var(--radius-lg);padding:1.25rem"></div>
+
         <!-- Tips -->
         <div style="background:var(--naranja-alpha);border:1px solid var(--naranja-200);border-radius:var(--radius-lg);padding:1.25rem">
           <h4 style="font-family:var(--font-display);font-weight:700;font-size:.9rem;color:var(--naranja-700);margin-bottom:.75rem">
@@ -371,6 +376,7 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
 
 <div class="toast-container"></div>
 <script src="js/app.js"></script>
+<script src="js/desafios.js"></script>
 <style>
 @media(max-width:640px){.create-layout{grid-template-columns:1fr!important}}
 

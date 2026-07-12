@@ -24,6 +24,8 @@ $categorias_footer = is_array($categorias_footer) ? $categorias_footer : $catego
           <div class="footer-links">
             <a href="dashboard.php" class="footer-link">Explorar propuestas</a>
             <a href="crear.php" class="footer-link">Crear propuesta</a>
+            <a href="debates.php" class="footer-link">Debates</a>
+            <a href="desafios.php" class="footer-link">Desafíos</a>
             <a href="index.php#top-votadas" class="footer-link">Más votadas</a>
             <a href="index.php#como-funciona" class="footer-link">Cómo funciona</a>
             <a href="faq.php" class="footer-link">FAQ</a>

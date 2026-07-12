@@ -622,6 +622,8 @@ const Proposals = {
 
 // ── Propuesta Detalle ──────────────────────────────────────
 const ProposalDetail = {
+  esAdmin: false,
+
   async init() {
     const id = new URLSearchParams(window.location.search).get('id');
     if (!id) return;
@@ -630,6 +632,7 @@ const ProposalDetail = {
     if (!res.success) { document.getElementById('detailContent').innerHTML = '<p>Propuesta no encontrada.</p>'; return; }
 
     const p = res.propuesta;
+    this._propuesta = p;
     document.title = `${p.titulo} - CIVINSIS`;
 
     // Cover image
@@ -677,11 +680,127 @@ const ProposalDetail = {
       <div class="detail-content animate-fade-up">
         <h2 class="content-title"><i class="fas fa-align-left"></i> Descripción completa</h2>
         <div class="content-body">${p.contenido}</div>
-      </div>`;
+      </div>
+      ${this.timelineHTML(p.progreso_timeline)}`;
 
-    // Guardar propuesta para edición
-    this._propuesta = p;
+    // Guardar propuesta para edición ya se hizo arriba (this._propuesta = p)
     this.loadComments(id);
+  },
+
+  timelineHTML(timeline) {
+    if (!timeline || !timeline.length) return '';
+    const steps = timeline.map(t => `
+      <div class="progreso-step ${t.alcanzada ? 'alcanzada' : ''} ${t.actual ? 'actual' : ''}">
+        <div class="progreso-dot" style="--stage-color:${t.color}"><i class="${t.icono}"></i></div>
+        <div class="progreso-info">
+          <div class="progreso-label">${t.label}</div>
+          <div class="progreso-desc">${t.descripcion}</div>
+          ${t.fecha ? `<div class="progreso-fecha"><i class="fas fa-calendar"></i> ${t.fecha}</div>` : ''}
+        </div>
+      </div>`).join('');
+
+    return `
+      <div class="detail-content animate-fade-up progreso-timeline-wrap">
+        <h2 class="content-title"><i class="fas fa-route"></i> Progreso de la propuesta</h2>
+        <div class="progreso-timeline">${steps}</div>
+        ${this._propuesta && this._propuesta.mostrar_decision_mejora ? this.decisionMejoraHTML() : ''}
+        ${this.esAdmin ? this.progresoAdminHTML() : ''}
+      </div>`;
+  },
+
+  decisionMejoraHTML() {
+    const p = this._propuesta;
+    return `
+      <div class="decision-mejora-box">
+        <div class="decision-mejora-header"><i class="fas fa-comment-dots"></i> Parece que ya hay suficientes comentarios como para mejorar la propuesta</div>
+        <p class="decision-mejora-desc">Tu propuesta ya tiene ${p.comentarios_comunidad} comentarios de la comunidad. ¿Quieres ajustarla con base en el feedback, o prefieres dejarla como está y pasar a votación?</p>
+        <div class="decision-mejora-buttons">
+          <button class="btn btn-outline btn-sm" onclick="ProposalDetail.pedirSugerenciasIA()">
+            <i class="fas fa-robot"></i> Pregunta a CIVI sobre lo que puedes mejorar
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="ProposalDetail.decidirFase('mejoras')">
+            <i class="fas fa-pen-ruler"></i> Mejorar propuesta
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="ProposalDetail.decidirFase('votacion')">
+            <i class="fas fa-square-poll-vertical"></i> Dejar como está y pasar a votación
+          </button>
+        </div>
+        <div id="civiSugerenciasBox" style="display:none"></div>
+      </div>`;
+  },
+
+  async decidirFase(destino) {
+    if (!this._propuesta) return;
+    const res = await API.post('php/propuestas.php', { accion: 'decidir_fase', id: this._propuesta.id, destino });
+    if (res.success) {
+      Toast.show(res.message, 'success');
+      if (destino === 'mejoras') {
+        setTimeout(() => this.openEdit(), 500);
+      }
+      this.init();
+    } else {
+      Toast.show(res.message, 'error');
+    }
+  },
+
+  async pedirSugerenciasIA() {
+    const box = document.getElementById('civiSugerenciasBox');
+    if (!box || !this._propuesta) return;
+    box.style.display = 'block';
+    box.innerHTML = `<div class="civi-sugerencias-loading"><i class="fas fa-spinner fa-spin"></i> CIVI está pensando...</div>`;
+
+    const res = await API.get('php/ia.php', { accion: 'sugerir_mejoras', id: this._propuesta.id });
+    if (!res.success) {
+      box.innerHTML = `<p style="color:var(--text-muted);font-size:.82rem;margin-top:.75rem">${this._esc(res.message)}</p>`;
+      return;
+    }
+    box.innerHTML = `
+      <div class="civi-sugerencias-card">
+        <div class="civi-sugerencias-header"><i class="fas fa-robot"></i> CIVI sugiere:</div>
+        <div class="civi-sugerencias-text">${this._nl2br(this._esc(res.sugerencias))}</div>
+      </div>`;
+  },
+
+  _esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str ?? '';
+    return d.innerHTML;
+  },
+
+  _nl2br(str) { return (str || '').replace(/\n/g, '<br>'); },
+
+  progresoAdminHTML() {
+    if (!this._propuesta) return '';
+    const p = this._propuesta;
+    const stages = [
+      ['idea', 'Idea', 'fa-lightbulb'],
+      ['discusion', 'Discusión', 'fa-comments'],
+      ['mejoras', 'Mejoras', 'fa-pen-ruler'],
+      ['votacion', 'Votación', 'fa-square-poll-vertical'],
+      ['destacada', 'Destacada', 'fa-star'],
+    ];
+    const botones = stages.map(([clave, label, icon]) => `
+      <button class="btn btn-sm ${p.progreso === clave ? 'btn-primary' : 'btn-outline'}"
+        onclick="ProposalDetail.cambiarProgreso('${clave}')" ${p.progreso === clave ? 'disabled' : ''}>
+        <i class="fas ${icon}"></i> ${label}
+      </button>`).join('');
+
+    return `
+      <div class="progreso-admin-panel">
+        <div class="progreso-admin-label"><i class="fas fa-user-shield"></i> Mover a fase (admin/moderador)</div>
+        <div class="progreso-admin-buttons">${botones}</div>
+      </div>`;
+  },
+
+  async cambiarProgreso(progreso) {
+    if (!this._propuesta) return;
+    const res = await API.post('php/propuestas.php', { accion: 'cambiar_progreso', id: this._propuesta.id, progreso });
+    if (res.success) {
+      Toast.show(res.message, 'success');
+      this.init();
+    } else {
+      Toast.show(res.message, 'error');
+    }
   },
 
   async vote(id) {
@@ -821,6 +940,7 @@ const CreateProposal = {
         descripcion:   (form.querySelector('[name=descripcion]') || {}).value || '',
         contenido:     contenidoVal,
         categoria_id:  (form.querySelector('[name=categoria_id]') || {}).value || '',
+        desafio_id:    (form.querySelector('[name=desafio_id]') || {}).value || '',
         diseno:        diseno,
         imagen_base64: imagenBase64,
         color_acento:     (acentoEl && acentoEl.dataset.activo === '1') ? acentoEl.value : '',
@@ -1034,6 +1154,118 @@ function showLogoutModal() {
   }, 2500);
 }
 
+// ── Notificaciones ─────────────────────────────────────────
+const Notificaciones = {
+  toastedKey: 'civinsis_notif_toasted',
+
+  async init() {
+    const wrap = document.getElementById('notifBellWrap');
+    if (!wrap) return; // usuario no logueado, la campana no se renderiza
+
+    await this.cargar(true);
+
+    const btn = document.getElementById('notifBellBtn');
+    const dropdown = document.getElementById('notifDropdown');
+    if (btn && dropdown) {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('open');
+        if (dropdown.classList.contains('open')) this.cargar(false);
+      });
+      document.addEventListener('click', (e) => {
+        if (!wrap.contains(e.target)) dropdown.classList.remove('open');
+      });
+    }
+
+    const markAll = document.getElementById('notifMarkAll');
+    if (markAll) {
+      markAll.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await API.post('php/notificaciones.php', { accion: 'marcar_todas' });
+        this.cargar(false);
+      });
+    }
+  },
+
+  async cargar(mostrarToasts) {
+    const res = await API.get('php/notificaciones.php', { accion: 'listar', limit: 15 });
+    if (!res.success) return;
+
+    const badge = document.getElementById('notifBadge');
+    if (badge) {
+      badge.textContent = res.no_leidas;
+      badge.style.display = res.no_leidas > 0 ? 'inline-flex' : 'none';
+    }
+
+    const list = document.getElementById('notifDropdownList');
+    if (list) {
+      list.innerHTML = res.notificaciones.length
+        ? res.notificaciones.map(n => this.itemHTML(n)).join('')
+        : '<div class="notif-empty">No tienes notificaciones todavía.</div>';
+    }
+
+    if (mostrarToasts) this.mostrarToastsNuevas(res.notificaciones);
+  },
+
+  _esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str ?? '';
+    return d.innerHTML;
+  },
+
+  itemHTML(n) {
+    return `
+      <a href="${n.enlace || '#'}" class="notif-item ${n.leida ? '' : 'unread'}" onclick="Notificaciones.marcarLeida(${n.id})">
+        <div class="notif-item-icon" style="background:${n.color}22;color:${n.color}"><i class="${n.icono}"></i></div>
+        <div class="notif-item-body">
+          <div class="notif-item-msg">${this._esc(n.mensaje)}</div>
+          <div class="notif-item-fecha">${n.fecha}</div>
+        </div>
+        ${n.leida ? '' : '<span class="notif-item-dot"></span>'}
+      </a>`;
+  },
+
+  async marcarLeida(id) {
+    try { await API.post('php/notificaciones.php', { accion: 'marcar_leida', id }); } catch (e) {}
+  },
+
+  mostrarToastsNuevas(notificaciones) {
+    let toasted = [];
+    try { toasted = JSON.parse(sessionStorage.getItem(this.toastedKey) || '[]'); } catch (e) {}
+
+    const nuevas = (notificaciones || []).filter(n => !n.leida && !toasted.includes(n.id));
+    if (!nuevas.length) return;
+
+    nuevas.slice(0, 3).forEach((n, i) => {
+      setTimeout(() => this.toastNotif(n), 600 + i * 800);
+      toasted.push(n.id);
+    });
+
+    try { sessionStorage.setItem(this.toastedKey, JSON.stringify(toasted.slice(-150))); } catch (e) {}
+  },
+
+  toastNotif(n) {
+    const container = document.querySelector('.toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = 'toast toast-notif';
+    toast.innerHTML = `
+      <i class="${n.icono} toast-icon" style="color:${n.color}"></i>
+      <span class="toast-msg">${this._esc(n.mensaje)}</span>
+      <div class="toast-notif-actions">
+        ${n.enlace ? `<a href="${n.enlace}" class="toast-notif-link" onclick="Notificaciones.marcarLeida(${n.id})">Ver</a>` : ''}
+        <button class="toast-notif-close" onclick="this.closest('.toast').remove()" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+      </div>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add('removing');
+      toast.addEventListener('animationend', () => toast.remove());
+    }, 9000);
+  }
+};
+
 // ── Init global ────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   Theme.init();
@@ -1046,6 +1278,7 @@ document.addEventListener('DOMContentLoaded', () => {
   Proposals.init();
   CreateProposal.init();
   TopProposals.init();
+  Notificaciones.init();
 
   // Init detalle si aplica
   if (document.getElementById('detailContent')) ProposalDetail.init();

@@ -59,6 +59,10 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
             <span class="profile-stat-num" id="statMisVistas">–</span>
             <span class="profile-stat-label">Vistas totales</span>
           </div>
+          <div class="profile-stat">
+            <span class="profile-stat-num" id="statDesafios">–</span>
+            <span class="profile-stat-label">Desafíos completados</span>
+          </div>
         </div>
       </div>
     </div>
@@ -395,6 +399,7 @@ async function loadProfileData() {
         document.getElementById('statMisProp').textContent  = u.propuestas || 0;
         document.getElementById('statMisVotos').textContent = u.votos_recibidos || 0;
         document.getElementById('statMisVistas').textContent = u.vistas_totales || 0;
+        document.getElementById('statDesafios').textContent = u.desafios_completados || 0;
       }
       if (u.avatar) {
         document.getElementById('profileAvatarDisplay').innerHTML = `<img src="${u.avatar}" alt="Avatar">`;

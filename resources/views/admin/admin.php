@@ -217,6 +217,17 @@ $esAdmin   = ($usuarioRol === 'admin');
           <option value="rechazada">Rechazada</option>
         </select>
       </div>
+      <div class="form-group">
+        <label class="form-label">Fase del ciclo de vida</label>
+        <select class="form-control" id="editPropProgreso">
+          <option value="idea">💡 Idea</option>
+          <option value="discusion">💬 Discusión</option>
+          <option value="mejoras">✏️ Mejoras</option>
+          <option value="votacion">🗳️ Votación</option>
+          <option value="destacada">⭐ Destacada</option>
+        </select>
+        <div class="form-hint">Al mover una propuesta a "Destacada" se activa automáticamente su efecto visual y se le avisa al autor.</div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeEditProp()">Cancelar</button>
@@ -340,11 +351,13 @@ async function loadAdminPropuestas() {
         <td>${p.autor || '–'}</td>
         <td><span class="badge badge-verde">${p.categoria || '–'}</span></td>
         <td><span class="estado-chip estado-${p.estado}">${p.estado}</span></td>
+        <td><span class="progreso-chip progreso-${p.progreso || 'idea'}">${PROGRESO_LABELS[p.progreso || 'idea']}</span></td>
         <td><strong style="color:var(--naranja)">${p.votos}</strong></td>
         <td style="color:var(--text-muted)">${new Date(p.fecha_creacion).toLocaleDateString('es')}</td>
         <td>
           <div class="admin-actions">
-            <button class="admin-action-btn edit" onclick="openEditProp(${p.id},'${escHtml(p.titulo)}','${p.estado}')" title="Editar"><i class="fas fa-edit"></i></button>
+            <button class="admin-action-btn edit" onclick="openEditProp(${p.id},'${escHtml(p.titulo)}','${p.estado}','${p.progreso || 'idea'}')" title="Editar"><i class="fas fa-edit"></i></button>
+            <button class="admin-action-btn" onclick="destacarPropuesta(${p.id}, ${p.progreso === 'destacada' ? 'false' : 'true'})" title="${p.progreso === 'destacada' ? 'Quitar destacado' : 'Destacar propuesta'}" style="color:var(--naranja-500)"><i class="fas fa-star"></i></button>
             <button class="admin-action-btn delete" onclick="confirmDelete('propuesta','${p.id}','Eliminar propuesta «${escHtml(p.titulo)}»')" title="Eliminar"><i class="fas fa-trash"></i></button>
           </div>
         </td>
@@ -726,6 +739,7 @@ async function loadAlertas(soloPendientes = false) {
                 <i class="fas fa-eye"></i>
               </a>
               ${!a.revisado ? `<button onclick="marcarAlertaRevisada(${a.id})" class="admin-action-btn" style="background:#36c0a122;color:var(--verde)" title="Marcar como revisada"><i class="fas fa-check"></i></button>` : ''}
+              ${!a.revisado ? `<button onclick="aprobarAlerta(${a.id})" class="admin-action-btn" style="background:#4a9eff22;color:#4a9eff" title="Publicar de todas formas"><i class="fas fa-unlock"></i></button>` : ''}
             </div>
           </div>
         </div>
@@ -749,6 +763,24 @@ async function marcarAlertaRevisada(id) {
       loadAlertas();
     } else {
       showToast(d.mensaje || 'Error', 'error');
+    }
+  } catch(e) { showToast('Error de conexión', 'error'); }
+}
+
+async function aprobarAlerta(id) {
+  if (!confirm('¿Publicar este contenido de todas formas? Se restaurará/publicará pese a la alerta de la IA.')) return;
+  try {
+    const r = await fetch('php/ia.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accion: 'aprobar', id })
+    });
+    const d = await r.json();
+    if (d.success) {
+      showToast(d.message || 'Contenido publicado', 'success');
+      loadAlertas();
+    } else {
+      showToast(d.message || 'Error', 'error');
     }
   } catch(e) { showToast('Error de conexión', 'error'); }
 }

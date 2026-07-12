@@ -120,6 +120,7 @@ class AuthController extends Controller
         $stats = [
             'votos_recibidos' => (int) $u->propuestas()->sum('votos'),
             'vistas_totales'  => (int) $u->propuestas()->sum('vistas'),
+            'desafios_completados' => (int) \App\Models\UsuarioDesafio::where('usuario_id', $u->id)->where('completado', true)->count(),
         ];
 
         return $this->json(true, 'OK', ['usuario' => array_merge($u->toArray(), [
@@ -127,6 +128,7 @@ class AuthController extends Controller
             'propuestas'      => $u->propuestas_count,
             'votos_recibidos' => $stats['votos_recibidos'],
             'vistas_totales'  => $stats['vistas_totales'],
+            'desafios_completados' => $stats['desafios_completados'],
             'fecha_registro'  => optional($u->created_at)->toDateTimeString(),
         ])]);
     }

@@ -128,6 +128,7 @@ $iniciales = $usuarioLogueado ? strtoupper(substr($usuarioNombre, 0, 1)) : 'U';
 <script src="js/app.js"></script>
 <script>
 // Mostrar sección de comentarios una vez cargue el detalle
+ProposalDetail.esAdmin = <?= json_encode(in_array($usuarioRol ?? '', ['admin', 'moderador'])) ?>;
 const origInit = ProposalDetail.init.bind(ProposalDetail);
 ProposalDetail.init = async function() {
   await origInit();

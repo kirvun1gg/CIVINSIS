@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\GamificacionController;
 use App\Http\Controllers\Api\DebateController;
 use App\Http\Controllers\Api\DesafioController;
 use App\Http\Controllers\Api\NotificacionController;
+use App\Http\Controllers\Api\RankingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +35,7 @@ Route::get('/comunidad.php',  [PageController::class, 'comunidad']);
 Route::get('/debates.php',    [PageController::class, 'debates']);
 Route::get('/debate.php',     [PageController::class, 'debate']);
 Route::get('/desafios.php',   [PageController::class, 'desafios']);
+Route::get('/ranking.php',    [PageController::class, 'ranking']);
 Route::get('/privacidad.php', [PageController::class, 'privacidad']);
 Route::get('/terminos.php',   [PageController::class, 'terminos']);
 Route::get('/admin.php',      [PageController::class, 'admin']);
@@ -49,4 +51,5 @@ Route::match(['get', 'post'], '/php/gamificacion.php', [GamificacionController::
 Route::match(['get', 'post'], '/php/debates.php',      [DebateController::class, 'handle']);
 Route::match(['get', 'post'], '/php/desafios.php',     [DesafioController::class, 'handle']);
 Route::match(['get', 'post'], '/php/notificaciones.php', [NotificacionController::class, 'handle']);
+Route::match(['get', 'post'], '/php/ranking.php',      [RankingController::class, 'handle']);
 Route::match(['get', 'post'], '/php/ia.php',               [IaController::class, 'handle']);

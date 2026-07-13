@@ -165,21 +165,25 @@ input, textarea, select { font-family: inherit; }
 
 /* Logo area con cuadro para imagen */
 .nav-logo {
-  display: flex; align-items: center; gap: .5rem;
+  display: flex; align-items: center; gap: .55rem;
   font-family: var(--font-display); font-size: 1.3rem; font-weight: 800;
-  background: var(--grad-primary); -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent; background-clip: text;
   letter-spacing: -.02em; flex-shrink: 0; text-decoration: none;
 }
 /* Cuadro de logo */
 .nav-logo-box {
-  width: 40px; height: 40px; border-radius: 10px;
+  width: 42px; height: 42px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden; flex-shrink: 0;
-  position: relative;
+  position: relative; cursor: pointer;
+  transition: transform .55s cubic-bezier(.34,1.56,.64,1), box-shadow .4s ease;
+}
+/* Giro + realce al pasar el cursor sobre el logo */
+.nav-logo:hover .nav-logo-box {
+  transform: rotate(360deg) scale(1.06);
+  box-shadow: 0 6px 20px rgba(54,192,161,.35);
 }
 /* LOGO AQUÍ */
-.nav-logo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+.nav-logo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 9px; }
 .nav-logo-box .logo-placeholder {
   font-size: .6rem; font-weight: 700; color: var(--verde-500);
   text-align: center; line-height: 1.2; font-family: var(--font-body);
@@ -187,21 +191,60 @@ input, textarea, select { font-family: inherit; }
   background-clip: unset; -webkit-background-clip: unset;
 }
 
+/* Texto del logo: oculto por defecto, se despliega al pasar sobre el logo */
+.nav-logo-text {
+  display: inline-flex; overflow: hidden;
+  max-width: 0; opacity: 0;
+  transition: max-width .5s cubic-bezier(.65,0,.35,1), opacity .35s ease, margin-left .5s ease;
+  margin-left: -.55rem;
+}
+.nav-logo-text-inner {
+  background: var(--grad-primary); -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; background-clip: text;
+  white-space: nowrap; padding-right: .1rem;
+  transform: translateX(-8px);
+  transition: transform .5s cubic-bezier(.34,1.56,.64,1);
+}
+.nav-logo:hover .nav-logo-text,
+.nav-logo:focus-visible .nav-logo-text {
+  max-width: 220px; opacity: 1; margin-left: 0;
+}
+.nav-logo:hover .nav-logo-text-inner,
+.nav-logo:focus-visible .nav-logo-text-inner { transform: translateX(0); }
+
 /* Nav links con pill indicator */
 .nav-links {
-  display: flex; align-items: center; gap: .3rem; flex: 1; margin-left: 1.75rem;
+  display: flex; align-items: center; gap: .1rem; flex: 1; margin-left: 1.5rem;
 }
 .nav-link {
-  padding: .45rem .9rem; border-radius: 100px;
+  position: relative;
+  padding: .5rem .95rem; border-radius: 100px;
   font-size: .85rem; font-weight: 500; color: var(--text-2);
-  transition: var(--trans); white-space: nowrap; display: flex; align-items: center; gap: .4rem;
+  transition: color .25s ease, background .25s ease; white-space: nowrap;
+  display: flex; align-items: center; gap: .45rem;
 }
-.nav-link i { font-size: .8rem; }
-.nav-link:hover { background: var(--verde-alpha); color: var(--verde-500); }
+/* Ícono oculto por defecto → aparece en hover/activo (navbar más liberado) */
+.nav-link i {
+  font-size: .8rem; max-width: 0; opacity: 0; overflow: hidden;
+  transition: max-width .3s ease, opacity .25s ease, margin-right .3s ease;
+  margin-right: -.45rem;
+}
+.nav-link:hover i, .nav-link.active i {
+  max-width: 1.2em; opacity: 1; margin-right: 0;
+}
+/* Subrayado animado en hover */
+.nav-link::after {
+  content: ''; position: absolute; left: 50%; bottom: .28rem;
+  width: 0; height: 2px; border-radius: 2px; background: var(--verde-500);
+  transform: translateX(-50%); transition: width .3s cubic-bezier(.65,0,.35,1);
+}
+.nav-link:hover { color: var(--verde-500); }
+.nav-link:hover::after { width: 45%; }
 .nav-link.active {
   background: var(--grad-primary); color: #fff;
   box-shadow: 0 2px 12px rgba(54,192,161,.3);
 }
+.nav-link.active::after { width: 0; }
 .nav-link.active:hover { transform: translateY(-1px); }
 
 .nav-actions {
@@ -1118,6 +1161,9 @@ textarea.form-control { resize: vertical; min-height: 100px; }
   .nav-links { display: none; }
   .hamburger { display: flex; }
   .mobile-menu { display: block; }
+  /* En móvil no hay hover: el nombre del logo se muestra siempre */
+  .nav-logo-text { max-width: 200px; opacity: 1; margin-left: 0; }
+  .nav-logo-text-inner { transform: translateX(0); }
   .dash-layout { grid-template-columns: 1fr; }
   .sidebar { display: none; }
   .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
@@ -1143,8 +1189,7 @@ textarea.form-control { resize: vertical; min-height: 100px; }
    CIVINSIS v3 — ESTILOS ADICIONALES
    ══════════════════════════════════════════════════════════ */
 
-/* ── Navbar logo text (para el include) ─────────────────── */
-.nav-logo-text { display: inline; }
+/* ── Navbar logo text: el comportamiento (revelar al hover) se define arriba ─ */
 
 /* ── Navbar link admin ───────────────────────────────────── */
 .nav-link-admin { color: var(--naranja) !important; }
@@ -1737,7 +1782,7 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 }
 
 /* Logo secret hover */
-.nav-logo-box:active { animation: logoSpin .5s ease; }
+.nav-logo:active .nav-logo-box { transform: rotate(360deg) scale(.96); }
 @keyframes logoSpin { to { transform: rotate(360deg); } }
 
 /* Triple click en footer */

@@ -24,6 +24,8 @@ class PageController extends Controller
     }
 
     public function desafios() { return view('desafios'); }
+
+    public function ranking() { return view('ranking'); }
     public function privacidad() { return view('privacidad'); }
     public function terminos()   { return view('terminos'); }
 

@@ -524,7 +524,6 @@ const Proposals = {
       : '';
 
     var estado = (p.estado || 'activa').replace('_', ' ');
-    var voteClass = p.ya_vote ? 'vote-btn voted' : 'vote-btn';
 
     var catFx = (p.efecto_categoria === false || p.efecto_categoria == 0) ? '' : (p.categoria_efecto || 'default');
     if (p.color_acento) { cardExtraStyle += 'border-color:' + p.color_acento + ';box-shadow:inset 4px 0 0 ' + p.color_acento + ';'; }
@@ -549,7 +548,11 @@ const Proposals = {
     html += '</div>';
     html += '<div class="card-footer">';
     html += '<div class="card-meta"><span><i class="fas fa-eye"></i>' + p.vistas + '</span><span><i class="fas fa-calendar"></i>' + p.fecha_formateada + '</span></div>';
-    html += '<button class="' + voteClass + '" data-pid="' + p.id + '"><i class="fas fa-arrow-up"></i><span>' + p.votos + '</span></button>';
+    var aspectoTopHtml = p.aspecto_top
+      ? '<span class="card-aspecto-top" title="' + p.aspecto_top.label + '">' + p.aspecto_top.icono + ' ' + p.aspecto_top.label + '</span>'
+      : '';
+    var votosClass = (p.votos < 0) ? ' negativo' : '';
+    html += '<div class="card-valoracion">' + aspectoTopHtml + '<span class="card-valoracion-count' + votosClass + '"><i class="fas fa-hand-sparkles"></i> ' + p.votos + '</span></div>';
     html += '</div></article>';
     return html;
   },
@@ -564,24 +567,7 @@ const Proposals = {
         window.location.href = 'propuesta.php?id=' + card.dataset.id;
       });
     });
-    // Click en vote btn
-    container.querySelectorAll('.vote-btn[data-pid]').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        Proposals.vote(btn.dataset.pid, btn);
-      });
-    });
-  },
-
-    async vote(propuestaId, btn) {
-    const res = await API.post('php/propuestas.php', { accion: 'votar', propuesta_id: propuestaId });
-    if (res.success) {
-      btn.querySelector('span').textContent = res.votos;
-      btn.classList.toggle('voted', res.accion === 'agregado');
-      Toast.show(res.accion === 'agregado' ? '¡Voto registrado!' : 'Voto removido', 'success');
-    } else {
-      Toast.show(res.message, 'error');
-    }
+    // La valoración por aspectos se hace en la página de detalle de la propuesta.
   },
 
   renderPagination(current, total) {
@@ -661,12 +647,8 @@ const ProposalDetail = {
           <span><i class="fas fa-eye"></i>${p.vistas} vistas</span>
         </div>
         <p class="detail-desc">${p.descripcion}</p>
+        ${this.valoracionHTML(p)}
         <div class="detail-actions">
-          <button id="voteBtn" class="btn ${p.ya_vote ? 'btn-primary' : 'btn-outline'} ${p.ya_vote ? 'voted' : ''}"
-            onclick="ProposalDetail.vote(${p.id})">
-            <i class="fas fa-arrow-up"></i>
-            <span id="voteCount">${p.votos}</span> votos
-          </button>
           ${p.es_autor ? `
             <button class="btn btn-ghost btn-sm" onclick="ProposalDetail.openEdit()">
               <i class="fas fa-pen"></i> Editar
@@ -803,17 +785,164 @@ const ProposalDetail = {
     }
   },
 
-  async vote(id) {
-    const res = await API.post('php/propuestas.php', { accion: 'votar', propuesta_id: id });
+  // Metadatos visuales de cada aspecto (descripción + color). El backend solo
+  // envía label/icono/signo/total; aquí enriquecemos la presentación sin tocarlo.
+  ASPECTO_META: {
+    creativa:    { desc: 'Presenta una idea novedosa',  color: '#e0a800' },
+    argumentada: { desc: 'Está bien fundamentada',      color: '#3b82f6' },
+    comunidad:   { desc: 'Genera impacto colectivo',    color: '#22a06b' },
+    factible:    { desc: 'Es realista de aplicar',      color: '#14b8a6' },
+    innovadora:  { desc: 'Aporta algo diferente',       color: '#8b5cf6' },
+    poco_clara:  { desc: 'Cuesta entenderla',           color: '#f97316' },
+    inviable:    { desc: 'Difícil de realizar',         color: '#94a3b8' },
+    poco_util:   { desc: 'Aporta poco valor',           color: '#ef4444' },
+  },
+
+  valoracionHTML(p) {
+    const aspectos = p.aspectos || [];
+    const miVoto = p.mi_voto || null;
+    const positivos = aspectos.filter(a => a.signo > 0);
+    const negativos = aspectos.filter(a => a.signo < 0);
+    const totalVotos = aspectos.reduce((s, a) => s + a.total, 0);
+
+    if (p.es_autor) {
+      return `
+        <div class="valoracion-box">
+          <div class="valoracion-titulo"><i class="fas fa-chart-simple"></i> Cómo valora la comunidad tu propuesta</div>
+          <div class="valoracion-seccion positiva">
+            <div class="valoracion-seccion-label"><i class="fas fa-thumbs-up"></i> Aspectos positivos</div>
+            <div class="aspectos-grid">${positivos.map(a => this.aspectoCard(p.id, a, miVoto, false)).join('')}</div>
+          </div>
+          <div class="valoracion-seccion negativa">
+            <div class="valoracion-seccion-label"><i class="fas fa-thumbs-down"></i> Aspectos por mejorar</div>
+            <div class="aspectos-grid">${negativos.map(a => this.aspectoCard(p.id, a, miVoto, false)).join('')}</div>
+          </div>
+          ${this.resumenValoracionHTML(aspectos, totalVotos)}
+          ${totalVotos === 0 ? '<p class="valoracion-vacio">Todavía nadie ha valorado tu propuesta.</p>' : ''}
+        </div>`;
+    }
+
+    return `
+      <div class="valoracion-box">
+        <div class="valoracion-titulo"><i class="fas fa-hand-sparkles"></i> ¿Qué te parece esta propuesta?</div>
+        <p class="valoracion-sub">Elige la opción que mejor la describe. Solo puedes votar una vez (puedes cambiar o quitar tu voto).</p>
+        <div class="valoracion-seccion positiva">
+          <div class="valoracion-seccion-label"><i class="fas fa-thumbs-up"></i> Aspectos positivos</div>
+          <div class="aspectos-grid" id="aspectosGridPos" role="radiogroup" aria-label="Aspectos positivos">${positivos.map(a => this.aspectoCard(p.id, a, miVoto, true)).join('')}</div>
+        </div>
+        <div class="valoracion-seccion negativa">
+          <div class="valoracion-seccion-label"><i class="fas fa-thumbs-down"></i> Aspectos por mejorar</div>
+          <div class="aspectos-grid" id="aspectosGridNeg" role="radiogroup" aria-label="Aspectos por mejorar">${negativos.map(a => this.aspectoCard(p.id, a, miVoto, true)).join('')}</div>
+        </div>
+        <div id="resumenValoracion">${this.resumenValoracionHTML(aspectos, totalVotos)}</div>
+      </div>`;
+  },
+
+  aspectoCard(pid, a, miVoto, votable) {
+    const meta = this.ASPECTO_META[a.clave] || { desc: '', color: '#36c0a1' };
+    const activo = miVoto === a.clave;
+    const tag = votable ? 'button' : 'div';
+    const attrs = votable
+      ? `onclick="ProposalDetail.valorar(${pid}, '${a.clave}')" role="radio" aria-checked="${activo}" tabindex="0"`
+      : `aria-label="${a.label}: ${a.total} votos"`;
+    return `
+      <${tag} class="aspecto-card ${a.signo < 0 ? 'negativo' : 'positivo'} ${activo ? 'activo' : ''} ${votable ? '' : 'readonly'}"
+        style="--asp-color:${meta.color}" ${attrs} data-clave="${a.clave}">
+        <span class="aspecto-card-check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path d="M4 12.5l5 5 11-11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="aspecto-card-icono">${a.icono}</span>
+        <span class="aspecto-card-nombre">${a.label}</span>
+        <span class="aspecto-card-desc">${meta.desc}</span>
+        <span class="aspecto-card-count"><span class="aspecto-card-count-num">${a.total}</span> votos</span>
+      </${tag}>`;
+  },
+
+  resumenValoracionHTML(aspectos, totalVotos) {
+    if (!totalVotos) {
+      return `<div class="valoracion-resumen vacio"><i class="fas fa-circle-info"></i> Aún no hay valoraciones suficientes para un resumen.</div>`;
+    }
+    // Aspecto más votado (global, positivo o negativo)
+    let top = aspectos[0];
+    for (const a of aspectos) if (a.total > top.total) top = a;
+    if (!top || top.total === 0) {
+      return `<div class="valoracion-resumen vacio"><i class="fas fa-circle-info"></i> Aún no hay valoraciones suficientes para un resumen.</div>`;
+    }
+    const meta = this.ASPECTO_META[top.clave] || { color: '#36c0a1' };
+    const pct = Math.round((top.total / totalVotos) * 100);
+    return `
+      <div class="valoracion-resumen" style="--asp-color:${meta.color}">
+        <i class="fas fa-chart-pie"></i>
+        <span>La valoración más votada es: <strong>${top.icono} ${top.label}</strong> (${pct}%)</span>
+      </div>`;
+  },
+
+  async valorar(id, aspecto) {
+    if (!this._propuesta) return;
+    const res = await API.post('php/propuestas.php', { accion: 'valorar', propuesta_id: id, aspecto });
     if (res.success) {
-      document.getElementById('voteCount').textContent = res.votos;
-      const btn = document.getElementById('voteBtn');
-      btn.classList.toggle('btn-primary', res.accion === 'agregado');
-      btn.classList.toggle('btn-outline', res.accion !== 'agregado');
-      Toast.show(res.accion === 'agregado' ? '¡Voto registrado!' : 'Voto removido', 'success');
+      const prev = this._propuesta.aspectos || [];
+      this._propuesta.aspectos = res.aspectos;
+      this._propuesta.mi_voto = res.accion === 'removido' ? null : res.aspecto;
+      this._propuesta.votos = res.votos;
+      this.rerenderAspectos(id, prev);
     } else {
       Toast.show(res.message, 'error');
     }
+  },
+
+  rerenderAspectos(id, prevAspectos = []) {
+    const p = this._propuesta;
+    const miVoto = p.mi_voto || null;
+    const prevMap = {};
+    prevAspectos.forEach(a => { prevMap[a.clave] = a.total; });
+
+    const render = (contId, lista) => {
+      const cont = document.getElementById(contId);
+      if (!cont) return;
+      lista.forEach(a => {
+        const card = cont.querySelector(`.aspecto-card[data-clave="${a.clave}"]`);
+        if (!card) return;
+        const activo = miVoto === a.clave;
+        const seSelecciono = activo && !card.classList.contains('activo');
+
+        card.classList.toggle('activo', activo);
+        card.setAttribute('aria-checked', activo ? 'true' : 'false');
+
+        // Conteo animado si cambió
+        const numEl = card.querySelector('.aspecto-card-count-num');
+        const desde = prevMap[a.clave] ?? a.total;
+        if (numEl && desde !== a.total) this.animarNumero(numEl, desde, a.total);
+        else if (numEl) numEl.textContent = a.total;
+
+        // Destello en el borde al seleccionar
+        if (seSelecciono) {
+          card.classList.remove('flash');
+          void card.offsetWidth; // reinicia la animación
+          card.classList.add('flash');
+        }
+      });
+    };
+    render('aspectosGridPos', (p.aspectos || []).filter(a => a.signo > 0));
+    render('aspectosGridNeg', (p.aspectos || []).filter(a => a.signo < 0));
+
+    // Actualizar resumen
+    const resumen = document.getElementById('resumenValoracion');
+    if (resumen) {
+      const total = (p.aspectos || []).reduce((s, a) => s + a.total, 0);
+      resumen.innerHTML = this.resumenValoracionHTML(p.aspectos || [], total);
+    }
+  },
+
+  animarNumero(el, desde, hasta) {
+    const dur = 400, t0 = performance.now();
+    const paso = (t) => {
+      const k = Math.min(1, (t - t0) / dur);
+      const val = Math.round(desde + (hasta - desde) * (1 - Math.pow(1 - k, 3)));
+      el.textContent = val;
+      if (k < 1) requestAnimationFrame(paso);
+    };
+    requestAnimationFrame(paso);
   },
 
   async loadComments(id) {
@@ -991,7 +1120,7 @@ const TopProposals = {
         </div>
         <div class="top-votes">
           <span class="top-votes-num">${p.votos}</span>
-          <span class="top-votes-label">votos</span>
+          <span class="top-votes-label">valoraciones</span>
         </div>
       </div>`).join('');
   }

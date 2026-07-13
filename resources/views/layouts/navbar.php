@@ -6,6 +6,7 @@ $navLinks = [
   ['href'=>'dashboard.php','icon'=>'fa-layer-group','label'=>'Propuestas','key'=>'propuestas'],
   ['href'=>'debates.php','icon'=>'fa-comments','label'=>'Debates','key'=>'debates'],
   ['href'=>'desafios.php','icon'=>'fa-flag-checkered','label'=>'Desafíos','key'=>'desafios'],
+  ['href'=>'ranking.php','icon'=>'fa-ranking-star','label'=>'Ranking','key'=>'ranking'],
 ];
 if (!empty($usuarioLogueado)) {
   $navLinks[] = ['href'=>'crear.php','icon'=>'fa-plus-circle','label'=>'Crear','key'=>'crear'];
@@ -18,9 +19,9 @@ $esAdminNav   = in_array($usuarioRol ?? '', ['admin','moderador']);
 ?>
 <nav class="navbar" id="navbar">
   <div class="container nav-inner">
-    <a href="index.php" class="nav-logo">
-      <div class="nav-logo-box"><img src="/media/logo.png" alt="">></div>
-      <span class="nav-logo-text">CIVINSIS</span>
+    <a href="index.php" class="nav-logo" aria-label="CIVINSIS - Inicio">
+      <div class="nav-logo-box"><img src="/media/logo.png" alt="CIVINSIS"></div>
+      <span class="nav-logo-text"><span class="nav-logo-text-inner">CIVINSIS</span></span>
     </a>
     <div class="nav-links">
       <?php foreach ($navLinks as $l): ?>

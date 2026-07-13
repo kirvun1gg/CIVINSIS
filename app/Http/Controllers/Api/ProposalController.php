@@ -40,6 +40,20 @@ class ProposalController extends Controller
     /** Cantidad de comentarios de la comunidad (sin contar al autor) para sugerirle mejorar o pasar a votación. */
     const UMBRAL_SUGERENCIA_MEJORA = 5;
 
+    /** Aspectos de la votación inteligente. Cada usuario elige UNO solo (positivo o negativo). */
+    const ASPECTOS = [
+        // Positivos (+1 reputación)
+        'creativa'    => ['label' => 'Creativa',                 'icono' => '💡', 'signo' => 1],
+        'argumentada' => ['label' => 'Bien argumentada',         'icono' => '📖', 'signo' => 1],
+        'comunidad'   => ['label' => 'Beneficia a la comunidad', 'icono' => '🌍', 'signo' => 1],
+        'factible'    => ['label' => 'Factible',                 'icono' => '✔️', 'signo' => 1],
+        'innovadora'  => ['label' => 'Innovadora',               'icono' => '🚀', 'signo' => 1],
+        // Negativos (-1 reputación)
+        'poco_clara'  => ['label' => 'Poco clara',               'icono' => '😕', 'signo' => -1],
+        'inviable'    => ['label' => 'Inviable',                 'icono' => '🚧', 'signo' => -1],
+        'poco_util'   => ['label' => 'Poco útil',                'icono' => '🤷', 'signo' => -1],
+    ];
+
     public function handle(Request $request)
     {
         $accion = $request->input('accion', '');
@@ -52,7 +66,8 @@ class ProposalController extends Controller
             'cambiar_progreso'   => $this->cambiarProgreso($request),
             'decidir_fase'       => $this->decidirFase($request),
             'eliminar'           => $this->eliminar($request),
-            'votar'              => $this->votar($request),
+            'votar'              => $this->valorar($request),
+            'valorar'            => $this->valorar($request),
             'comentar'           => $this->comentar($request),
             'comentarios'        => $this->comentarios($request),
             'top'                => $this->top($request),
@@ -132,9 +147,28 @@ class ProposalController extends Controller
             $votadas = Voto::where('usuario_id', Auth::id())->pluck('propuesta_id')->all();
         }
 
-        $propuestas = $items->map(function ($p) use ($votadas) {
+        // Aspecto POSITIVO más valorado por cada propuesta de la página (una sola consulta)
+        $ids = $items->pluck('id')->all();
+        $topAspectos = [];
+        if ($ids) {
+            $positivos = array_keys(array_filter(self::ASPECTOS, fn ($a) => $a['signo'] > 0));
+            $filas = Voto::whereIn('propuesta_id', $ids)->whereIn('aspecto', $positivos)
+                ->select('propuesta_id', 'aspecto', DB::raw('COUNT(*) as total'))
+                ->groupBy('propuesta_id', 'aspecto')->get();
+            foreach ($filas as $f) {
+                if (!isset($topAspectos[$f->propuesta_id]) || $f->total > $topAspectos[$f->propuesta_id]['total']) {
+                    $topAspectos[$f->propuesta_id] = ['aspecto' => $f->aspecto, 'total' => (int) $f->total];
+                }
+            }
+        }
+
+        $propuestas = $items->map(function ($p) use ($votadas, $topAspectos) {
             $row = $this->formato($p);
             $row['ya_vote'] = in_array($p->id, $votadas);
+            $top = $topAspectos[$p->id] ?? null;
+            $row['aspecto_top'] = ($top && isset(self::ASPECTOS[$top['aspecto']]))
+                ? ['clave' => $top['aspecto'], 'label' => self::ASPECTOS[$top['aspecto']]['label'], 'icono' => self::ASPECTOS[$top['aspecto']]['icono'], 'total' => $top['total']]
+                : null;
             return $row;
         });
 
@@ -162,6 +196,8 @@ class ProposalController extends Controller
             $data['ya_vote'] = Voto::where('propuesta_id', $id)->where('usuario_id', Auth::id())->exists();
             $data['es_autor'] = ($p->usuario_id === Auth::id());
         }
+        $data['aspectos'] = $this->conteoAspectos($id);
+        $data['mi_voto']  = $this->miVoto($id);
         $data['fecha_formateada'] = optional($p->fecha_creacion ?? $p->created_at)->format('d/m/Y \a \l\a\s H:i');
         $data['progreso_timeline'] = $this->timelineProgreso($p);
 
@@ -334,27 +370,116 @@ class ProposalController extends Controller
         return $this->json(true, 'Propuesta eliminada correctamente');
     }
 
-    private function votar(Request $request)
+    /**
+     * Votación inteligente: cada usuario emite UN SOLO voto por propuesta,
+     * eligiendo un aspecto positivo o uno negativo (son excluyentes). Volver a
+     * tocar el mismo aspecto lo retira; tocar otro cambia su voto.
+     * propuestas.votos guarda el saldo neto (positivos - negativos) para que
+     * rankings y widgets sigan funcionando.
+     */
+    private function valorar(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión para votar');
-        $pid = (int) $request->input('propuesta_id');
+        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión para valorar');
+
+        $pid     = (int) $request->input('propuesta_id');
+        $aspecto = (string) $request->input('aspecto');
+
         if (!$pid) return $this->json(false, 'ID de propuesta inválido');
+        if (!array_key_exists($aspecto, self::ASPECTOS)) return $this->json(false, 'Aspecto inválido');
 
         $p = Proposal::find($pid);
         if (!$p) return $this->json(false, 'Propuesta no encontrada');
+        if ($p->usuario_id === Auth::id()) return $this->json(false, 'No puedes valorar tu propia propuesta');
 
-        $voto = Voto::where('propuesta_id', $pid)->where('usuario_id', Auth::id())->first();
-        if ($voto) {
-            $voto->delete();
-            if ($p->votos > 0) $p->decrement('votos');
+        // Voto previo de este usuario (solo puede haber uno)
+        $votoPrevio = Voto::where('propuesta_id', $pid)->where('usuario_id', Auth::id())->first();
+        $signoPrevio = $votoPrevio && isset(self::ASPECTOS[$votoPrevio->aspecto])
+            ? self::ASPECTOS[$votoPrevio->aspecto]['signo'] : 0;
+        $signoNuevo  = self::ASPECTOS[$aspecto]['signo'];
+
+        if ($votoPrevio && $votoPrevio->aspecto === $aspecto) {
+            // Tocar el mismo aspecto = retirar el voto
+            $votoPrevio->delete();
             $accion = 'removido';
+            $deltaReputacion = -$signoPrevio;
+        } elseif ($votoPrevio) {
+            // Cambiar de aspecto (puede cambiar de signo)
+            $votoPrevio->aspecto = $aspecto;
+            $votoPrevio->save();
+            $accion = 'cambiado';
+            $deltaReputacion = $signoNuevo - $signoPrevio;
         } else {
-            Voto::create(['propuesta_id' => $pid, 'usuario_id' => Auth::id()]);
-            $p->increment('votos');
+            // Primer voto
+            Voto::create(['propuesta_id' => $pid, 'usuario_id' => Auth::id(), 'aspecto' => $aspecto]);
             $accion = 'agregado';
+            $deltaReputacion = $signoNuevo;
         }
 
-        return $this->json(true, 'Voto ' . $accion, ['votos' => $p->fresh()->votos, 'accion' => $accion]);
+        // Recalcular saldo neto de la propuesta (positivos - negativos)
+        $p->votos = $this->saldoNeto($pid);
+        $p->save();
+
+        // Ajustar reputación del autor según el cambio neto
+        if ($deltaReputacion !== 0) {
+            try {
+                $autor = $p->autor;
+                if ($autor) {
+                    $motivo = $deltaReputacion > 0 ? 'Tu propuesta fue valorada positivamente' : 'Tu propuesta recibió una valoración negativa';
+                    app(GamificacionService::class)->otorgarReputacion($autor, $motivo, $deltaReputacion, Auth::id(), $p->id);
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        return $this->json(true, 'Valoración ' . $accion, [
+            'accion'      => $accion,
+            'aspecto'     => $aspecto,
+            'votos'       => $p->votos,
+            'aspectos'    => $this->conteoAspectos($pid),
+            'mi_voto'     => $this->miVoto($pid),
+        ]);
+    }
+
+    /** Saldo neto de valoraciones: (positivos) - (negativos). */
+    private function saldoNeto(int $pid): int
+    {
+        $conteos = Voto::where('propuesta_id', $pid)->whereNotNull('aspecto')
+            ->select('aspecto', DB::raw('COUNT(*) as total'))
+            ->groupBy('aspecto')->pluck('total', 'aspecto')->toArray();
+
+        $neto = 0;
+        foreach ($conteos as $aspecto => $total) {
+            $signo = self::ASPECTOS[$aspecto]['signo'] ?? 1; // 'general' (histórico) cuenta como positivo
+            $neto += $signo * (int) $total;
+        }
+        return $neto;
+    }
+
+    /** Conteo de cada aspecto para una propuesta. */
+    private function conteoAspectos(int $pid): array
+    {
+        $conteos = Voto::where('propuesta_id', $pid)->whereNotNull('aspecto')
+            ->select('aspecto', DB::raw('COUNT(*) as total'))
+            ->groupBy('aspecto')->pluck('total', 'aspecto')->toArray();
+
+        $out = [];
+        foreach (self::ASPECTOS as $clave => $meta) {
+            $out[] = [
+                'clave' => $clave,
+                'label' => $meta['label'],
+                'icono' => $meta['icono'],
+                'signo' => $meta['signo'],
+                'total' => (int) ($conteos[$clave] ?? 0),
+            ];
+        }
+        return $out;
+    }
+
+    /** El aspecto único que el usuario actual eligió en esta propuesta (o null). */
+    private function miVoto(int $pid): ?string
+    {
+        if (!Auth::check()) return null;
+        return Voto::where('propuesta_id', $pid)->where('usuario_id', Auth::id())
+            ->whereNotNull('aspecto')->value('aspecto');
     }
 
     private function comentar(Request $request)

@@ -176,6 +176,142 @@
 .toast-notif-close:hover { color: var(--text); }
 
 /* ============================================================
+   #5 · VOTACIÓN INTELIGENTE (tarjetas)
+   ============================================================ */
+.valoracion-box {
+  margin: 1.25rem 0; padding: 1.5rem; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+}
+.valoracion-titulo {
+  font-family: var(--font-display); font-weight: 700; font-size: .95rem; color: var(--text);
+  display: flex; align-items: center; gap: .5rem; margin-bottom: .35rem;
+}
+.valoracion-titulo i { color: var(--verde-500); }
+.valoracion-sub { font-size: .82rem; color: var(--text-muted); margin-bottom: 1.25rem; }
+.valoracion-vacio { font-size: .82rem; color: var(--text-muted); margin-top: .75rem; }
+
+/* Secciones (positiva / negativa) con fondo ligeramente distinto */
+.valoracion-seccion { border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem; }
+.valoracion-seccion.positiva { background: color-mix(in srgb, var(--verde-500) 5%, transparent); }
+.valoracion-seccion.negativa { background: color-mix(in srgb, #ef4444 4%, transparent); }
+.valoracion-seccion-label {
+  font-size: .76rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--text-muted); margin-bottom: .85rem; display: flex; align-items: center; gap: .45rem;
+}
+.valoracion-seccion.positiva .valoracion-seccion-label i { color: var(--verde-500); }
+.valoracion-seccion.negativa .valoracion-seccion-label i { color: #ef4444; }
+
+/* Grid responsivo de tarjetas */
+.aspectos-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: .75rem;
+}
+@media (max-width: 640px) { .aspectos-grid { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: .6rem; } }
+
+/* Tarjeta de aspecto */
+.aspecto-card {
+  position: relative; display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: .3rem; padding: 1rem .75rem .85rem; border-radius: 16px;
+  border: 1.5px solid var(--border); background: var(--bg-card); cursor: pointer;
+  font-family: inherit; color: var(--text); overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease, border-color .3s ease;
+  transform-style: preserve-3d;
+}
+.aspecto-card:hover {
+  transform: perspective(600px) translateY(-7px) rotateX(3deg) rotateY(-2deg);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--asp-color) 22%, transparent);
+  border-color: var(--asp-color);
+}
+.aspecto-card:focus-visible {
+  outline: 3px solid var(--asp-color); outline-offset: 2px;
+  border-color: var(--asp-color);
+}
+.aspecto-card.readonly { cursor: default; }
+.aspecto-card.readonly:hover { transform: none; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+
+.aspecto-card-icono {
+  font-size: 1.7rem; line-height: 1; margin-bottom: .15rem;
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.aspecto-card:hover .aspecto-card-icono { transform: scale(1.18); }
+.aspecto-card-nombre { font-weight: 700; font-size: .82rem; color: var(--text); }
+.aspecto-card-desc { font-size: .68rem; color: var(--text-muted); line-height: 1.35; min-height: 1.8em; }
+.aspecto-card-count {
+  margin-top: .35rem; font-size: .72rem; font-weight: 600; color: var(--text-muted);
+  border-top: 1px solid var(--border); padding-top: .5rem; width: 100%;
+}
+.aspecto-card-count-num { font-weight: 800; color: var(--asp-color); }
+
+/* Estado seleccionado */
+.aspecto-card.activo {
+  border-color: var(--asp-color);
+  background: color-mix(in srgb, var(--asp-color) 12%, var(--bg-card));
+}
+.aspecto-card.activo .aspecto-card-count { border-top-color: color-mix(in srgb, var(--asp-color) 30%, transparent); }
+
+/* Check SVG en la esquina */
+.aspecto-card-check {
+  position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--asp-color); display: flex; align-items: center; justify-content: center;
+  transform: scale(0); opacity: 0; transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .2s ease;
+}
+.aspecto-card.activo .aspecto-card-check { transform: scale(1); opacity: 1; }
+.aspecto-card-check svg path {
+  stroke-dasharray: 30; stroke-dashoffset: 30;
+}
+.aspecto-card.activo .aspecto-card-check svg path {
+  animation: checkDraw .4s ease .1s forwards;
+}
+@keyframes checkDraw { to { stroke-dashoffset: 0; } }
+
+/* Destello recorriendo el borde al seleccionar */
+.aspecto-card.flash::after {
+  content: ''; position: absolute; inset: -1.5px; border-radius: 16px; pointer-events: none;
+  background: linear-gradient(120deg, transparent 30%, color-mix(in srgb, var(--asp-color) 65%, white) 50%, transparent 70%);
+  background-size: 250% 250%;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude; padding: 2px;
+  animation: bordeFlash .55s ease forwards;
+}
+@keyframes bordeFlash {
+  0% { background-position: 200% 0; opacity: 1; }
+  100% { background-position: -50% 0; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aspecto-card, .aspecto-card-icono, .aspecto-card-check { transition: none; }
+  .aspecto-card:hover { transform: translateY(-3px); }
+  .aspecto-card.flash::after { animation: none; }
+  .aspecto-card.activo .aspecto-card-check svg path { animation: none; stroke-dashoffset: 0; }
+}
+
+/* Tarjeta-resumen de la votación */
+.valoracion-resumen {
+  display: flex; align-items: center; gap: .6rem; margin-top: .5rem;
+  padding: .85rem 1.1rem; border-radius: var(--radius);
+  background: color-mix(in srgb, var(--asp-color) 8%, var(--bg-card));
+  border: 1px solid color-mix(in srgb, var(--asp-color) 25%, transparent);
+  font-size: .85rem; color: var(--text);
+}
+.valoracion-resumen i { color: var(--asp-color); font-size: 1rem; }
+.valoracion-resumen.vacio { background: var(--bg-card); border-color: var(--border); color: var(--text-muted); }
+.valoracion-resumen.vacio i { color: var(--text-muted); }
+
+/* Resumen de valoración en la tarjeta del listado */
+.card-valoracion { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; justify-content: flex-end; }
+.card-aspecto-top {
+  font-size: .72rem; font-weight: 600; color: var(--verde-700);
+  background: var(--verde-alpha); padding: .2rem .55rem; border-radius: 100px; white-space: nowrap;
+}
+[data-theme="dark"] .card-aspecto-top { color: var(--verde-300); }
+.card-valoracion-count {
+  display: inline-flex; align-items: center; gap: .3rem; font-weight: 700; font-size: .82rem; color: var(--verde-600);
+}
+.card-valoracion-count.negativo { color: #e74c3c; }
+
+
+/* ============================================================
    #5 · EFECTOS HOVER POR CATEGORÍA
    La tarjeta lleva data-cat-effect="<efecto>". El JS inyecta
    partículas dentro de .cat-fx-layer; el CSS las anima.

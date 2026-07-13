@@ -1,0 +1,62 @@
+/* ============================================================
+   CIVINSIS · Módulo de Ranking
+   Reutiliza .debates-hero, .debate-cat-badge, .empty-state, .skeleton
+   ============================================================ */
+
+.ranking-tabs {
+  display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1.5rem; margin-bottom: 1.5rem;
+}
+.ranking-tab {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .55rem 1rem; border-radius: 100px; border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text-2); font-size: .82rem; font-weight: 600;
+  cursor: pointer; transition: var(--trans);
+}
+.ranking-tab:hover { border-color: var(--verde-alpha2); color: var(--verde-600); }
+.ranking-tab.active { background: var(--grad-primary); color: #fff; border-color: transparent; box-shadow: var(--shadow); }
+
+.ranking-panel {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 1.5rem; box-shadow: var(--shadow);
+}
+.ranking-panel-header {
+  display: flex; align-items: center; gap: .6rem; font-family: var(--font-display);
+  font-weight: 800; font-size: 1.2rem; color: var(--text); margin-bottom: 1.25rem;
+}
+.ranking-panel-header i { color: #ffb300; }
+
+.ranking-row {
+  display: flex; align-items: center; gap: 1rem; padding: .85rem .5rem;
+  border-bottom: 1px solid var(--border); text-decoration: none; color: inherit;
+  transition: var(--trans); border-radius: 10px;
+}
+.ranking-row:last-child { border-bottom: none; }
+.ranking-row:hover { background: var(--surface); }
+.ranking-row.top3 { background: linear-gradient(90deg, rgba(255,224,102,.08), transparent); }
+.ranking-row.soy-yo { background: var(--verde-alpha); border-radius: 10px; }
+
+.ranking-pos-badge {
+  width: 34px; height: 34px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; font-weight: 800; color: var(--text-muted); border-radius: 8px;
+}
+.ranking-pos-badge.pos-0, .ranking-pos-badge.pos-1, .ranking-pos-badge.pos-2 { font-size: 1.3rem; }
+
+.ranking-avatar-wrap { flex-shrink: 0; }
+.ranking-avatar-img {
+  width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--grad-primary); color: #fff; font-weight: 700; font-size: .95rem; object-fit: cover;
+}
+
+.ranking-user-info { flex: 1; min-width: 0; }
+.ranking-user-name { font-weight: 700; font-size: .9rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ranking-tu-tag { color: var(--verde-600); font-weight: 600; font-size: .78rem; }
+.ranking-user-meta { font-size: .76rem; color: var(--text-muted); margin-top: .2rem; display: flex; align-items: center; flex-wrap: wrap; gap: .3rem; }
+
+.ranking-valor { font-weight: 800; color: var(--verde-600); font-size: .95rem; white-space: nowrap; flex-shrink: 0; }
+.ranking-unidad { font-weight: 600; font-size: .72rem; color: var(--text-muted); }
+
+.ranking-mi-posicion {
+  margin-top: 1.25rem; padding: .85rem 1.1rem; background: var(--verde-alpha);
+  border: 1px solid var(--verde-alpha2); border-radius: var(--radius); font-size: .85rem; color: var(--verde-700);
+}
+[data-theme="dark"] .ranking-mi-posicion { color: var(--verde-300); }

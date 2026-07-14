@@ -2,7 +2,7 @@
 // layouts/navbar.php  (renderizado por Laravel; las variables vienen del View Composer)
 $activeNav    = $activeNav ?? '';
 $navLinks = [
-  ['href'=>'index.php','icon'=>'fa-home','label'=>'Inicio','key'=>'inicio'],
+  ['href'=> !empty($usuarioLogueado) ? 'inicio.php' : 'index.php', 'icon'=>'fa-home', 'label'=>'Inicio', 'key'=>'inicio'],
   ['href'=>'dashboard.php','icon'=>'fa-layer-group','label'=>'Propuestas','key'=>'propuestas'],
   ['href'=>'debates.php','icon'=>'fa-comments','label'=>'Debates','key'=>'debates'],
   ['href'=>'desafios.php','icon'=>'fa-flag-checkered','label'=>'Desafíos','key'=>'desafios'],

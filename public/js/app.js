@@ -1275,9 +1275,11 @@ function showLogoutModal() {
   setTimeout(async () => {
     try {
       const res = await API.post('php/auth.php', { accion: 'logout' });
+      sessionStorage.setItem('civinsis_logged_out', '1');
       // Reemplazar historial para que "atrás" no regrese a páginas protegidas
       window.location.replace(res.redirect || 'index.php');
     } catch(e) {
+      sessionStorage.setItem('civinsis_logged_out', '1');
       window.location.replace('index.php');
     }
   }, 2500);
@@ -1396,6 +1398,22 @@ const Notificaciones = {
 };
 
 // ── Init global ────────────────────────────────────────────
+// ── Anti-bfcache: si la página se restaura desde la caché "atrás/adelante"
+//    del navegador, forzamos una recarga real desde el servidor. Así, tras
+//    cerrar sesión, volver "atrás" nunca muestra al usuario todavía logueado.
+window.addEventListener('pageshow', (event) => {
+  const navEntry = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+  const veniaDeBfcache = event.persisted || (navEntry && navEntry.type === 'back_forward');
+  if (veniaDeBfcache) {
+    // Si acabamos de cerrar sesión, o simplemente volvimos con "atrás",
+    // recargamos para que el servidor decida el estado real de la sesión.
+    if (sessionStorage.getItem('civinsis_logged_out') === '1') {
+      sessionStorage.removeItem('civinsis_logged_out');
+    }
+    window.location.reload();
+  }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   Theme.init();
   Nav.init();

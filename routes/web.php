@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\DebateController;
 use App\Http\Controllers\Api\DesafioController;
 use App\Http\Controllers\Api\NotificacionController;
 use App\Http\Controllers\Api\RankingController;
+use App\Http\Controllers\Api\ActividadController;
+use App\Http\Controllers\Api\TendenciasController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +38,8 @@ Route::get('/debates.php',    [PageController::class, 'debates']);
 Route::get('/debate.php',     [PageController::class, 'debate']);
 Route::get('/desafios.php',   [PageController::class, 'desafios']);
 Route::get('/ranking.php',    [PageController::class, 'ranking']);
+Route::get('/inicio.php',     [PageController::class, 'inicio']);
+Route::get('/tendencias.php', [PageController::class, 'tendencias']);
 Route::get('/privacidad.php', [PageController::class, 'privacidad']);
 Route::get('/terminos.php',   [PageController::class, 'terminos']);
 Route::get('/admin.php',      [PageController::class, 'admin']);
@@ -52,4 +56,6 @@ Route::match(['get', 'post'], '/php/debates.php',      [DebateController::class,
 Route::match(['get', 'post'], '/php/desafios.php',     [DesafioController::class, 'handle']);
 Route::match(['get', 'post'], '/php/notificaciones.php', [NotificacionController::class, 'handle']);
 Route::match(['get', 'post'], '/php/ranking.php',      [RankingController::class, 'handle']);
+Route::match(['get', 'post'], '/php/actividad.php',    [ActividadController::class, 'handle']);
+Route::match(['get', 'post'], '/php/tendencias.php',   [TendenciasController::class, 'handle']);
 Route::match(['get', 'post'], '/php/ia.php',               [IaController::class, 'handle']);

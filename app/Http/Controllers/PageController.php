@@ -26,6 +26,14 @@ class PageController extends Controller
     public function desafios() { return view('desafios'); }
 
     public function ranking() { return view('ranking'); }
+
+    public function inicio()
+    {
+        if (!Auth::check()) return redirect('/auth.php');
+        return view('inicio');
+    }
+
+    public function tendencias() { return view('tendencias'); }
     public function privacidad() { return view('privacidad'); }
     public function terminos()   { return view('terminos'); }
 

@@ -64,7 +64,7 @@ class AuthController extends Controller
         } catch (\Throwable $e) {}
 
         return $this->json(true, 'Inicio de sesión exitoso', [
-            'redirect' => 'dashboard.php',
+            'redirect' => 'inicio.php',
             'nombre'   => $user->nombre,
         ]);
     }
@@ -98,7 +98,7 @@ class AuthController extends Controller
         $request->session()->regenerate();
 
         return $this->json(true, '¡Cuenta creada exitosamente!', [
-            'redirect' => 'dashboard.php',
+            'redirect' => 'inicio.php',
             'nombre'   => $nombre,
         ]);
     }

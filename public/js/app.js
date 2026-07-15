@@ -805,17 +805,24 @@ const ProposalDetail = {
     const negativos = aspectos.filter(a => a.signo < 0);
     const totalVotos = aspectos.reduce((s, a) => s + a.total, 0);
 
+    // La votación solo está activa en la fase "votacion"
+    const votacionAbierta = (p.progreso === 'votacion');
+    const puedeVotar = votacionAbierta && !p.es_autor;
+
     if (p.es_autor) {
       return `
-        <div class="valoracion-box">
+        <div class="valoracion-box ${votacionAbierta ? '' : 'apagada'}">
           <div class="valoracion-titulo"><i class="fas fa-chart-simple"></i> Cómo valora la comunidad tu propuesta</div>
-          <div class="valoracion-seccion positiva">
-            <div class="valoracion-seccion-label"><i class="fas fa-thumbs-up"></i> Aspectos positivos</div>
-            <div class="aspectos-grid">${positivos.map(a => this.aspectoCard(p.id, a, miVoto, false)).join('')}</div>
-          </div>
-          <div class="valoracion-seccion negativa">
-            <div class="valoracion-seccion-label"><i class="fas fa-thumbs-down"></i> Aspectos por mejorar</div>
-            <div class="aspectos-grid">${negativos.map(a => this.aspectoCard(p.id, a, miVoto, false)).join('')}</div>
+          <div class="valoracion-apagable">
+            ${!votacionAbierta ? this.overlayApagado(p) : ''}
+            <div class="valoracion-seccion positiva">
+              <div class="valoracion-seccion-label"><i class="fas fa-thumbs-up"></i> Aspectos positivos</div>
+              <div class="aspectos-grid">${positivos.map(a => this.aspectoCard(p.id, a, miVoto, false, false)).join('')}</div>
+            </div>
+            <div class="valoracion-seccion negativa">
+              <div class="valoracion-seccion-label"><i class="fas fa-thumbs-down"></i> Aspectos por mejorar</div>
+              <div class="aspectos-grid">${negativos.map(a => this.aspectoCard(p.id, a, miVoto, false, false)).join('')}</div>
+            </div>
           </div>
           ${this.resumenValoracionHTML(aspectos, totalVotos)}
           ${totalVotos === 0 ? '<p class="valoracion-vacio">Todavía nadie ha valorado tu propuesta.</p>' : ''}
@@ -823,22 +830,42 @@ const ProposalDetail = {
     }
 
     return `
-      <div class="valoracion-box">
+      <div class="valoracion-box ${votacionAbierta ? '' : 'apagada'}">
         <div class="valoracion-titulo"><i class="fas fa-hand-sparkles"></i> ¿Qué te parece esta propuesta?</div>
-        <p class="valoracion-sub">Elige la opción que mejor la describe. Solo puedes votar una vez (puedes cambiar o quitar tu voto).</p>
-        <div class="valoracion-seccion positiva">
-          <div class="valoracion-seccion-label"><i class="fas fa-thumbs-up"></i> Aspectos positivos</div>
-          <div class="aspectos-grid" id="aspectosGridPos" role="radiogroup" aria-label="Aspectos positivos">${positivos.map(a => this.aspectoCard(p.id, a, miVoto, true)).join('')}</div>
-        </div>
-        <div class="valoracion-seccion negativa">
-          <div class="valoracion-seccion-label"><i class="fas fa-thumbs-down"></i> Aspectos por mejorar</div>
-          <div class="aspectos-grid" id="aspectosGridNeg" role="radiogroup" aria-label="Aspectos por mejorar">${negativos.map(a => this.aspectoCard(p.id, a, miVoto, true)).join('')}</div>
+        ${votacionAbierta
+          ? '<p class="valoracion-sub">Elige la opción que mejor la describe. Solo puedes votar una vez (puedes cambiar o quitar tu voto).</p>'
+          : ''}
+        <div class="valoracion-apagable">
+          ${!votacionAbierta ? this.overlayApagado(p) : ''}
+          <div class="valoracion-seccion positiva">
+            <div class="valoracion-seccion-label"><i class="fas fa-thumbs-up"></i> Aspectos positivos</div>
+            <div class="aspectos-grid" id="aspectosGridPos" role="radiogroup" aria-label="Aspectos positivos">${positivos.map(a => this.aspectoCard(p.id, a, miVoto, puedeVotar, false)).join('')}</div>
+          </div>
+          <div class="valoracion-seccion negativa">
+            <div class="valoracion-seccion-label"><i class="fas fa-thumbs-down"></i> Aspectos por mejorar</div>
+            <div class="aspectos-grid" id="aspectosGridNeg" role="radiogroup" aria-label="Aspectos por mejorar">${negativos.map(a => this.aspectoCard(p.id, a, miVoto, puedeVotar, false)).join('')}</div>
+          </div>
         </div>
         <div id="resumenValoracion">${this.resumenValoracionHTML(aspectos, totalVotos)}</div>
       </div>`;
   },
 
-  aspectoCard(pid, a, miVoto, votable) {
+  overlayApagado(p) {
+    const faseActual = p.progreso_label || 'otra fase';
+    return `
+      <div class="valoracion-overlay-apagado">
+        <div class="apagado-bombilla">
+          <i class="fas fa-lightbulb"></i>
+          <span class="apagado-zzz">off</span>
+        </div>
+        <div class="apagado-texto">
+          <strong>Votación en pausa</strong>
+          <span>Se encenderá cuando la propuesta llegue a la fase <b>Votación</b>. Ahora está en <b>${faseActual}</b>.</span>
+        </div>
+      </div>`;
+  },
+
+  aspectoCard(pid, a, miVoto, votable, bloqueado) {
     const meta = this.ASPECTO_META[a.clave] || { desc: '', color: '#36c0a1' };
     const activo = miVoto === a.clave;
     const tag = votable ? 'button' : 'div';

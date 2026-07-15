@@ -32,8 +32,11 @@ class PageController extends Controller
         if (!Auth::check()) return redirect('/auth.php');
         return view('inicio');
     }
+<<<<<<< HEAD
 
     public function tendencias() { return view('tendencias'); }
+=======
+>>>>>>> ca77bc9d41357e54545a2f654329b02bab574dae
     public function privacidad() { return view('privacidad'); }
     public function terminos()   { return view('terminos'); }
 

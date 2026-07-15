@@ -390,6 +390,9 @@ class ProposalController extends Controller
         $p = Proposal::find($pid);
         if (!$p) return $this->json(false, 'Propuesta no encontrada');
         if ($p->usuario_id === Auth::id()) return $this->json(false, 'No puedes valorar tu propia propuesta');
+        if (($p->progreso ?? 'idea') !== 'votacion') {
+            return $this->json(false, 'Esta propuesta solo puede valorarse cuando está en la fase de Votación');
+        }
 
         // Voto previo de este usuario (solo puede haber uno)
         $votoPrevio = Voto::where('propuesta_id', $pid)->where('usuario_id', Auth::id())->first();

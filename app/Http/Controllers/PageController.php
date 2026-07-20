@@ -32,6 +32,8 @@ class PageController extends Controller
         if (!Auth::check()) return redirect('/auth.php');
         return view('inicio');
     }
+
+    public function tendencias() { return view('tendencias'); }
     public function privacidad() { return view('privacidad'); }
     public function terminos()   { return view('terminos'); }
 
@@ -59,7 +61,7 @@ class PageController extends Controller
 
     public function auth()
     {
-        if (Auth::check()) return redirect('/dashboard.php');
+        if (Auth::check()) return redirect('/inicio.php');
         return view('auth.auth');
     }
 }

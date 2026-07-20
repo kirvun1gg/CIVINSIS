@@ -9,9 +9,11 @@ use App\Models\Debate;
 use App\Models\DebateRespuesta;
 use App\Models\ModeracionAlerta;
 use App\Models\Proposal;
+use App\Models\Voto;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -32,6 +34,19 @@ class IaController extends Controller
             'alertas'           => $this->alertas($request),
             'marcar_revisado'   => $this->marcarRevisado($request),
             'aprobar'           => $this->aprobar($request),
+            // ── Entrenador cívico (Fase IA) ──────────────────────────
+            'redactar'          => $this->redactar($request),
+            'ortografia'        => $this->ortografia($request),
+            'argumentos'        => $this->argumentos($request),
+            'similares'         => $this->similares($request),
+            'resumir_propuesta' => $this->resumirPropuesta($request),
+            'titulos'           => $this->titulos($request),
+            'categoria'         => $this->categoriaAuto($request),
+            'explicar'          => $this->explicar($request),
+            'reporte'           => $this->reporte($request),
+            // ── CIVI mentor (cerebro del entrenador cívico) ──────────
+            'coach'             => $this->coach($request),
+            'nudge'             => $this->nudge($request),
             default             => $this->json(false, 'Acción no reconocida'),
         };
     }
@@ -391,6 +406,507 @@ TXT;
     // ─────────────────────────────────────────────────────────────
     //  LLAMADA A GROQ
     // ─────────────────────────────────────────────────────────────
+    // ═════════════════════════════════════════════════════════════
+    //  ENTRENADOR CÍVICO — funciones de IA integradas en la plataforma
+    // ═════════════════════════════════════════════════════════════
+
+    /** System prompt corto para herramientas (respeta formato pedido). */
+    private function sysTool(): string
+    {
+        $cats = Categoria::pluck('nombre')->implode(', ');
+        return "Eres CIVI, el asistente de redacción y entrenador cívico de CIVINSIS, "
+            . "una plataforma salvadoreña de participación ciudadana juvenil "
+            . "(categorías: {$cats}). Respondes SIEMPRE en español, con precisión, y sigues "
+            . "EXACTAMENTE el formato pedido, sin introducciones ni despedidas.";
+    }
+
+    /** Atajo: una llamada a Groq con system + user. */
+    private function pedir(string $system, string $userPrompt, int $max = 700): array
+    {
+        return $this->llamarGroq([
+            ['role' => 'system', 'content' => $system],
+            ['role' => 'user',   'content' => $userPrompt],
+        ], $max);
+    }
+
+    // ── Ayudar a redactar: de una idea suelta a un borrador completo ──
+    private function redactar(Request $request)
+    {
+        $idea = trim((string) $request->input('idea', ''));
+        if (mb_strlen($idea) < 6) return $this->json(false, 'Cuéntame tu idea en una frase');
+
+        $prompt = <<<TXT
+Un ciudadano quiere crear una propuesta pero solo tiene esta idea inicial:
+"{$idea}"
+
+Redacta una propuesta ciudadana completa y convincente. Devuelve SOLO un JSON válido (sin markdown ni texto extra) con este formato exacto:
+{"titulo":"...","descripcion":"...","contenido":"..."}
+- titulo: claro y atractivo, máximo 90 caracteres.
+- descripcion: 2-3 oraciones, máximo 400 caracteres.
+- contenido: desarrollo en 4 párrafos cortos que cubran problema, solución, impacto y recursos (usa saltos de línea entre párrafos).
+TXT;
+
+        $r    = $this->pedir($this->sysTool(), $prompt, 900);
+        $json = json_decode($r['texto'], true);
+        if (is_array($json) && isset($json['titulo'])) {
+            return $this->json(true, 'OK', ['borrador' => [
+                'titulo'      => (string) ($json['titulo'] ?? ''),
+                'descripcion' => (string) ($json['descripcion'] ?? ''),
+                'contenido'   => (string) ($json['contenido'] ?? ''),
+            ], 'fuente' => $r['fuente']]);
+        }
+        // Respaldo: si no vino JSON, entregamos todo como contenido
+        return $this->json(true, 'OK', ['borrador' => [
+            'titulo' => '', 'descripcion' => '', 'contenido' => $r['texto'],
+        ], 'fuente' => $r['fuente']]);
+    }
+
+    // ── Corregir SOLO ortografía y gramática (sin cambiar el sentido) ──
+    private function ortografia(Request $request)
+    {
+        $texto = trim((string) $request->input('texto', ''));
+        if ($texto === '') return $this->json(false, 'No hay texto que corregir');
+
+        $prompt = "Corrige ÚNICAMENTE la ortografía, tildes, puntuación y errores gramaticales "
+            . "del siguiente texto. NO cambies el significado, el estilo ni agregues contenido. "
+            . "Devuelve SOLO el texto corregido:\n\n{$texto}";
+        $r = $this->pedir($this->sysTool(), $prompt, 800);
+        return $this->json(true, 'OK', ['respuesta' => $r['texto'], 'fuente' => $r['fuente']]);
+    }
+
+    // ── Reforzar argumentos (más persuasivo, sin inventar datos) ──
+    private function argumentos(Request $request)
+    {
+        $texto = trim((string) $request->input('texto', ''));
+        if ($texto === '') return $this->json(false, 'No hay texto que reforzar');
+
+        $prompt = "Refuerza los argumentos de esta propuesta ciudadana: hazla más persuasiva, "
+            . "agrega razones concretas y ejemplos plausibles, y responde a objeciones típicas. "
+            . "NO inventes cifras estadísticas falsas. Mantén el tema y la voz del autor. "
+            . "Devuelve SOLO el texto mejorado:\n\n{$texto}";
+        $r = $this->pedir($this->sysTool(), $prompt, 850);
+        return $this->json(true, 'OK', ['respuesta' => $r['texto'], 'fuente' => $r['fuente']]);
+    }
+
+    // ── Detectar propuestas similares (evitar duplicados) ──
+    private function similares(Request $request)
+    {
+        $titulo  = trim((string) $request->input('titulo', ''));
+        $desc    = trim((string) $request->input('descripcion', ''));
+        $excluir = (int) $request->input('excluir_id', 0);
+        $base    = trim($titulo . ' ' . $desc);
+        if (mb_strlen($base) < 8) return $this->json(false, 'Escribe un título y una descripción primero');
+
+        $stop = ['para', 'como', 'este', 'esta', 'esto', 'pero', 'porque', 'cuando', 'donde',
+                 'sobre', 'entre', 'desde', 'hacia', 'todos', 'todas', 'nuestro', 'nuestra',
+                 'propuesta', 'comunidad', 'ciudad', 'personas'];
+        $tokenizar = function (string $s) use ($stop): array {
+            $w = preg_split('/[^\p{L}\p{N}]+/u', mb_strtolower($s), -1, PREG_SPLIT_NO_EMPTY);
+            return array_values(array_diff(array_unique(array_filter($w, fn($x) => mb_strlen($x) >= 4)), $stop));
+        };
+
+        $baseTok = $tokenizar($base);
+        if (!$baseTok) return $this->json(true, 'OK', ['similares' => []]);
+
+        $catMap = Categoria::pluck('nombre', 'id');
+        $cands  = Proposal::where('censurada', false)
+            ->when($excluir, fn($q) => $q->where('id', '!=', $excluir))
+            ->orderByDesc('fecha_creacion')->limit(120)
+            ->get(['id', 'titulo', 'descripcion', 'categoria_id']);
+
+        $rank = [];
+        foreach ($cands as $c) {
+            $ct = $tokenizar($c->titulo . ' ' . $c->descripcion);
+            if (!$ct) continue;
+            $inter = count(array_intersect($baseTok, $ct));
+            if ($inter < 2) continue;
+            $union = count(array_unique(array_merge($baseTok, $ct)));
+            $rank[] = [
+                'id'         => $c->id,
+                'titulo'     => $c->titulo,
+                'similitud'  => $union ? (int) round($inter / $union * 100) : 0,
+                'categoria'  => $catMap[$c->categoria_id] ?? null,
+            ];
+        }
+        usort($rank, fn($a, $b) => $b['similitud'] <=> $a['similitud']);
+        return $this->json(true, 'OK', ['similares' => array_slice($rank, 0, 5)]);
+    }
+
+    // ── Resumir una propuesta larga ──
+    private function resumirPropuesta(Request $request)
+    {
+        $id = (int) $request->input('id');
+        $p  = Proposal::find($id);
+        if (!$p) return $this->json(false, 'Propuesta no encontrada');
+
+        $texto = trim(strip_tags((string) $p->contenido));
+        if (mb_strlen($texto) < 200) return $this->json(false, 'Esta propuesta ya es corta; no necesita resumen');
+
+        $prompt = "Resume esta propuesta ciudadana en 3 o 4 puntos clave (lista) y una frase final de "
+            . "conclusión. Español, claro y neutral.\nTítulo: {$p->titulo}\n\n{$texto}";
+        $r = $this->pedir($this->sysTool(), $prompt, 350);
+        return $this->json(true, 'OK', ['resumen' => $r['texto'], 'fuente' => $r['fuente']]);
+    }
+
+    // ── Sugerir títulos ──
+    private function titulos(Request $request)
+    {
+        $texto = trim((string) $request->input('texto', ''));
+        if ($texto === '') {
+            $texto = trim(($request->input('titulo', '') . ' ' . $request->input('descripcion', '')));
+        }
+        if (mb_strlen($texto) < 8) return $this->json(false, 'Escribe primero una descripción');
+
+        $prompt = "Propón 5 títulos posibles para esta propuesta ciudadana. Claros, atractivos y de "
+            . "máximo 90 caracteres. Devuelve SOLO una lista, un título por línea, sin numeración ni "
+            . "comillas:\n\n{$texto}";
+        $r      = $this->pedir($this->sysTool(), $prompt, 220);
+        $lineas = array_values(array_filter(array_map(
+            fn($l) => trim(preg_replace('/^[\d\.\)\-\•\*\s"]+/u', '', $l)),
+            explode("\n", $r['texto'])
+        ), fn($l) => $l !== ''));
+        return $this->json(true, 'OK', ['titulos' => array_slice($lineas, 0, 5), 'fuente' => $r['fuente']]);
+    }
+
+    // ── Detectar categoría automáticamente ──
+    private function categoriaAuto(Request $request)
+    {
+        $titulo = trim((string) $request->input('titulo', ''));
+        $desc   = trim((string) $request->input('descripcion', ''));
+        $texto  = trim($titulo . ' ' . $desc);
+        if (mb_strlen($texto) < 8) return $this->json(false, 'Escribe un título y una descripción primero');
+
+        $cats  = Categoria::get(['id', 'nombre']);
+        $lista = $cats->pluck('nombre')->implode(', ');
+        $prompt = "Elige la categoría MÁS adecuada para esta propuesta ciudadana, de esta lista exacta: "
+            . "{$lista}.\nResponde SOLO el nombre exacto de la categoría, sin ningún otro texto.\n\n"
+            . "Propuesta: {$texto}";
+        $r      = $this->pedir($this->sysTool(), $prompt, 30);
+        $nombre = trim($r['texto']);
+
+        $match = $cats->first(fn($c) => mb_strtolower($c->nombre) === mb_strtolower($nombre))
+            ?? $cats->first(fn($c) => $nombre !== '' && mb_stripos($nombre, $c->nombre) !== false);
+
+        if (!$match) return $this->json(true, 'OK', ['detectada' => false, 'sugerida' => $nombre]);
+        return $this->json(true, 'OK', [
+            'detectada'        => true,
+            'categoria_id'     => $match->id,
+            'categoria_nombre' => $match->nombre,
+        ]);
+    }
+
+    // ── Explicar un concepto ciudadano ──
+    private function explicar(Request $request)
+    {
+        $concepto = trim((string) $request->input('concepto', ''));
+        if ($concepto === '') return $this->json(false, '¿Qué concepto quieres que te explique?');
+
+        $prompt = "Explica de forma sencilla, breve (máximo 120 palabras) y con un ejemplo cercano a "
+            . "El Salvador el concepto ciudadano: \"{$concepto}\". Si no fuera un concepto cívico, "
+            . "explícalo igual y relaciónalo con la participación ciudadana.";
+        $r = $this->pedir($this->sysTool(), $prompt, 300);
+        return $this->json(true, 'OK', ['respuesta' => $r['texto'], 'fuente' => $r['fuente']]);
+    }
+
+    // ── Reporte personalizado del ciudadano ──
+    private function reporte(Request $request)
+    {
+        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
+        $u = Auth::user();
+
+        $numProp        = Proposal::where('usuario_id', $u->id)->count();
+        $votosRecibidos = (int) Proposal::where('usuario_id', $u->id)->sum('votos');
+        $numDebates     = Debate::where('usuario_id', $u->id)->count();
+        $numResp        = DebateRespuesta::where('usuario_id', $u->id)->count();
+
+        $gam     = app(\App\Services\GamificacionService::class);
+        $perfil  = $gam->perfilCompleto($u);
+        $misComp = collect($perfil['misiones'] ?? [])->where('completada', true)->count();
+
+        $stats = [
+            'propuestas'      => $numProp,
+            'votos_recibidos' => $votosRecibidos,
+            'debates'         => $numDebates,
+            'aportes'         => $numResp,
+            'nivel'           => $perfil['nivel'] ?? 1,
+            'reputacion'      => $perfil['reputacion'] ?? 0,
+            'racha'           => $perfil['racha_dias'] ?? 0,
+            'logros'          => $perfil['total_logros'] ?? 0,
+        ];
+
+        $datos = "Nivel {$stats['nivel']}, reputación {$stats['reputacion']}, racha {$stats['racha']} días. "
+            . "Propuestas creadas: {$stats['propuestas']}. Votos recibidos: {$stats['votos_recibidos']}. "
+            . "Debates iniciados: {$stats['debates']}. Aportes en debates: {$stats['aportes']}. "
+            . "Logros desbloqueados: {$stats['logros']}. Misiones completadas: {$misComp}.";
+
+        $prompt = "Eres CIVI, el entrenador cívico de {$u->nombre}. Con estos datos de su actividad "
+            . "en CIVINSIS, escribe un reporte personalizado, motivador y breve (máximo 140 palabras) que: "
+            . "1) reconozca sus logros, 2) señale un punto a mejorar, 3) sugiera 1-2 acciones concretas "
+            . "para su próxima participación. Tono cercano y juvenil.\n\nDatos: {$datos}";
+        $r = $this->pedir($this->sysTool(), $prompt, 420);
+
+        return $this->json(true, 'OK', ['reporte' => $r['texto'], 'stats' => $stats, 'fuente' => $r['fuente']]);
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    //  CIVI MENTOR — el cerebro del entrenador cívico
+    //  Lee la actividad REAL del usuario y produce guía personalizada.
+    // ═════════════════════════════════════════════════════════════
+
+    private const ASPECTOS_POS = [
+        'creativa'    => 'creativas',
+        'argumentada' => 'bien argumentadas',
+        'comunidad'   => 'beneficiosas para la comunidad',
+        'factible'    => 'factibles',
+        'innovadora'  => 'innovadoras',
+    ];
+
+    /** Agrega toda la actividad del usuario en señales medibles. */
+    private function perfilActividad($u): array
+    {
+        $propQ          = Proposal::where('usuario_id', $u->id);
+        $numProp        = (clone $propQ)->count();
+        $votosRecibidos = (int) (clone $propQ)->sum('votos');
+        $propIds        = (clone $propQ)->pluck('id');
+
+        $numCom     = Comentario::where('usuario_id', $u->id)->count();
+        $numDeb     = Debate::where('usuario_id', $u->id)->count();
+        $numAportes = DebateRespuesta::where('usuario_id', $u->id)->count();
+
+        // Valoraciones inteligentes positivas recibidas + aspecto más fuerte
+        $valPos = 0; $aspectoFuerte = null;
+        if ($propIds->isNotEmpty()) {
+            $rows = Voto::whereIn('propuesta_id', $propIds)
+                ->whereIn('aspecto', array_keys(self::ASPECTOS_POS))
+                ->select('aspecto', DB::raw('COUNT(*) as total'))
+                ->groupBy('aspecto')->get();
+            $valPos = (int) $rows->sum('total');
+            $aspectoFuerte = optional($rows->sortByDesc('total')->first())->aspecto;
+        }
+
+        // Categoría favorita (de sus propuestas)
+        $catFav = null;
+        if ($numProp > 0) {
+            $catId = (clone $propQ)->select('categoria_id', DB::raw('COUNT(*) as t'))
+                ->whereNotNull('categoria_id')->groupBy('categoria_id')
+                ->orderByDesc('t')->value('categoria_id');
+            $catFav = $catId ? optional(Categoria::find($catId))->nombre : null;
+        }
+
+        // Inactividad
+        $inactivo = $u->ultimo_acceso ? (int) $u->ultimo_acceso->diffInDays(now()) : null;
+
+        // Gamificación
+        $gam     = app(\App\Services\GamificacionService::class);
+        $perfil  = $gam->perfilCompleto($u);
+        $nivel   = $perfil['nivel'] ?? 1;
+        $xp      = $perfil['xp'] ?? 0;
+        $xpSig   = $perfil['xp_siguiente_nivel'] ?? ($xp + 100);
+        $xpFalt  = max(0, $xpSig - $xp);
+        $mis     = collect($perfil['misiones'] ?? []);
+        $misComp = $mis->where('completada', true)->count();
+        $misCerca = $mis->where('completada', false)
+            ->map(function ($m) {
+                $m['ratio'] = ($m['cantidad'] ?? 0) > 0 ? ($m['progreso'] ?? 0) / $m['cantidad'] : 0;
+                return $m;
+            })->sortByDesc('ratio')->first();
+
+        // Estilo de participación (dominante)
+        $estilo = 'nuevo';
+        $max = max($numProp, $numCom, $numAportes);
+        if ($max > 0) {
+            if ($numCom === $max)         $estilo = 'comentarista';
+            if ($numProp === $max)        $estilo = 'proponente';
+            if ($numAportes === $max)     $estilo = 'debatiente';
+            $spread = [$numProp, $numCom, $numAportes];
+            sort($spread);
+            if ($spread[2] > 0 && ($spread[2] - $spread[0]) <= 2) $estilo = 'equilibrado';
+        }
+
+        return [
+            'nivel' => $nivel, 'xp' => $xp, 'xp_faltante' => $xpFalt,
+            'pct_nivel' => $perfil['porcentaje_nivel'] ?? 0,
+            'reputacion' => $perfil['reputacion'] ?? 0, 'racha' => $perfil['racha_dias'] ?? 0,
+            'propuestas' => $numProp, 'comentarios' => $numCom,
+            'debates' => $numDeb, 'aportes' => $numAportes,
+            'votos_recibidos' => $votosRecibidos, 'valoraciones_positivas' => $valPos,
+            'aspecto_fuerte' => $aspectoFuerte, 'categoria_favorita' => $catFav,
+            'inactividad_dias' => $inactivo, 'estilo' => $estilo,
+            'logros' => $perfil['total_logros'] ?? 0, 'misiones_completadas' => $misComp,
+            'mision_cerca' => $misCerca ? [
+                'nombre' => $misCerca['nombre'] ?? '', 'progreso' => $misCerca['progreso'] ?? 0,
+                'cantidad' => $misCerca['cantidad'] ?? 0,
+            ] : null,
+        ];
+    }
+
+    /** Objetivo adaptativo: el siguiente paso ideal según el comportamiento. */
+    private function construirObjetivo(array $s): array
+    {
+        if ($s['propuestas'] === 0) {
+            return ['clave' => 'primera_propuesta', 'titulo' => 'Comparte tu primera propuesta',
+                'descripcion' => 'Ya conoces la plataforma; es momento de proponer tu propia idea.',
+                'cta_texto' => 'Crear propuesta', 'cta_url' => 'crear.php'];
+        }
+        if ($s['comentarios'] === 0) {
+            return ['clave' => 'primeros_comentarios', 'titulo' => 'Comenta en 3 propuestas',
+                'descripcion' => 'Aportar en las ideas de otros amplía tu participación y tu reputación.',
+                'cta_texto' => 'Ver propuestas', 'cta_url' => 'dashboard.php'];
+        }
+        if ($s['aportes'] === 0) {
+            return ['clave' => 'primer_debate', 'titulo' => 'Da tu opinión en un debate',
+                'descripcion' => 'Los debates son el mejor lugar para practicar tus argumentos.',
+                'cta_texto' => 'Ir a debates', 'cta_url' => 'debates.php'];
+        }
+        if ($s['xp_faltante'] > 0 && $s['xp_faltante'] <= 60) {
+            return ['clave' => 'subir_nivel', 'titulo' => "Solo te faltan {$s['xp_faltante']} XP para el nivel " . ($s['nivel'] + 1),
+                'descripcion' => 'Un comentario valioso o un voto en una propuesta te acercan.',
+                'cta_texto' => 'Participar', 'cta_url' => 'dashboard.php'];
+        }
+        if ($s['mision_cerca'] && $s['mision_cerca']['cantidad'] > 0
+            && $s['mision_cerca']['progreso'] / $s['mision_cerca']['cantidad'] >= 0.5) {
+            $falta = $s['mision_cerca']['cantidad'] - $s['mision_cerca']['progreso'];
+            return ['clave' => 'mision_cerca', 'titulo' => "Completa la misión: {$s['mision_cerca']['nombre']}",
+                'descripcion' => "Te falta muy poco ({$falta}) para desbloquearla.",
+                'cta_texto' => 'Ver misiones', 'cta_url' => 'progreso.php'];
+        }
+        // Diversificar según estilo
+        if ($s['estilo'] === 'comentarista') {
+            return ['clave' => 'diversificar_propuesta', 'titulo' => 'Convierte una idea en propuesta',
+                'descripcion' => 'Comentas muy bien; comparte una idea propia y llévala más lejos.',
+                'cta_texto' => 'Crear propuesta', 'cta_url' => 'crear.php'];
+        }
+        if ($s['estilo'] === 'proponente') {
+            return ['clave' => 'diversificar_debate', 'titulo' => 'Abre o participa en un debate',
+                'descripcion' => 'Tienes buenas ideas; llévalas a un debate para enriquecerlas.',
+                'cta_texto' => 'Ir a debates', 'cta_url' => 'debates.php'];
+        }
+        return ['clave' => 'seguir', 'titulo' => 'Sigue construyendo comunidad',
+            'descripcion' => 'Vas muy bien. Elige un desafío nuevo y mantén tu racha.',
+            'cta_texto' => 'Ver desafíos', 'cta_url' => 'desafios.php'];
+    }
+
+    /** Señales de crecimiento motivadoras (máx. 3). */
+    private function construirProgreso(array $s): array
+    {
+        $out = [];
+        if ($s['xp_faltante'] > 0 && $s['xp_faltante'] <= 120) {
+            $out[] = ['icono' => 'fa-bolt', 'texto' => "Solo te faltan {$s['xp_faltante']} XP para subir al nivel " . ($s['nivel'] + 1) . '.'];
+        }
+        if ($s['mision_cerca'] && $s['mision_cerca']['cantidad'] > 0) {
+            $falta = $s['mision_cerca']['cantidad'] - $s['mision_cerca']['progreso'];
+            if ($falta > 0 && $falta <= $s['mision_cerca']['cantidad']) {
+                $out[] = ['icono' => 'fa-bullseye', 'texto' => "Te falta {$falta} para completar «{$s['mision_cerca']['nombre']}»."];
+            }
+        }
+        if ($s['racha'] >= 2) {
+            $out[] = ['icono' => 'fa-fire', 'texto' => "Llevas {$s['racha']} días seguidos participando. ¡No rompas la racha!"];
+        }
+        if ($s['valoraciones_positivas'] > 0 && $s['aspecto_fuerte']) {
+            $lbl = self::ASPECTOS_POS[$s['aspecto_fuerte']] ?? 'valiosas';
+            $out[] = ['icono' => 'fa-star', 'texto' => "La comunidad valora tus propuestas como {$lbl}."];
+        }
+        return array_slice($out, 0, 3);
+    }
+
+    /** Hechos deterministas del "Análisis de CIVI" (fallback sin IA). */
+    private function hechosAnalisis(array $s): array
+    {
+        $f = [];
+        $estilos = ['comentarista' => 'comentando', 'proponente' => 'creando propuestas',
+                    'debatiente' => 'debatiendo', 'equilibrado' => 'de forma equilibrada',
+                    'nuevo' => 'explorando la plataforma'];
+        $f[] = 'Participas principalmente ' . ($estilos[$s['estilo']] ?? 'explorando') . '.';
+        if ($s['categoria_favorita']) $f[] = "El tema donde más participas es {$s['categoria_favorita']}.";
+        if ($s['aspecto_fuerte']) {
+            $lbl = self::ASPECTOS_POS[$s['aspecto_fuerte']] ?? 'valiosas';
+            $f[] = "Tus propuestas destacan por ser {$lbl}.";
+        }
+        if ($s['aportes'] === 0)          $f[] = 'Podrías crecer participando más en debates.';
+        elseif ($s['propuestas'] === 0)   $f[] = 'Aún no has creado tu primera propuesta.';
+        return $f;
+    }
+
+    // ── Acción principal del mentor: panel completo personalizado ──
+    private function coach(Request $request)
+    {
+        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
+        $u = Auth::user();
+
+        $s        = $this->perfilActividad($u);
+        $objetivo = $this->construirObjetivo($s);
+        $progreso = $this->construirProgreso($s);
+        $hechos   = $this->hechosAnalisis($s);
+
+        // Narración cálida del análisis (IA), con respaldo determinista.
+        $datos = "Estilo: {$s['estilo']}. Nivel {$s['nivel']}, {$s['xp']} XP, reputación {$s['reputacion']}, "
+            . "racha {$s['racha']} días. Propuestas {$s['propuestas']}, comentarios {$s['comentarios']}, "
+            . "aportes en debates {$s['aportes']}, votos recibidos {$s['votos_recibidos']}, "
+            . "valoraciones positivas {$s['valoraciones_positivas']}"
+            . ($s['aspecto_fuerte'] ? " (destacan como {$s['aspecto_fuerte']})" : '') . ". "
+            . ($s['categoria_favorita'] ? "Categoría favorita: {$s['categoria_favorita']}. " : '')
+            . "Logros {$s['logros']}, misiones completadas {$s['misiones_completadas']}.";
+
+        $prompt = "Eres CIVI, mentor cívico de {$u->nombre}. Con estos datos reales de su actividad, "
+            . "escribe un análisis breve (máx. 90 palabras, 2-3 frases) cálido y personalizado que reconozca "
+            . "su estilo, un punto fuerte y un área de mejora. Tono cercano y motivador, sin listas ni saludos. "
+            . "Datos: {$datos}";
+        $r = $this->pedir($this->sysTool(), $prompt, 220);
+        $analisis = ($r['fuente'] === 'groq' && mb_strlen(trim($r['texto'])) > 10)
+            ? trim($r['texto'])
+            : implode(' ', $hechos);
+
+        $nombre = $u->nombre;
+        $saludo = $s['estilo'] === 'nuevo'
+            ? "¡Hola, {$nombre}! Empecemos a construir tu camino cívico."
+            : "¡Hola de nuevo, {$nombre}! Esto es lo que veo en tu progreso.";
+
+        return $this->json(true, 'OK', [
+            'saludo'    => $saludo,
+            'stats'     => $s,
+            'objetivo'  => $objetivo,
+            'progreso'  => $progreso,
+            'analisis'  => $analisis,
+            'hechos'    => $hechos,
+            'fuente'    => $r['fuente'],
+        ]);
+    }
+
+    // ── Nudge contextual: aparece SOLO cuando aporta algo (no invasivo) ──
+    private function nudge(Request $request)
+    {
+        if (!Auth::check()) return $this->json(true, 'OK', ['mostrar' => false]);
+        $u        = Auth::user();
+        $contexto = (string) $request->input('contexto', '');
+        $s        = $this->perfilActividad($u);
+
+        $n = null; // ['texto','cta_texto','cta_url','prioridad']
+        $set = function ($texto, $cta, $url, $pri) use (&$n) {
+            if (!$n || $pri > $n['prioridad']) $n = compact('texto') + ['cta_texto' => $cta, 'cta_url' => $url, 'prioridad' => $pri];
+        };
+
+        // Reglas por contexto — CIVI solo habla si detecta una oportunidad real
+        if ($s['propuestas'] === 0 && in_array($contexto, ['dashboard', 'propuestas', 'inicio', 'perfil'])) {
+            $set('He notado que aún no has creado tu primera propuesta. ¿La construimos juntos?', 'Crear propuesta', 'crear.php', 3);
+        }
+        if ($s['propuestas'] === 0 && $s['comentarios'] >= 3) {
+            $set('Tus comentarios reciben buenas valoraciones. Tal vez ya sea momento de compartir una idea propia.', 'Crear propuesta', 'crear.php', 4);
+        }
+        if ($s['aportes'] === 0 && in_array($contexto, ['debates', 'debate'])) {
+            $set('Aún no has opinado en ningún debate. Tu punto de vista puede enriquecerlo.', 'Participar', 'debates.php', 2);
+        }
+        if ($s['xp_faltante'] > 0 && $s['xp_faltante'] <= 40) {
+            $set("Estás a solo {$s['xp_faltante']} XP de subir al nivel " . ($s['nivel'] + 1) . '. ¡Un aporte más!', 'Participar', 'dashboard.php', 3);
+        }
+        if ($s['inactividad_dias'] !== null && $s['inactividad_dias'] >= 4 && $s['categoria_favorita']) {
+            $set("Han aparecido novedades en {$s['categoria_favorita']}, tu tema favorito. ¿Les echas un vistazo?", 'Ver propuestas', 'dashboard.php', 2);
+        }
+
+        if (!$n) return $this->json(true, 'OK', ['mostrar' => false]);
+        unset($n['prioridad']);
+        return $this->json(true, 'OK', ['mostrar' => true] + $n);
+    }
+
     private function llamarGroq(array $messages, int $maxTokens = 700): array
     {
         $key = config('services.groq.key');

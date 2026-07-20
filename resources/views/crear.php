@@ -39,6 +39,35 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
         <form id="createForm" class="animate-fade-up">
           <input type="hidden" id="desafioIdInput" name="desafio_id" value="">
 
+          <!-- ── CIVI · Entrenador cívico integrado ─────────────── -->
+          <div class="civi-crear" id="civiCrear">
+            <div class="civi-crear-head">
+              <span class="civi-crear-title"><i class="fas fa-wand-magic-sparkles"></i> CIVI te ayuda a crear</span>
+              <span class="civi-crear-sub">Redacta, corrige y mejora tu propuesta con inteligencia artificial</span>
+            </div>
+
+            <!-- Redactar desde una idea suelta -->
+            <div class="civi-idea-row">
+              <input type="text" id="civiIdea" class="form-control"
+                placeholder="¿No sabes por dónde empezar? Escribe tu idea en una frase…">
+              <button type="button" class="btn btn-primary btn-sm" id="civiRedactar">
+                <i class="fas fa-wand-magic-sparkles"></i> Redactar borrador
+              </button>
+            </div>
+
+            <!-- Herramientas -->
+            <div class="civi-tools">
+              <button type="button" class="btn btn-outline btn-sm" data-civi="titulos"><i class="fas fa-heading"></i> Sugerir títulos</button>
+              <button type="button" class="btn btn-outline btn-sm" data-civi="categoria"><i class="fas fa-tag"></i> Detectar categoría</button>
+              <button type="button" class="btn btn-outline btn-sm" data-civi="ortografia"><i class="fas fa-spell-check"></i> Corregir ortografía</button>
+              <button type="button" class="btn btn-outline btn-sm" data-civi="argumentos"><i class="fas fa-scale-balanced"></i> Reforzar argumentos</button>
+              <button type="button" class="btn btn-outline btn-sm" data-civi="similares"><i class="fas fa-clone"></i> Ver similares</button>
+            </div>
+
+            <!-- Resultados dinámicos de CIVI -->
+            <div id="civiResult" class="civi-result" hidden></div>
+          </div>
+
           <!-- Título -->
           <div class="form-group">
             <label class="form-label" for="titulo">
@@ -377,6 +406,7 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
 <div class="toast-container"></div>
 <script src="js/app.js"></script>
 <script src="js/desafios.js"></script>
+<script src="js/crear-ia.js"></script>
 <style>
 @media(max-width:640px){.create-layout{grid-template-columns:1fr!important}}
 
@@ -388,6 +418,30 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
 }
 .design-option input:checked + .design-preview { border-color:var(--verde); box-shadow:0 0 0 2px var(--verde-alpha2); }
 .design-label { font-size:.72rem; color:var(--text-muted); font-weight:600; }
+
+/* ── Panel CIVI en crear ─────────────────────────────────── */
+.civi-crear{
+  background:linear-gradient(135deg,var(--verde-alpha),var(--naranja-alpha));
+  border:1px solid var(--verde-200); border-radius:var(--radius-lg);
+  padding:1.1rem 1.15rem; margin-bottom:1.75rem;
+}
+.civi-crear-head{display:flex;flex-direction:column;gap:.15rem;margin-bottom:.85rem}
+.civi-crear-title{font-family:var(--font-display);font-weight:800;font-size:.95rem;color:var(--verde-700);display:flex;align-items:center;gap:.5rem}
+.civi-crear-sub{font-size:.78rem;color:var(--text-muted)}
+.civi-idea-row{display:flex;gap:.6rem;margin-bottom:.75rem}
+.civi-idea-row .form-control{flex:1;min-width:0}
+.civi-idea-row .btn{flex-shrink:0;white-space:nowrap}
+.civi-tools{display:flex;flex-wrap:wrap;gap:.5rem}
+.civi-tools .btn{font-size:.74rem}
+.civi-tools .btn i{margin-right:.3rem}
+.civi-result{margin-top:.9rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;font-size:.84rem;line-height:1.55;animation:fadeUp .3s ease}
+.civi-result-head{display:flex;align-items:center;gap:.5rem;font-weight:700;color:var(--verde-700);font-size:.82rem;margin-bottom:.55rem}
+.civi-result .btn{margin-top:.7rem}
+.civi-titulo-opt{display:block;width:100%;text-align:left;background:var(--verde-alpha);border:1px solid var(--verde-200);border-radius:8px;padding:.5rem .7rem;margin-bottom:.4rem;cursor:pointer;font-size:.82rem;color:var(--text);transition:var(--trans)}
+.civi-titulo-opt:hover{background:var(--verde-alpha2);border-color:var(--verde)}
+.civi-sim-item{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.5rem .65rem;border:1px solid var(--border);border-radius:8px;margin-bottom:.4rem}
+.civi-sim-badge{flex-shrink:0;font-size:.72rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;background:var(--naranja-alpha);color:var(--naranja-700)}
+.civi-busy{opacity:.6;pointer-events:none}
 
 /* Placeholder en contenteditable */
 .rich-editor-content:empty::before {

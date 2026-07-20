@@ -7,6 +7,7 @@ $navLinks = [
   ['href'=>'debates.php','icon'=>'fa-comments','label'=>'Debates','key'=>'debates'],
   ['href'=>'desafios.php','icon'=>'fa-flag-checkered','label'=>'Desafíos','key'=>'desafios'],
   ['href'=>'ranking.php','icon'=>'fa-ranking-star','label'=>'Ranking','key'=>'ranking'],
+  ['href'=>'tendencias.php','icon'=>'fa-fire','label'=>'Tendencias','key'=>'tendencias'],
 ];
 if (!empty($usuarioLogueado)) {
   $navLinks[] = ['href'=>'crear.php','icon'=>'fa-plus-circle','label'=>'Crear','key'=>'crear'];

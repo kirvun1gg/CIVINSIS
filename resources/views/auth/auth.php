@@ -27,21 +27,9 @@ $activeTab = $_GET['tab'] ?? 'login';
         <span class="auth-brand-icon"><img src="/media/logo.png" alt=""></span>
         <span class="auth-brand-name">CIVINSIS</span>
       </a>
-
-      <!-- ╔══════════════════════════════════════════════════════╗
-           ║  ▼▼▼  ZONA PARA TU ANIMACIÓN  ▼▼▼                   ║
-           ║  Reemplaza el contenido de este div por tu          ║
-           ║  animación (Lottie, <video>, SVG, canvas, iframe…). ║
-           ║  Ocupa todo el espacio disponible automáticamente.  ║
-           ╚══════════════════════════════════════════════════════╝ -->
       <div class="auth-animation-slot" id="authAnimationSlot">
-        <div class="auth-anim-placeholder">
-          <i class="fas fa-people-group"></i>
-          <p>Tu animación va aquí</p>
-          <span>Sustituye el contenido de <code>#authAnimationSlot</code></span>
-        </div>
+
       </div>
-      <!-- ▲▲▲  FIN ZONA ANIMACIÓN  ▲▲▲ -->
 
       <div class="auth-visual-caption">
         <h2>Tu voz construye comunidad</h2>

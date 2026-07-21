@@ -757,14 +757,14 @@ TXT;
             $json = json_decode($resp->json('choices.0.message.content'), true);
             if (!is_array($json) || empty($json['inapropiado'])) return;
 
-            // Aplicar censura
+            // Los COMENTARIOS ya no se censuran automáticamente: se publican
+            // visibles y solo generan una alerta para que un moderador los revise
+            // (abajo). Guardamos el original por si el moderador decide censurar luego.
+            // Las PROPUESTAS sí pasan a revisión por su mayor visibilidad.
             if ($tipo === 'comentario') {
                 $item = Comentario::find($id);
                 if ($item) {
                     $item->contenido_original = $texto;
-                    $item->contenido          = $json['texto_censurado'] ?? $texto;
-                    $item->censurado          = true;
-                    $item->razon_censura      = $json['razon'] ?? 'Contenido inapropiado';
                     $item->save();
                 }
             } else {

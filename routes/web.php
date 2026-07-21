@@ -13,10 +13,7 @@ use App\Http\Controllers\Api\DesafioController;
 use App\Http\Controllers\Api\NotificacionController;
 use App\Http\Controllers\Api\RankingController;
 use App\Http\Controllers\Api\ActividadController;
-<<<<<<< HEAD
 use App\Http\Controllers\Api\TendenciasController;
-=======
->>>>>>> ca77bc9d41357e54545a2f654329b02bab574dae
 
 /*
 |--------------------------------------------------------------------------
@@ -42,10 +39,7 @@ Route::get('/debate.php',     [PageController::class, 'debate']);
 Route::get('/desafios.php',   [PageController::class, 'desafios']);
 Route::get('/ranking.php',    [PageController::class, 'ranking']);
 Route::get('/inicio.php',     [PageController::class, 'inicio']);
-<<<<<<< HEAD
 Route::get('/tendencias.php', [PageController::class, 'tendencias']);
-=======
->>>>>>> ca77bc9d41357e54545a2f654329b02bab574dae
 Route::get('/privacidad.php', [PageController::class, 'privacidad']);
 Route::get('/terminos.php',   [PageController::class, 'terminos']);
 Route::get('/admin.php',      [PageController::class, 'admin']);
@@ -63,8 +57,4 @@ Route::match(['get', 'post'], '/php/desafios.php',     [DesafioController::class
 Route::match(['get', 'post'], '/php/notificaciones.php', [NotificacionController::class, 'handle']);
 Route::match(['get', 'post'], '/php/ranking.php',      [RankingController::class, 'handle']);
 Route::match(['get', 'post'], '/php/actividad.php',    [ActividadController::class, 'handle']);
-<<<<<<< HEAD
-Route::match(['get', 'post'], '/php/tendencias.php',   [TendenciasController::class, 'handle']);
-=======
->>>>>>> ca77bc9d41357e54545a2f654329b02bab574dae
 Route::match(['get', 'post'], '/php/ia.php',               [IaController::class, 'handle']);

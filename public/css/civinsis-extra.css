@@ -581,3 +581,49 @@
 .civi-input button { border:none; background:var(--grad-primary); color:#fff; width:40px; height:40px; border-radius:50%; cursor:pointer; }
 
 [data-theme="dark"] .civi-chip { color:var(--verde-200); }
+
+/* ═══════════════════════════════════════════════════════════
+   CIVI · Percepción — burbuja contextual + brillo de atención
+   CIVI aparece SOLO cuando detecta algo útil. No invasivo.
+   ═══════════════════════════════════════════════════════════ */
+.civi-bubble {
+  position:fixed; right:24px; bottom:96px; z-index:9997;
+  width:min(330px, calc(100vw - 32px));
+  background:var(--bg-card); border:1px solid var(--border); border-left:4px solid var(--verde);
+  border-radius:16px; box-shadow:var(--shadow-lg); padding:.9rem 1rem;
+  display:flex; gap:.75rem; align-items:flex-start;
+  transform:translateY(14px) scale(.95); opacity:0; pointer-events:none;
+  transition:transform .35s cubic-bezier(.34,1.4,.5,1), opacity .3s ease;
+}
+.civi-bubble.show { transform:none; opacity:1; pointer-events:auto; }
+.civi-bubble .civi-b-ava {
+  flex-shrink:0; width:34px; height:34px; border-radius:50%;
+  background:var(--grad-primary); color:#fff; display:flex; align-items:center; justify-content:center;
+  font-size:.95rem; box-shadow:0 2px 8px var(--verde-alpha2);
+}
+.civi-bubble .civi-b-body { flex:1; min-width:0; padding-right:.6rem; }
+.civi-bubble .civi-b-name { font-weight:800; font-size:.74rem; color:var(--verde-700); letter-spacing:.02em; margin-bottom:.15rem; }
+.civi-bubble .civi-b-text { font-size:.85rem; line-height:1.5; color:var(--text); }
+.civi-bubble .civi-b-cta {
+  margin-top:.7rem; display:inline-flex; align-items:center; gap:.4rem; font-size:.78rem; font-weight:700;
+  color:#fff; background:var(--grad-primary); border:none; border-radius:999px; padding:.42rem .85rem;
+  cursor:pointer; text-decoration:none; transition:var(--trans);
+}
+.civi-bubble .civi-b-cta:hover { filter:brightness(1.05); transform:translateY(-1px); }
+.civi-bubble .civi-b-close {
+  position:absolute; top:.45rem; right:.55rem; background:none; border:none;
+  color:var(--text-muted); cursor:pointer; font-size:.8rem; line-height:1; padding:.2rem;
+}
+.civi-bubble .civi-b-close:hover { color:var(--text); }
+.civi-bubble::after {
+  content:''; position:absolute; bottom:-7px; right:28px; width:14px; height:14px;
+  background:var(--bg-card); border-right:1px solid var(--border); border-bottom:1px solid var(--border);
+  transform:rotate(45deg);
+}
+/* Brillo de atención del FAB cuando CIVI tiene algo que decir */
+.civi-fab.civi-attn { animation:civiAttn 1.9s ease-in-out infinite; }
+@keyframes civiAttn {
+  0%,100% { box-shadow:var(--shadow-lg); }
+  50%     { box-shadow:0 0 0 7px var(--verde-alpha), var(--shadow-lg); }
+}
+@media (max-width:640px){ .civi-bubble{ bottom:92px; right:16px; } }

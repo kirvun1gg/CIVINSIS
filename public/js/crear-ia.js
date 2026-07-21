@@ -168,4 +168,43 @@
         '<p style="color:var(--text-muted);font-size:.78rem;margin-top:.5rem">Revisa si tu propuesta aporta algo distinto antes de publicar.</p>');
     },
   };
+
+  // ── Percepción en tiempo real mientras escribes (entrenador de propuestas) ──
+  const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+  const perceive = debounce(() => {
+    if (!window.CIVI) return;
+    const t = (titulo.value || '').trim();
+    const d = (desc.value || '').trim();
+    const body = (editor.innerText || '').trim();
+
+    // 1) describió la propuesta pero no eligió categoría
+    if (d.length > 15 && catSel && !catSel.value) {
+      CIVI.suggest({ id: 'crear_cat', once: true,
+        texto: 'Veo que ya describiste tu propuesta pero falta elegir la categoría. ¿Quieres que la detecte por ti?',
+        cta_texto: 'Detectar categoría', cta_fn: () => panel.querySelector('[data-civi="categoria"]')?.click() });
+      return;
+    }
+    // 2) contenido demasiado corto: explica POR QUÉ conviene desarrollarlo
+    if (body.length > 0 && body.length < 120) {
+      CIVI.suggest({ id: 'crear_corto', once: true,
+        texto: 'Tu contenido va corto. Una propuesta se entiende mejor si explicas primero el problema, luego tu solución, el impacto esperado y los recursos necesarios.' });
+      return;
+    }
+    // 3) escribe en MAYÚSCULAS (tono)
+    const letras = body.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ]/g, '');
+    if (letras.length > 25 && letras === letras.toUpperCase()) {
+      CIVI.suggest({ id: 'crear_mayus', once: true,
+        texto: 'Escribir todo en MAYÚSCULAS puede leerse como gritar. Un tono calmado hace que tu propuesta convenza más.' });
+      return;
+    }
+    // 4) ya hay descripción pero falta título
+    if (!t && d.length > 20) {
+      CIVI.suggest({ id: 'crear_titulo', once: true,
+        texto: 'Ya tienes una buena descripción, pero aún te falta el título. ¿Te propongo algunos?',
+        cta_texto: 'Sugerir títulos', cta_fn: () => panel.querySelector('[data-civi="titulos"]')?.click() });
+    }
+  }, 1600);
+
+  [titulo, desc].forEach((el) => el && el.addEventListener('input', perceive));
+  if (editor) editor.addEventListener('input', perceive);
 })();

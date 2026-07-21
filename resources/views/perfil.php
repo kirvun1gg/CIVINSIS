@@ -13,6 +13,32 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/gamificacion.css">
+  <style>
+    /* ── Análisis de CIVI (perfil) ─────────────────────────── */
+    .civi-analisis { display:flex; flex-direction:column; gap:1.1rem; }
+    .civi-an-loading { text-align:center; color:var(--text-muted); padding:2.5rem 0; font-size:.9rem; }
+    .civi-an-head { display:flex; align-items:center; gap:.75rem; }
+    .civi-an-ava { width:44px; height:44px; border-radius:50%; background:var(--grad-primary); color:#fff;
+      display:flex; align-items:center; justify-content:center; font-size:1.2rem; box-shadow:0 4px 12px var(--verde-alpha2); flex-shrink:0; }
+    .civi-an-title { font-family:var(--font-display); font-weight:800; font-size:1.05rem; color:var(--text); }
+    .civi-an-sub { font-size:.8rem; color:var(--text-muted); }
+    .civi-an-parrafo { background:linear-gradient(135deg,var(--verde-alpha),var(--naranja-alpha));
+      border:1px solid var(--verde-200); border-radius:14px; padding:1rem 1.15rem; font-size:.92rem; line-height:1.6; color:var(--text); }
+    .civi-an-chips { display:flex; flex-wrap:wrap; gap:.55rem; }
+    .civi-an-chip { display:flex; align-items:center; gap:.4rem; background:var(--bg-card); border:1px solid var(--border);
+      border-radius:999px; padding:.4rem .8rem; font-size:.8rem; color:var(--text-muted); }
+    .civi-an-chip i { color:var(--verde); }
+    .civi-an-chip b { color:var(--text); font-weight:700; }
+    .civi-an-section-t { font-weight:700; font-size:.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.03em; margin-bottom:.5rem; }
+    .civi-an-objetivo { display:flex; align-items:flex-start; gap:.8rem; background:var(--bg-card); border:1px solid var(--border);
+      border-left:4px solid var(--naranja); border-radius:14px; padding:1rem 1.15rem; }
+    .civi-an-objetivo .ic { color:var(--naranja); font-size:1.1rem; margin-top:.15rem; }
+    .civi-an-objetivo h4 { margin:0 0 .25rem; font-size:.95rem; color:var(--text); }
+    .civi-an-objetivo p { margin:0 0 .7rem; font-size:.84rem; color:var(--text-muted); line-height:1.5; }
+    .civi-an-progreso { display:flex; flex-direction:column; gap:.55rem; }
+    .civi-an-prog-item { display:flex; align-items:center; gap:.6rem; font-size:.86rem; color:var(--text); }
+    .civi-an-prog-item i { color:var(--verde); width:1.2rem; text-align:center; flex-shrink:0; }
+  </style>
 </head>
 <body>
 
@@ -83,6 +109,9 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
       </button>
       <button class="profile-tab" data-tab="gamificacion">
         <i class="fas fa-trophy"></i> Gamificación
+      </button>
+      <button class="profile-tab" data-tab="civi">
+        <i class="fas fa-robot"></i> Análisis de CIVI
       </button>
       <button class="profile-tab" data-tab="seguridad">
         <i class="fas fa-lock"></i> Contraseña
@@ -312,6 +341,13 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
     </div>
 
     <!-- Tab: Contraseña -->
+    <!-- Tab: Análisis de CIVI -->
+    <div class="profile-section" id="tab-civi">
+      <div class="civi-analisis" id="civiAnalisis">
+        <div class="civi-an-loading"><i class="fas fa-robot fa-bounce"></i> CIVI está analizando tu actividad…</div>
+      </div>
+    </div>
+
     <div class="profile-section" id="tab-seguridad">
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem">
         <h3 style="font-family:var(--font-display);font-weight:700;font-size:1.15rem;color:var(--text);margin-bottom:1.5rem">
@@ -364,8 +400,76 @@ document.querySelectorAll('.profile-tab').forEach(tab => {
     const _tabEl = document.getElementById('tab-' + tab.dataset.tab);
     if (_tabEl) _tabEl.classList.add('active');
     if (tab.dataset.tab === 'propuestas') loadMisProposals();
+    if (tab.dataset.tab === 'civi') loadCiviAnalisis();
   });
 });
+
+// ── Análisis de CIVI (consume el cerebro del coach) ───────
+let _civiAnalisisCargado = false;
+async function loadCiviAnalisis() {
+  if (_civiAnalisisCargado) return;
+  const box = document.getElementById('civiAnalisis');
+  const esc = (x) => { const e = document.createElement('div'); e.textContent = x ?? ''; return e.innerHTML; };
+  try {
+    const res = await fetch('php/ia.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accion: 'coach' }),
+    });
+    const d = await res.json();
+    if (!d || !d.success) { box.innerHTML = '<div class="civi-an-loading">No se pudo cargar tu análisis ahora mismo. Vuelve a intentarlo en un momento.</div>'; return; }
+    _civiAnalisisCargado = true;
+
+    const s = d.stats || {};
+    const estilos  = { comentarista: 'Comentarista', proponente: 'Proponente', debatiente: 'Debatiente', equilibrado: 'Participante equilibrado', nuevo: 'Explorador' };
+    const aspectos = { creativa: 'Creatividad', argumentada: 'Buenos argumentos', comunidad: 'Enfoque comunitario', factible: 'Propuestas factibles', innovadora: 'Innovación' };
+
+    const chips = [];
+    if (s.estilo) chips.push(`<span class="civi-an-chip"><i class="fas fa-user-tag"></i> Estilo: <b>${esc(estilos[s.estilo] || s.estilo)}</b></span>`);
+    if (s.categoria_favorita) chips.push(`<span class="civi-an-chip"><i class="fas fa-tag"></i> Tema fuerte: <b>${esc(s.categoria_favorita)}</b></span>`);
+    if (s.aspecto_fuerte) chips.push(`<span class="civi-an-chip"><i class="fas fa-star"></i> Destacas por: <b>${esc(aspectos[s.aspecto_fuerte] || s.aspecto_fuerte)}</b></span>`);
+    chips.push(`<span class="civi-an-chip"><i class="fas fa-arrow-trend-up"></i> Nivel <b>${s.nivel || 1}</b></span>`);
+    if (s.racha) chips.push(`<span class="civi-an-chip"><i class="fas fa-fire"></i> Racha <b>${s.racha} días</b></span>`);
+
+    const o = d.objetivo || {};
+    const objHtml = o.titulo ? `
+      <div>
+        <div class="civi-an-section-t">Tu objetivo ahora</div>
+        <div class="civi-an-objetivo">
+          <i class="fas fa-bullseye ic"></i>
+          <div style="flex:1;min-width:0">
+            <h4>${esc(o.titulo)}</h4>
+            <p>${esc(o.descripcion || '')}</p>
+            ${o.cta_texto && o.cta_url ? `<a class="btn btn-primary btn-sm" href="${esc(o.cta_url)}"><i class="fas fa-arrow-right"></i> ${esc(o.cta_texto)}</a>` : ''}
+          </div>
+        </div>
+      </div>` : '';
+
+    const prog = d.progreso || [];
+    const progHtml = prog.length ? `
+      <div>
+        <div class="civi-an-section-t">Tu progreso</div>
+        <div class="civi-an-progreso">
+          ${prog.map((p) => `<div class="civi-an-prog-item"><i class="fas ${esc(p.icono || 'fa-circle-info')}"></i> ${esc(p.texto)}</div>`).join('')}
+        </div>
+      </div>` : '';
+
+    box.innerHTML = `
+      <div class="civi-an-head">
+        <div class="civi-an-ava"><i class="fas fa-robot"></i></div>
+        <div>
+          <div class="civi-an-title">Análisis de CIVI</div>
+          <div class="civi-an-sub">${esc(d.saludo || 'Esto es lo que veo en tu progreso.')}</div>
+        </div>
+      </div>
+      <div class="civi-an-parrafo">${esc(d.analisis || '')}</div>
+      ${chips.length ? `<div class="civi-an-chips">${chips.join('')}</div>` : ''}
+      ${objHtml}
+      ${progHtml}
+    `;
+  } catch (e) {
+    box.innerHTML = '<div class="civi-an-loading">No se pudo cargar tu análisis ahora mismo.</div>';
+  }
+}
 
 // ── Cargar datos del perfil ───────────────────────────────
 async function loadProfileData() {

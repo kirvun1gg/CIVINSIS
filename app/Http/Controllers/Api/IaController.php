@@ -7,8 +7,10 @@ use App\Models\Categoria;
 use App\Models\Comentario;
 use App\Models\Debate;
 use App\Models\DebateRespuesta;
+use App\Models\Desafio;
 use App\Models\ModeracionAlerta;
 use App\Models\Proposal;
+use App\Models\UsuarioDesafio;
 use App\Models\Voto;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
@@ -34,6 +36,7 @@ class IaController extends Controller
             'alertas'           => $this->alertas($request),
             'marcar_revisado'   => $this->marcarRevisado($request),
             'aprobar'           => $this->aprobar($request),
+            'censurar'          => $this->censurar($request),
             // ── Entrenador cívico (Fase IA) ──────────────────────────
             'redactar'          => $this->redactar($request),
             'ortografia'        => $this->ortografia($request),
@@ -47,6 +50,10 @@ class IaController extends Controller
             // ── CIVI mentor (cerebro del entrenador cívico) ──────────
             'coach'             => $this->coach($request),
             'nudge'             => $this->nudge($request),
+            'tono'              => $this->tono($request),
+            'revisar_tono'      => $this->revisarTono($request),
+            'crecimiento'       => $this->crecimiento($request),
+            'recomendar'        => $this->recomendar($request),
             default             => $this->json(false, 'Acción no reconocida'),
         };
     }
@@ -905,6 +912,232 @@ TXT;
         if (!$n) return $this->json(true, 'OK', ['mostrar' => false]);
         unset($n['prioridad']);
         return $this->json(true, 'OK', ['mostrar' => true] + $n);
+    }
+
+    // ── Reformular un comentario en tono constructivo (educar, no censurar) ──
+    private function tono(Request $request)
+    {
+        $texto = trim((string) $request->input('texto', ''));
+        if ($texto === '') return $this->json(false, 'No hay comentario que reformular');
+
+        $prompt = "Reescribe este comentario de una plataforma de participación ciudadana para que "
+            . "sea respetuoso y constructivo, SIN perder la crítica o el punto de vista de la persona. "
+            . "Quita insultos, agresividad y mayúsculas de grito. Mantén el mismo idioma y sé breve. "
+            . "Devuelve SOLO el comentario reformulado:\n\n{$texto}";
+        $r = $this->pedir($this->sysTool(), $prompt, 300);
+        return $this->json(true, 'OK', ['respuesta' => $r['texto'], 'fuente' => $r['fuente']]);
+    }
+
+    // ── Señales de crecimiento en vivo (tras una acción del usuario) ──
+    private function crecimiento(Request $request)
+    {
+        if (!Auth::check()) return $this->json(true, 'OK', ['disponible' => false]);
+        $s = $this->perfilActividad(Auth::user());
+        return $this->json(true, 'OK', [
+            'disponible'   => true,
+            'nivel'        => $s['nivel'],
+            'xp'           => $s['xp'],
+            'xp_faltante'  => $s['xp_faltante'],
+            'racha'        => $s['racha'],
+            'logros'       => $s['logros'],
+            'mision_cerca' => $s['mision_cerca'],
+        ]);
+    }
+
+    // ── Recomendaciones de contenido personalizadas (con el "por qué") ──
+    private function recomendar(Request $request)
+    {
+        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
+        $u = Auth::user();
+
+        // Categoría favorita (por sus propuestas y comentarios)
+        $catFavId = Proposal::where('usuario_id', $u->id)->whereNotNull('categoria_id')
+            ->select('categoria_id', DB::raw('COUNT(*) as t'))->groupBy('categoria_id')
+            ->orderByDesc('t')->value('categoria_id');
+        if (!$catFavId) {
+            $catFavId = Comentario::where('comentarios.usuario_id', $u->id)
+                ->join('propuestas', 'propuestas.id', '=', 'comentarios.propuesta_id')
+                ->whereNotNull('propuestas.categoria_id')
+                ->select('propuestas.categoria_id', DB::raw('COUNT(*) as t'))
+                ->groupBy('propuestas.categoria_id')->orderByDesc('t')->value('propuestas.categoria_id');
+        }
+        $catFavNombre = $catFavId ? optional(Categoria::find($catFavId))->nombre : null;
+
+        // Lo que ya tocó (para no recomendárselo)
+        $votadas    = Voto::where('usuario_id', $u->id)->pluck('propuesta_id')->all();
+        $comentadas = Comentario::where('usuario_id', $u->id)->pluck('propuesta_id')->all();
+        $propExcluir = array_unique(array_merge($votadas, $comentadas));
+        $debatidos  = DebateRespuesta::where('usuario_id', $u->id)->pluck('debate_id')->all();
+        $desafHechos = UsuarioDesafio::where('usuario_id', $u->id)->where('completado', true)->pluck('desafio_id')->all();
+
+        // ── Propuestas: favorita + en votación + con apoyo, sin las suyas ni las ya tocadas ──
+        $props = Proposal::with('categoria')->where('censurada', false)
+            ->where('usuario_id', '!=', $u->id)
+            ->when($propExcluir, fn($q) => $q->whereNotIn('id', $propExcluir))
+            ->orderByRaw('CASE WHEN categoria_id = ? THEN 0 ELSE 1 END', [$catFavId ?: 0])
+            ->orderByRaw("CASE WHEN progreso = 'votacion' THEN 0 ELSE 1 END")
+            ->orderByDesc('votos')->limit(3)->get()
+            ->map(function ($p) use ($catFavId) {
+                $razon = $p->categoria_id === $catFavId && $catFavId
+                    ? 'Porque te interesa ' . ($p->categoria->nombre ?? 'este tema')
+                    : ($p->progreso === 'votacion'
+                        ? 'Está en votación y tu voto cuenta ahora'
+                        : 'Está ganando apoyo en la comunidad');
+                return [
+                    'id' => $p->id, 'titulo' => $p->titulo, 'razon' => $razon,
+                    'categoria' => $p->categoria->nombre ?? '',
+                    'icono' => $p->categoria->icono ?? 'fas fa-tag',
+                    'color' => $p->categoria->color ?? '#36c0a1',
+                    'url' => 'propuesta.php?id=' . $p->id,
+                ];
+            })->values();
+
+        // ── Debates: activos, favorito, sin los suyos ni los ya respondidos ──
+        $debs = Debate::with('categoria')->where('censurado', false)->where('estado', 'activo')
+            ->where('usuario_id', '!=', $u->id)
+            ->when($debatidos, fn($q) => $q->whereNotIn('id', $debatidos))
+            ->orderByRaw('CASE WHEN categoria_id = ? THEN 0 ELSE 1 END', [$catFavId ?: 0])
+            ->latest('fecha_creacion')->limit(2)->get()
+            ->map(function ($d) use ($catFavId) {
+                $razon = $d->categoria_id === $catFavId && $catFavId
+                    ? 'Sobre ' . ($d->categoria->nombre ?? 'tu tema favorito') . ', donde más participas'
+                    : 'Un debate activo donde tu opinión sumaría';
+                return [
+                    'id' => $d->id, 'titulo' => $d->titulo, 'razon' => $razon,
+                    'categoria' => $d->categoria->nombre ?? '',
+                    'icono' => $d->categoria->icono ?? 'fas fa-comments',
+                    'color' => $d->categoria->color ?? '#ef7e22',
+                    'url' => 'debate.php?id=' . $d->id,
+                ];
+            })->values();
+
+        // ── Desafío: activo, sin completar, favorito primero ──
+        $des = Desafio::with('categoria')->where('activo', true)
+            ->when($desafHechos, fn($q) => $q->whereNotIn('id', $desafHechos))
+            ->orderByRaw('CASE WHEN categoria_id = ? THEN 0 ELSE 1 END', [$catFavId ?: 0])
+            ->orderByDesc('xp_recompensa')->first();
+        $desafio = $des ? [
+            'id' => $des->id, 'titulo' => $des->titulo,
+            'razon' => ($des->categoria_id === $catFavId && $catFavId)
+                ? 'Un reto de ' . ($des->categoria->nombre ?? 'tu tema') . ' para ti'
+                : 'Un reto para ganar ' . ($des->xp_recompensa ?? 0) . ' XP',
+            'xp' => $des->xp_recompensa ?? 0,
+            'url' => 'crear.php?desafio_id=' . $des->id,
+        ] : null;
+
+        // Intro narrada (con respaldo determinista)
+        $intro = $catFavNombre
+            ? "Basándome en tu interés por {$catFavNombre} y en tu actividad, te sugiero:"
+            : 'Basándome en tu actividad en la comunidad, te sugiero:';
+        if ($props->isEmpty() && $debs->isEmpty() && !$desafio) {
+            $intro = '¡Vas al día! Por ahora no tengo nada nuevo que recomendarte. Sigue participando.';
+        }
+
+        return $this->json(true, 'OK', [
+            'intro'      => $intro,
+            'categoria'  => $catFavNombre,
+            'propuestas' => $props,
+            'debates'    => $debs,
+            'desafio'    => $desafio,
+        ]);
+    }
+
+    // ── Juzgar el tono de un comentario en vivo (IA; heurística si no hay key) ──
+    private function revisarTono(Request $request)
+    {
+        $texto = trim((string) $request->input('texto', ''));
+        if (mb_strlen($texto) < 4) return $this->json(true, 'OK', ['agresivo' => false]);
+
+        // Sin IA disponible → respaldo heurístico
+        if (!config('services.groq.key')) {
+            return $this->json(true, 'OK', ['agresivo' => $this->tonoHeuristico($texto), 'fuente' => 'local']);
+        }
+
+        // Con IA → juicio contextual real (reutiliza el analizador de moderación)
+        $r = $this->analizarContenido($texto);
+        return $this->json(true, 'OK', [
+            'agresivo' => (bool) ($r['inapropiado'] ?? false),
+            'motivo'   => $r['razon'] ?? '',
+            'fuente'   => 'groq',
+        ]);
+    }
+
+    /** Respaldo simple cuando no hay IA configurada. */
+    private function tonoHeuristico(string $texto): bool
+    {
+        $t = mb_strtolower($texto);
+        $palabras = ['idiota', 'estupido', 'estúpido', 'tonto', 'tonta', 'imbecil', 'imbécil',
+            'inutil', 'inútil', 'basura', 'callate', 'cállate', 'maldito', 'pendejo', 'baboso',
+            'ignorante', 'tarado', 'burro', 'asqueroso', 'ridiculo', 'ridículo', 'payaso', 'mierda', 'estupidez'];
+        foreach ($palabras as $w) {
+            if (preg_match('/\b' . preg_quote($w, '/') . '\b/u', $t)) return true;
+        }
+        $letras = preg_replace('/[^\p{L}]/u', '', $texto);
+        if (mb_strlen($letras) >= 8 && mb_strtoupper($letras) === $letras) return true;
+        if (substr_count($texto, '!') >= 3) return true;
+        return false;
+    }
+
+    // ── Censurar desde el panel: el moderador decide ocultar el contenido ──
+    private function censurar(Request $request)
+    {
+        if (!Auth::check() || !in_array(Auth::user()->rol_nombre, ['admin', 'moderador']))
+            return $this->json(false, 'Sin permisos');
+
+        $id = (int) $request->input('id'); // ID de la alerta (no del contenido)
+        $alerta = ModeracionAlerta::find($id);
+        if (!$alerta) return $this->json(false, 'Alerta no encontrada');
+
+        $razon = $alerta->razon ?: 'Contenido inapropiado';
+
+        switch ($alerta->tipo) {
+            case 'comentario':
+                $item = Comentario::find($alerta->referencia_id);
+                if (!$item) return $this->json(false, 'El comentario ya no existe');
+                if (!$item->contenido_original) $item->contenido_original = $item->contenido;
+                $item->contenido     = '[Comentario retirado por un moderador]';
+                $item->censurado     = true;
+                $item->razon_censura = $razon;
+                $item->save();
+                break;
+
+            case 'debate_respuesta':
+                $item = DebateRespuesta::find($alerta->referencia_id);
+                if (!$item) return $this->json(false, 'La respuesta ya no existe');
+                if (!$item->contenido_original) $item->contenido_original = $item->contenido;
+                $item->contenido     = '[Respuesta retirada por un moderador]';
+                $item->censurado     = true;
+                $item->razon_censura = $razon;
+                $item->save();
+                break;
+
+            case 'propuesta':
+                $item = Proposal::find($alerta->referencia_id);
+                if (!$item) return $this->json(false, 'La propuesta ya no existe');
+                $item->censurada     = true;
+                $item->razon_censura = $razon;
+                $item->estado        = 'en_revision';
+                $item->save();
+                break;
+
+            case 'debate':
+                $item = Debate::find($alerta->referencia_id);
+                if (!$item) return $this->json(false, 'El debate ya no existe');
+                $item->censurado     = true;
+                $item->razon_censura = $razon;
+                $item->save();
+                break;
+
+            default:
+                return $this->json(false, 'Tipo no soportado');
+        }
+
+        $alerta->revisado     = true;
+        $alerta->revisado_at  = now();
+        $alerta->revisado_por = Auth::id();
+        $alerta->save();
+
+        return $this->json(true, 'Contenido censurado y alerta cerrada');
     }
 
     private function llamarGroq(array $messages, int $maxTokens = 700): array

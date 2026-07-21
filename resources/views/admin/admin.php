@@ -738,8 +738,9 @@ async function loadAlertas(soloPendientes = false) {
                  target="_blank" class="admin-action-btn edit" title="Ver contenido">
                 <i class="fas fa-eye"></i>
               </a>
-              ${!a.revisado ? `<button onclick="marcarAlertaRevisada(${a.id})" class="admin-action-btn" style="background:#36c0a122;color:var(--verde)" title="Marcar como revisada"><i class="fas fa-check"></i></button>` : ''}
-              ${!a.revisado ? `<button onclick="aprobarAlerta(${a.id})" class="admin-action-btn" style="background:#4a9eff22;color:#4a9eff" title="Publicar de todas formas"><i class="fas fa-unlock"></i></button>` : ''}
+              ${!a.revisado ? `<button onclick="marcarAlertaRevisada(${a.id})" class="admin-action-btn" style="background:#36c0a122;color:var(--verde)" title="Marcar como revisada (dejar publicado)"><i class="fas fa-check"></i></button>` : ''}
+              ${!a.revisado ? `<button onclick="aprobarAlerta(${a.id})" class="admin-action-btn" style="background:#4a9eff22;color:#4a9eff" title="Aprobar / restaurar contenido"><i class="fas fa-unlock"></i></button>` : ''}
+              ${!a.revisado ? `<button onclick="censurarAlerta(${a.id})" class="admin-action-btn" style="background:#e74c3c22;color:#e74c3c" title="Censurar (ocultar contenido)"><i class="fas fa-ban"></i></button>` : ''}
             </div>
           </div>
         </div>
@@ -778,6 +779,24 @@ async function aprobarAlerta(id) {
     const d = await r.json();
     if (d.success) {
       showToast(d.message || 'Contenido publicado', 'success');
+      loadAlertas();
+    } else {
+      showToast(d.message || 'Error', 'error');
+    }
+  } catch(e) { showToast('Error de conexión', 'error'); }
+}
+
+async function censurarAlerta(id) {
+  if (!confirm('¿Censurar este contenido? Se ocultará a los usuarios y quedará como retirado por moderación.')) return;
+  try {
+    const r = await fetch('php/ia.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accion: 'censurar', id })
+    });
+    const d = await r.json();
+    if (d.success) {
+      showToast(d.message || 'Contenido censurado', 'success');
       loadAlertas();
     } else {
       showToast(d.message || 'Error', 'error');

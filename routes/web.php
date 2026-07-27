@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\NotificacionController;
 use App\Http\Controllers\Api\RankingController;
 use App\Http\Controllers\Api\ActividadController;
 use App\Http\Controllers\Api\TendenciasController;
+use App\Http\Controllers\Api\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,3 +59,4 @@ Route::match(['get', 'post'], '/php/notificaciones.php', [NotificacionController
 Route::match(['get', 'post'], '/php/ranking.php',      [RankingController::class, 'handle']);
 Route::match(['get', 'post'], '/php/actividad.php',    [ActividadController::class, 'handle']);
 Route::match(['get', 'post'], '/php/ia.php',               [IaController::class, 'handle']);
+Route::match(['get', 'post'], '/php/admin.php',        [AdminController::class, 'handle']);

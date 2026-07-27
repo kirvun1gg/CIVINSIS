@@ -587,13 +587,13 @@
    CIVI aparece SOLO cuando detecta algo útil. No invasivo.
    ═══════════════════════════════════════════════════════════ */
 .civi-bubble {
-  position:fixed; right:24px; bottom:96px; z-index:9997;
+  position:fixed; right:24px; bottom:96px; z-index:10000;
   width:min(330px, calc(100vw - 32px));
   background:var(--bg-card); border:1px solid var(--border); border-left:4px solid var(--verde);
   border-radius:16px; box-shadow:var(--shadow-lg); padding:.9rem 1rem;
   display:flex; gap:.75rem; align-items:flex-start;
   transform:translateY(14px) scale(.95); opacity:0; pointer-events:none;
-  transition:transform .35s cubic-bezier(.34,1.4,.5,1), opacity .3s ease;
+  transition:transform .35s cubic-bezier(.34,1.4,.5,1), opacity .3s ease, bottom .28s ease;
 }
 .civi-bubble.show { transform:none; opacity:1; pointer-events:auto; }
 .civi-bubble .civi-b-ava {
@@ -627,3 +627,7 @@
   50%     { box-shadow:0 0 0 7px var(--verde-alpha), var(--shadow-lg); }
 }
 @media (max-width:640px){ .civi-bubble{ bottom:92px; right:16px; } }
+
+/* El gestor de apilado de CIVI mueve este contenedor para no chocar
+   con la burbuja ni con el panel del chat: que el cambio sea suave. */
+.toast-container { transition: right .28s ease, bottom .28s ease; }

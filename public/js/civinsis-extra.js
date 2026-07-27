@@ -95,9 +95,12 @@
       </div>
       <div class="civi-body" id="civiBody"></div>
       <div class="civi-chips" id="civiChips">
-        <button class="civi-chip" data-msg="Dame una idea para una propuesta">💡 Dame una idea</button>
-        <button class="civi-chip" data-msg="¿Cómo hago una buena propuesta?">📝 Mejorar propuesta</button>
-        <button class="civi-chip" data-msg="¿Qué es una propuesta ciudadana?">🏛️ Explícame un concepto</button>
+        <button class="civi-chip" data-msg="¿Cuál es mi objetivo ahora en CIVINSIS?">🎯 Mi objetivo</button>
+        <button class="civi-chip" data-msg="¿Qué me recomiendas leer o hacer ahora en la plataforma?">✨ Recomiéndame</button>
+        <button class="civi-chip" data-msg="¿Cómo voy con mi progreso?">📈 ¿Cómo voy?</button>
+        <button class="civi-chip" data-msg="Ayúdame a escribir una propuesta">📝 Ayuda con mi propuesta</button>
+        <button class="civi-chip" data-msg="¿Cómo hago un comentario más constructivo?">💬 Mejorar un comentario</button>
+        <button class="civi-chip" data-msg="Explícame un concepto de ciudadanía con un ejemplo sencillo">🏛️ Aprender ciudadanía</button>
       </div>
       <div class="civi-input">
         <input id="civiInput" type="text" placeholder="Pregúntale a CIVI..." autocomplete="off">
@@ -266,7 +269,8 @@
         if (btn) btn.onclick = () => { this.markSeen(opts.id); this.hide(); opts.cta_fn(); };
       }
 
-      requestAnimationFrame(() => b.classList.add('show'));
+      this.stackLayout(); // colocarla antes de mostrarla (no aparece pisando nada)
+      requestAnimationFrame(() => { this.stackLayout(); b.classList.add('show'); });
       this.glow(true);
       this.markSeen(opts.id);
       this._current = opts;
@@ -277,6 +281,65 @@
         b.onmouseenter = () => clearTimeout(this.hideTimer);
         b.onmouseleave = () => { this.hideTimer = setTimeout(() => this.hide(), 5000); };
       }
+    },
+
+    /* ─────────────────────────────────────────────────────────
+       GESTOR DE APILADO (anticolisión)
+       La burbuja, el panel del chat y los toasts/notificaciones
+       viven en la misma esquina. Aquí se detectan y se colocan
+       uno encima de otro en vez de pisarse.
+    ───────────────────────────────────────────────────────── */
+    stackLayout() {
+      const GAP   = 12;
+      const cont  = document.querySelector('.toast-container');
+      const panel = document.getElementById('civiPanel');
+      const fab   = document.getElementById('civiFab');
+      const chatAbierto = !!(panel && panel.classList.contains('open'));
+      const b = this.bubble;
+      const burbujaVisible = !!(b && b.classList.contains('show'));
+
+      // 1) PRIORIDAD: la burbuja de CIVI SIEMPRE va justo encima de su botón.
+      //    Se ancla al botón real (no a un número fijo), así nunca lo tapa
+      //    ni se despega de él aunque cambie el tamaño de pantalla.
+      if (b && fab) {
+        const fr = fab.getBoundingClientRect();
+        b.style.bottom = (Math.round(window.innerHeight - fr.top) + GAP) + 'px';
+      }
+
+      if (!cont) return;
+
+      // 2) Con el chat abierto, los toasts se apartan a la izquierda del panel
+      //    (solo en pantallas anchas; en móvil no hay sitio).
+      if (chatAbierto && window.innerWidth >= 900) {
+        const pr = panel.getBoundingClientRect();
+        cont.style.right  = Math.round(window.innerWidth - pr.left + GAP) + 'px';
+        cont.style.bottom = '';
+        return;
+      }
+      cont.style.right = '';
+
+      // 3) Si la burbuja está visible, los toasts suben POR ENCIMA de ella.
+      if (burbujaVisible && b) {
+        const br = b.getBoundingClientRect();
+        cont.style.bottom = (Math.round(window.innerHeight - br.top) + GAP) + 'px';
+      } else {
+        cont.style.bottom = '';
+      }
+    },
+
+    // Vigila la aparición/desaparición de toasts y la apertura del chat
+    watchStack() {
+      const relayout = () => {
+        clearTimeout(this._stackT);
+        this._stackT = setTimeout(() => this.stackLayout(), 60);
+      };
+      // los toasts se crean y se destruyen dinámicamente en cualquier parte
+      new MutationObserver(relayout).observe(document.body, { childList: true, subtree: true });
+      // abrir/cerrar el chat cambia la clase del panel
+      new MutationObserver(relayout).observe(document.body, {
+        attributes: true, subtree: true, attributeFilter: ['class'],
+      });
+      window.addEventListener('resize', relayout);
     },
 
     // Al pulsar el FAB: CIVI te observa AHORA y da su mejor consejo del momento.
@@ -349,6 +412,7 @@
       setTimeout(() => this.perceive(), 2600);
       this.watchComentarios();
       this.watchAcciones();
+      this.watchStack();
       this.seedGrowth();
     },
 

@@ -46,7 +46,10 @@ $esAdmin   = ($usuarioRol === 'admin');
 
     <!-- Tabs -->
     <div class="profile-tabs" style="margin-bottom:1.5rem">
-      <button class="profile-tab active" data-admin-tab="propuestas">
+      <button class="profile-tab active" data-admin-tab="estadisticas">
+        <i class="fas fa-chart-line"></i> Estadísticas
+      </button>
+      <button class="profile-tab" data-admin-tab="propuestas">
         <i class="fas fa-file-alt"></i> Propuestas
       </button>
       <button class="profile-tab" data-admin-tab="comentarios">
@@ -62,14 +65,26 @@ $esAdmin   = ($usuarioRol === 'admin');
       <button class="profile-tab" data-admin-tab="categorias">
         <i class="fas fa-tags"></i> Categorías
       </button>
+      <button class="profile-tab" data-admin-tab="gamificacion">
+        <i class="fas fa-trophy"></i> Gamificación
+      </button>
       <button class="profile-tab" data-admin-tab="alertas" id="tabAlertas">
         <i class="fas fa-robot"></i> Alertas IA <span class="msg-badge" id="alertasBadge" style="display:none">0</span>
       </button>
       <?php endif; ?>
     </div>
 
+    <!-- Tab: Estadísticas -->
+    <div class="admin-section active" id="admin-tab-estadisticas">
+      <div id="statsBox">
+        <div style="text-align:center;padding:3rem 0;color:var(--text-muted)">
+          <i class="fas fa-chart-line fa-bounce"></i> Cargando estadísticas…
+        </div>
+      </div>
+    </div>
+
     <!-- Tab: Propuestas -->
-    <div class="admin-section active" id="admin-tab-propuestas">
+    <div class="admin-section" id="admin-tab-propuestas">
       <div class="table-wrap">
         <table class="admin-table">
           <thead>
@@ -86,6 +101,10 @@ $esAdmin   = ($usuarioRol === 'admin');
 
     <!-- Tab: Comentarios -->
     <div class="admin-section" id="admin-tab-comentarios">
+      <div class="gam-bar">
+        <h3 class="gam-titulo">Comentarios</h3>
+        <button class="btn btn-outline btn-sm" onclick="spamAbrir()"><i class="fas fa-broom"></i> Limpiar spam</button>
+      </div>
       <div class="table-wrap">
         <table class="admin-table">
           <thead>
@@ -119,6 +138,21 @@ $esAdmin   = ($usuarioRol === 'admin');
     <?php endif; ?>
 
     <!-- Tab: Alertas IA -->
+    <!-- Tab: Gamificación -->
+    <div class="admin-section" id="admin-tab-gamificacion">
+      <div class="gam-chips" id="gamChips"></div>
+      <div class="gam-bar">
+        <h3 class="gam-titulo" id="gamTitulo">Desafíos</h3>
+        <button class="btn btn-primary btn-sm" onclick="gamNuevo()"><i class="fas fa-plus"></i> Nuevo</button>
+      </div>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead id="gamHead"></thead>
+          <tbody id="gamBody"><tr><td style="text-align:center;padding:2rem;color:var(--text-muted)">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="admin-section" id="admin-tab-alertas">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem">
         <div>
@@ -265,6 +299,36 @@ $esAdmin   = ($usuarioRol === 'admin');
 </div>
 
 <!-- Modal CRUD Categoría -->
+<div class="modal-backdrop" id="spamModal">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="fas fa-broom"></i> Posible spam</h3>
+      <button class="modal-close" onclick="spamCerrar()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="spamBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="spamCerrar()">Cerrar</button>
+      <button class="btn btn-primary btn-sm" style="background:#e74c3c;border-color:#e74c3c" onclick="spamEliminar()">
+        <i class="fas fa-trash"></i> Eliminar seleccionados
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="gamModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="gamModalTitulo">Nuevo</h3>
+      <button class="modal-close" onclick="gamCerrar()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="gamForm"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="gamCerrar()">Cancelar</button>
+      <button class="btn btn-primary btn-sm" onclick="gamGuardar()"><i class="fas fa-save"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="catModal">
   <div class="modal">
     <div class="modal-header">
@@ -314,8 +378,321 @@ document.querySelectorAll('[data-admin-tab]').forEach(tab => {
     if (tab.dataset.adminTab === 'propuestas') loadAdminPropuestas();
     else if (tab.dataset.adminTab === 'comentarios') loadAdminComentarios();
     else if (tab.dataset.adminTab === 'usuarios') loadAdminUsuarios();
+    else if (tab.dataset.adminTab === 'estadisticas') loadAdminStats();
+    else if (tab.dataset.adminTab === 'gamificacion') gamInit();
   });
 });
+
+// ── Limpieza de spam ─────────────────────────────────────
+async function spamAbrir() {
+  const box = document.getElementById('spamBody');
+  box.innerHTML = '<p style="color:var(--text-muted);padding:1rem 0">Analizando comentarios…</p>';
+  document.getElementById('spamModal').classList.add('open');
+  try {
+    const r = await fetch('php/admin.php?accion=spam_listar');
+    const d = await r.json();
+    if (!d.success || !(d.items || []).length) {
+      box.innerHTML = '<p style="color:var(--text-muted);padding:1rem 0"><i class="fas fa-check" style="color:#22c55e"></i> No se detectó spam. Todo limpio.</p>';
+      return;
+    }
+    box.innerHTML = `
+      <p style="font-size:.83rem;color:var(--text-muted);margin-bottom:.8rem">
+        Se detectaron ${d.total} comentarios sospechosos. Revísalos antes de eliminar.
+      </p>` +
+      d.items.map((it, i) => `
+        <label class="spam-item">
+          <input type="checkbox" class="spam-check" data-ids="${it.ids.join(',')}">
+          <div>
+            <div class="spam-motivo"><i class="fas fa-triangle-exclamation"></i> ${escHtml(it.motivo)} · ${escHtml(it.usuario)}</div>
+            <div class="spam-extracto">${escHtml(it.extracto)}</div>
+          </div>
+        </label>`).join('');
+  } catch (e) {
+    box.innerHTML = '<p style="color:#e74c3c;padding:1rem 0">Error al analizar.</p>';
+  }
+}
+function spamCerrar() { document.getElementById('spamModal').classList.remove('open'); }
+
+async function spamEliminar() {
+  const ids = [...document.querySelectorAll('.spam-check:checked')]
+    .flatMap(c => c.dataset.ids.split(',').map(Number));
+  if (!ids.length) { showToast('No seleccionaste nada', 'error'); return; }
+  if (!confirm(`¿Eliminar ${ids.length} comentarios? Esta acción no se puede deshacer.`)) return;
+  try {
+    const r = await fetch('php/admin.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accion: 'spam_eliminar', ids }),
+    });
+    const d = await r.json();
+    showToast(d.message, d.success ? 'success' : 'error');
+    if (d.success) { spamCerrar(); loadAdminComentarios(); }
+  } catch (e) { showToast('Error de conexión', 'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  GESTIÓN DE GAMIFICACIÓN (formularios generados del esquema)
+// ═══════════════════════════════════════════════════════════
+let _gamEsquema = null;
+let _gamEntidad = 'desafio';
+let _gamItems   = [];
+
+async function gamInit() {
+  if (!_gamEsquema) {
+    try {
+      const r = await fetch('php/admin.php?accion=gestion_esquema');
+      const d = await r.json();
+      if (!d.success) { showToast('No se pudo cargar la configuración', 'error'); return; }
+      _gamEsquema = d.entidades;
+    } catch (e) { showToast('Error de conexión', 'error'); return; }
+
+    document.getElementById('gamChips').innerHTML = Object.entries(_gamEsquema).map(([k, e]) => `
+      <button class="gam-chip ${k === _gamEntidad ? 'active' : ''}" data-ent="${k}" onclick="gamCambiar('${k}')">
+        <i class="fas ${e.icono}"></i> ${e.label}
+      </button>`).join('');
+  }
+  gamCargar();
+}
+
+function gamCambiar(clave) {
+  _gamEntidad = clave;
+  document.querySelectorAll('.gam-chip').forEach(c => c.classList.toggle('active', c.dataset.ent === clave));
+  gamCargar();
+}
+
+/** Columnas que se muestran en la tabla (las primeras, para no saturar). */
+function gamColumnas(e) {
+  return e.campos.filter(c => c.tipo !== 'textarea').slice(0, 5);
+}
+
+async function gamCargar() {
+  const e = _gamEsquema[_gamEntidad];
+  document.getElementById('gamTitulo').textContent = e.label;
+  const head = document.getElementById('gamHead');
+  const body = document.getElementById('gamBody');
+  const cols = gamColumnas(e);
+
+  head.innerHTML = `<tr><th>ID</th>${cols.map(c => `<th>${c.label}</th>`).join('')}<th>Acciones</th></tr>`;
+  body.innerHTML = `<tr><td colspan="${cols.length + 2}" style="text-align:center;padding:2rem;color:var(--text-muted)">Cargando…</td></tr>`;
+
+  try {
+    const r = await fetch(`php/admin.php?accion=gestion_listar&entidad=${_gamEntidad}`);
+    const d = await r.json();
+    if (!d.success) { body.innerHTML = `<tr><td colspan="${cols.length + 2}" style="text-align:center;color:#e74c3c">${d.message}</td></tr>`; return; }
+    _gamItems = d.items || [];
+    if (!_gamItems.length) {
+      body.innerHTML = `<tr><td colspan="${cols.length + 2}" style="text-align:center;padding:2rem;color:var(--text-muted)">Todavía no hay ${e.label.toLowerCase()}</td></tr>`;
+      return;
+    }
+    body.innerHTML = _gamItems.map(it => `
+      <tr>
+        <td><span style="color:var(--text-muted)">#${it.id}</span></td>
+        ${cols.map(c => `<td>${gamCelda(c, it[c.name])}</td>`).join('')}
+        <td>
+          <div class="admin-actions">
+            <button class="admin-action-btn edit" onclick="gamEditar(${it.id})" title="Editar"><i class="fas fa-edit"></i></button>
+            <button class="admin-action-btn delete" onclick="gamEliminar(${it.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+          </div>
+        </td>
+      </tr>`).join('');
+  } catch (err) {
+    body.innerHTML = `<tr><td colspan="${cols.length + 2}" style="text-align:center;color:#e74c3c">Error al cargar</td></tr>`;
+  }
+}
+
+function gamCelda(campo, valor) {
+  if (campo.tipo === 'bool') {
+    return valor ? '<span class="gam-badge on">Sí</span>' : '<span class="gam-badge off">No</span>';
+  }
+  if (campo.tipo === 'color') {
+    return `<span class="gam-color" style="background:${escHtml(valor || '#ccc')}"></span> <span style="color:var(--text-muted);font-size:.8rem">${escHtml(valor || '')}</span>`;
+  }
+  if (campo.tipo === 'select' && campo.opciones) {
+    return escHtml(campo.opciones[valor] ?? (valor ?? '–'));
+  }
+  if (valor === null || valor === '' || valor === undefined) return '<span style="color:var(--text-muted)">–</span>';
+  return escHtml(String(valor).slice(0, 60));
+}
+
+function gamCampoHtml(c, valor) {
+  const id = 'gam_' + c.name;
+  const v  = valor ?? '';
+  let input;
+  if (c.tipo === 'textarea') {
+    input = `<textarea class="form-control" id="${id}" rows="3" placeholder="${c.ph || ''}">${escHtml(v)}</textarea>`;
+  } else if (c.tipo === 'bool') {
+    input = `<select class="form-control" id="${id}"><option value="true" ${v ? 'selected' : ''}>Sí</option><option value="false" ${!v ? 'selected' : ''}>No</option></select>`;
+  } else if (c.tipo === 'select') {
+    const vacio = c.vacio ? `<option value="">${c.vacio}</option>` : '';
+    const ops = Object.entries(c.opciones || {}).map(([k, l]) =>
+      `<option value="${escHtml(k)}" ${String(v) === String(k) ? 'selected' : ''}>${escHtml(l)}</option>`).join('');
+    input = `<select class="form-control" id="${id}">${vacio}${ops}</select>`;
+  } else if (c.tipo === 'color') {
+    input = `<input type="color" class="form-control" id="${id}" value="${escHtml(v || '#36c0a1')}" style="height:42px;padding:.25rem">`;
+  } else if (c.tipo === 'number') {
+    input = `<input type="number" class="form-control" id="${id}" value="${v === '' ? 0 : v}">`;
+  } else {
+    input = `<input type="text" class="form-control" id="${id}" value="${escHtml(v)}" placeholder="${c.ph || ''}">`;
+  }
+  return `<div class="form-group"><label class="form-label">${escHtml(c.label)}${c.req ? ' *' : ''}</label>${input}</div>`;
+}
+
+function gamAbrir(item) {
+  const e = _gamEsquema[_gamEntidad];
+  document.getElementById('gamModalTitulo').textContent =
+    (item ? 'Editar ' : 'Crear ') + (e.singular || e.label.toLowerCase());
+  document.getElementById('gamForm').innerHTML =
+    `<input type="hidden" id="gam_id" value="${item ? item.id : ''}">` +
+    e.campos.map(c => gamCampoHtml(c, item ? item[c.name] : (c.tipo === 'bool' ? true : ''))).join('');
+  document.getElementById('gamModal').classList.add('open');
+}
+
+function gamNuevo()  { gamAbrir(null); }
+function gamEditar(id) { const it = _gamItems.find(x => x.id === id); if (it) gamAbrir(it); }
+function gamCerrar() { document.getElementById('gamModal').classList.remove('open'); }
+
+async function gamGuardar() {
+  const e = _gamEsquema[_gamEntidad];
+  const id = document.getElementById('gam_id').value;
+  const datos = {};
+  e.campos.forEach(c => {
+    const el = document.getElementById('gam_' + c.name);
+    if (el) datos[c.name] = el.value;
+  });
+  try {
+    const r = await fetch('php/admin.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accion: 'gestion_guardar', entidad: _gamEntidad, id: id || 0, datos }),
+    });
+    const d = await r.json();
+    showToast(d.message, d.success ? 'success' : 'error');
+    if (d.success) { gamCerrar(); gamCargar(); }
+  } catch (err) { showToast('Error de conexión', 'error'); }
+}
+
+async function gamEliminar(id) {
+  if (!confirm('¿Eliminar este elemento? Si ya lo tienen usuarios, se desactivará en vez de borrarse.')) return;
+  try {
+    const r = await fetch('php/admin.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accion: 'gestion_eliminar', entidad: _gamEntidad, id }),
+    });
+    const d = await r.json();
+    showToast(d.message, d.success ? 'success' : 'error');
+    if (d.success) gamCargar();
+  } catch (err) { showToast('Error de conexión', 'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ESTADÍSTICAS COMPLETAS
+// ═══════════════════════════════════════════════════════════
+const _n = (v) => (v ?? 0).toLocaleString('es');
+
+function statCard(icono, color, valor, label, extra) {
+  return `
+    <div class="stat-card">
+      <div class="stat-ico" style="background:${color}1f;color:${color}"><i class="fas ${icono}"></i></div>
+      <div class="stat-body">
+        <div class="stat-val">${valor}</div>
+        <div class="stat-lbl">${label}</div>
+        ${extra ? `<div class="stat-extra">${extra}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+async function loadAdminStats() {
+  const box = document.getElementById('statsBox');
+  try {
+    const r = await fetch('php/admin.php?accion=estadisticas');
+    const d = await r.json();
+    if (!d.success) { box.innerHTML = '<p style="color:var(--text-muted)">No se pudieron cargar las estadísticas.</p>'; return; }
+
+    const u = d.usuarios, c = d.contenido, g = d.gamificacion, m = d.moderacion;
+
+    const barras = (d.por_categoria || []).length
+      ? (() => {
+          const max = Math.max(...d.por_categoria.map(x => x.total));
+          return d.por_categoria.map(x => `
+            <div class="stat-bar-row">
+              <span class="stat-bar-lbl">${x.nombre}</span>
+              <div class="stat-bar-track">
+                <div class="stat-bar-fill" style="width:${Math.round(x.total / max * 100)}%;background:${x.color || '#36c0a1'}"></div>
+              </div>
+              <span class="stat-bar-num">${_n(x.total)}</span>
+            </div>`).join('');
+        })()
+      : '<p style="color:var(--text-muted);font-size:.85rem">Todavía no hay propuestas por categoría.</p>';
+
+    box.innerHTML = `
+      <h3 class="stat-title"><i class="fas fa-users"></i> Comunidad</h3>
+      <div class="stat-grid">
+        ${statCard('fa-user-group', '#36c0a1', _n(u.total), 'Usuarios registrados', `+${_n(u.nuevos_30)} en 30 días`)}
+        ${statCard('fa-user-check', '#22c55e', _n(u.activos), 'Usuarios activos', `${_n(u.recientes)} entraron en 30 días`)}
+        ${statCard('fa-user-slash', '#ef4444', _n(u.suspendidos), 'Suspendidos', '')}
+        ${statCard('fa-triangle-exclamation', '#f59e0b', _n(m.alertas_pendientes), 'Alertas por revisar', '')}
+      </div>
+
+      <h3 class="stat-title"><i class="fas fa-layer-group"></i> Contenido</h3>
+      <div class="stat-grid">
+        ${statCard('fa-file-lines', '#4a9eff', _n(c.propuestas), 'Propuestas creadas', `+${_n(c.propuestas_30)} en 30 días`)}
+        ${statCard('fa-star', '#f59e0b', _n(c.propuestas_destacadas), 'Propuestas destacadas', `${_n(c.propuestas_votacion)} en votación`)}
+        ${statCard('fa-comments', '#8b5cf6', _n(c.debates_activos), 'Debates activos', `${_n(c.debates)} en total`)}
+        ${statCard('fa-comment-dots', '#06b6d4', _n(c.comentarios), 'Comentarios', `+${_n(c.comentarios_30)} en 30 días`)}
+        ${statCard('fa-reply-all', '#14b8a6', _n(c.respuestas_debate), 'Respuestas en debates', '')}
+        ${statCard('fa-eye-slash', '#ef4444', _n(c.propuestas_censuradas + c.comentarios_censurados), 'Contenido oculto', '')}
+      </div>
+
+      <h3 class="stat-title"><i class="fas fa-trophy"></i> Gamificación</h3>
+      <div class="stat-grid">
+        ${statCard('fa-bolt', '#f59e0b', _n(g.xp_total), 'XP total repartido', '')}
+        ${statCard('fa-star-half-stroke', '#36c0a1', _n(g.reputacion_media), 'Reputación promedio', `nivel medio ${g.nivel_medio}`)}
+        ${statCard('fa-award', '#8b5cf6', _n(g.logros_desbloqueados), 'Logros desbloqueados', '')}
+        ${statCard('fa-certificate', '#ef7e22', _n(g.insignias_desbloqueadas), 'Insignias otorgadas', `${_n(g.desafios_completados)} desafíos completados`)}
+      </div>
+
+      <h3 class="stat-title"><i class="fas fa-chart-simple"></i> Propuestas por categoría</h3>
+      <div class="stat-bars">${barras}</div>`;
+  } catch (e) {
+    box.innerHTML = '<p style="color:var(--text-muted)">Error de conexión al cargar estadísticas.</p>';
+  }
+}
+
+// ── Acciones de administración (destacar / ocultar / suspender) ──
+async function adminAccion(payload, confirmMsg) {
+  if (confirmMsg && !confirm(confirmMsg)) return false;
+  try {
+    const r = await fetch('php/admin.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const d = await r.json();
+    showToast(d.message || (d.success ? 'Listo' : 'Error'), d.success ? 'success' : 'error');
+    return d.success;
+  } catch (e) { showToast('Error de conexión', 'error'); return false; }
+}
+
+async function destacarContenido(tipo, id) {
+  if (await adminAccion({ accion: 'destacar', tipo, id })) {
+    if (tipo === 'propuesta') loadAdminPropuestas();
+    else if (tipo === 'comentario') loadAdminComentarios();
+  }
+}
+
+async function ocultarContenido(tipo, id) {
+  if (await adminAccion({ accion: 'ocultar', tipo, id })) {
+    if (tipo === 'propuesta') loadAdminPropuestas();
+    else if (tipo === 'comentario') loadAdminComentarios();
+  }
+}
+
+async function suspenderUsuario(id) {
+  const razon = prompt('Motivo de la suspensión (lo verá el equipo de moderación):', 'Incumplimiento de las normas de la comunidad');
+  if (razon === null) return;
+  if (await adminAccion({ accion: 'suspender', id, razon })) loadAdminUsuarios();
+}
+
+async function reactivarUsuario(id) {
+  if (await adminAccion({ accion: 'reactivar', id }, '¿Reactivar a este usuario?')) loadAdminUsuarios();
+}
 
 // ── KPIs ─────────────────────────────────────────────────
 async function loadAdminKpis() {
@@ -357,7 +734,7 @@ async function loadAdminPropuestas() {
         <td>
           <div class="admin-actions">
             <button class="admin-action-btn edit" onclick="openEditProp(${p.id},'${escHtml(p.titulo)}','${p.estado}','${p.progreso || 'idea'}')" title="Editar"><i class="fas fa-edit"></i></button>
-            <button class="admin-action-btn" onclick="destacarPropuesta(${p.id}, ${p.progreso === 'destacada' ? 'false' : 'true'})" title="${p.progreso === 'destacada' ? 'Quitar destacado' : 'Destacar propuesta'}" style="color:var(--naranja-500)"><i class="fas fa-star"></i></button>
+            <button class="admin-action-btn" onclick="destacarContenido('propuesta',${p.id})" title="${p.destacada ? 'Quitar destacado' : 'Destacar propuesta'}" style="color:${p.destacada ? '#f59e0b' : 'var(--naranja-500)'}"><i class="fa${p.destacada ? 's' : 'r'} fa-star"></i></button>
             <button class="admin-action-btn delete" onclick="confirmDelete('propuesta','${p.id}','Eliminar propuesta «${escHtml(p.titulo)}»')" title="Eliminar"><i class="fas fa-trash"></i></button>
           </div>
         </td>
@@ -365,6 +742,7 @@ async function loadAdminPropuestas() {
     `).join('');
   } catch(e) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#e74c3c">Error al cargar</td></tr>'; }
 }
+loadAdminStats();
 loadAdminPropuestas();
 
 // ── Comentarios admin ────────────────────────────────────
@@ -386,6 +764,8 @@ async function loadAdminComentarios() {
         <td style="color:var(--text-muted)">${new Date(c.fecha_creacion).toLocaleDateString('es')}</td>
         <td>
           <div class="admin-actions">
+            <button class="admin-action-btn" onclick="destacarContenido('comentario',${c.id})" title="${c.destacado ? 'Quitar destacado' : 'Destacar comentario'}" style="color:${c.destacado ? '#f59e0b' : 'var(--naranja-500)'}"><i class="fa${c.destacado ? 's' : 'r'} fa-star"></i></button>
+            <button class="admin-action-btn" onclick="ocultarContenido('comentario',${c.id})" title="Ocultar/mostrar comentario" style="color:#8b5cf6"><i class="fas fa-eye-slash"></i></button>
             <button class="admin-action-btn delete" onclick="confirmDelete('comentario','${c.id}','Eliminar este comentario')" title="Eliminar"><i class="fas fa-trash"></i></button>
           </div>
         </td>
@@ -419,6 +799,7 @@ async function loadAdminUsuarios() {
         <td style="color:var(--text-muted)">${new Date(u.fecha_registro).toLocaleDateString('es')}</td>
         <td>
           <div class="admin-actions">
+            <button class="admin-action-btn" onclick="${u.activo === false ? `reactivarUsuario(${u.id})` : `suspenderUsuario(${u.id})`}" title="${u.activo === false ? 'Reactivar usuario' : 'Suspender usuario'}" style="color:${u.activo === false ? '#22c55e' : '#ef4444'}"><i class="fas fa-user-${u.activo === false ? 'check' : 'slash'}"></i></button>
             <button class="admin-action-btn delete" onclick="confirmDelete('usuario','${u.id}','Eliminar usuario ${escHtml(u.nombre)}')" title="Eliminar">
               <i class="fas fa-trash"></i>
             </button>
@@ -841,6 +1222,54 @@ document.querySelectorAll('[data-admin-tab]').forEach(tab => {
 <style>
 .admin-section { display: none; }
 .admin-section.active { display: block; }
+
+/* ── Estadísticas del panel ───────────────────────────── */
+.stat-title { font-family: var(--font-display); font-weight: 800; font-size: .95rem; color: var(--text);
+  margin: 1.75rem 0 .85rem; display: flex; align-items: center; gap: .5rem; }
+.stat-title:first-child { margin-top: 0; }
+.stat-title i { color: var(--verde); }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .9rem; }
+.stat-card { display: flex; align-items: center; gap: .85rem; background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.1rem; transition: var(--trans); }
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.stat-ico { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center;
+  justify-content: center; font-size: 1.05rem; flex-shrink: 0; }
+.stat-body { min-width: 0; }
+.stat-val { font-family: var(--font-display); font-weight: 800; font-size: 1.4rem; color: var(--text); line-height: 1.1; }
+.stat-lbl { font-size: .78rem; color: var(--text-muted); margin-top: .15rem; }
+.stat-extra { font-size: .72rem; color: var(--verde-700); margin-top: .2rem; }
+
+.stat-bars { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 1.1rem 1.2rem; }
+.stat-bar-row { display: flex; align-items: center; gap: .75rem; margin-bottom: .6rem; }
+.stat-bar-row:last-child { margin-bottom: 0; }
+.stat-bar-lbl { width: 130px; font-size: .8rem; color: var(--text); flex-shrink: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat-bar-track { flex: 1; height: 9px; background: var(--surface); border-radius: 999px; overflow: hidden; }
+.stat-bar-fill { height: 100%; border-radius: 999px; transition: width .5s ease; }
+.stat-bar-num { width: 44px; text-align: right; font-size: .78rem; font-weight: 700; color: var(--text-muted); }
+
+/* Marca de contenido destacado en las tablas */
+.admin-destacado { color: #f59e0b; }
+
+/* ── Gestión de gamificación ──────────────────────────── */
+.gam-chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.1rem; }
+.gam-chip { display: inline-flex; align-items: center; gap: .45rem; background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: 999px; padding: .45rem .95rem; font-size: .82rem;
+  font-weight: 600; color: var(--text-muted); cursor: pointer; transition: var(--trans); }
+.gam-chip:hover { border-color: var(--verde-200); color: var(--text); }
+.gam-chip.active { background: var(--grad-primary); border-color: transparent; color: #fff; }
+.gam-bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .9rem; }
+.gam-titulo { font-family: var(--font-display); font-weight: 800; font-size: 1rem; color: var(--text); margin: 0; }
+.gam-badge { display: inline-block; padding: .15rem .55rem; border-radius: 999px; font-size: .72rem; font-weight: 700; }
+.gam-badge.on  { background: #22c55e22; color: #22c55e; }
+.gam-badge.off { background: #ef444422; color: #ef4444; }
+.spam-item { display: flex; gap: .7rem; align-items: flex-start; padding: .7rem .8rem; border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: .55rem; cursor: pointer; transition: var(--trans); }
+.spam-item:hover { border-color: var(--verde-200); background: var(--surface); }
+.spam-motivo { font-size: .78rem; font-weight: 700; color: #f59e0b; margin-bottom: .2rem; }
+.spam-extracto { font-size: .82rem; color: var(--text-muted); line-height: 1.4; }
+.gam-color { display: inline-block; width: 14px; height: 14px; border-radius: 4px;
+  border: 1px solid var(--border); vertical-align: middle; }
 </style>
 <?php echo view('layouts.footer')->render(); ?>
 </body>

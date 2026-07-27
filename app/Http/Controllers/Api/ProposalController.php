@@ -557,6 +557,8 @@ class ProposalController extends Controller
             'autor_nivel'      => $u->nivel ?? 1,
             'autor_titulo'     => $this->tituloData($u),
             'autor_marco'      => $u->marco_equipado ?? null,
+            'destacado'        => (bool) ($c->destacado ?? false),
+            'censurado'        => (bool) ($c->censurado ?? false),
             'fecha_creacion'   => optional($c->fecha_creacion ?? $c->created_at)->toDateTimeString(),
             'fecha_formateada' => optional($c->fecha_creacion ?? $c->created_at)->format('d/m/Y H:i'),
         ];

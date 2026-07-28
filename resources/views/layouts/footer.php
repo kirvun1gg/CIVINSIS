@@ -73,4 +73,6 @@ $categorias_footer = is_array($categorias_footer) ? $categorias_footer : $catego
 
 <!-- CIVINSIS · Extras (efectos por categoría, personalización y asistente IA) -->
 <link rel="stylesheet" href="css/civinsis-extra.css">
+<link rel="stylesheet" href="css/civinsis-polish.css">
 <script src="js/civinsis-extra.js" defer></script>
+<script src="js/civinsis-polish.js" defer></script>

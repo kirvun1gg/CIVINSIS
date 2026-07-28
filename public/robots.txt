@@ -1,2 +1,10 @@
 User-agent: *
 Disallow:
+
+# Zonas privadas: no indexar
+Disallow: /perfil.php
+Disallow: /crear.php
+Disallow: /admin.php
+Disallow: /php/
+
+Sitemap: /sitemap.xml

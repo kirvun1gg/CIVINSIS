@@ -213,6 +213,27 @@ $esAdmin   = ($usuarioRol === 'admin');
 </main>
 
 <!-- Modal de confirmación -->
+<!-- Modal de confirmación ambientado (moderación IA y borrados) -->
+<div class="modal-backdrop" id="askModal">
+  <div class="modal ask-modal">
+    <div class="ask-icon" id="askIcon"><i class="fas fa-question"></i></div>
+    <h3 class="ask-title" id="askTitle">Confirmar</h3>
+    <p class="ask-msg" id="askMsg"></p>
+    <div class="ask-detail" id="askDetail" hidden>
+      <span class="ask-detail-lbl" id="askDetailLbl">Contenido</span>
+      <p id="askDetailTxt"></p>
+    </div>
+    <div class="ask-input" id="askInputWrap" hidden>
+      <label class="ask-input-lbl" id="askInputLbl">Motivo</label>
+      <input type="text" class="form-control" id="askInput" autocomplete="off">
+    </div>
+    <div class="ask-actions">
+      <button class="btn btn-ghost btn-sm" id="askCancel">Cancelar</button>
+      <button class="btn btn-sm" id="askOk">Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="confirmModal">
   <div class="modal">
     <div class="modal-header">
@@ -417,7 +438,13 @@ async function spamEliminar() {
   const ids = [...document.querySelectorAll('.spam-check:checked')]
     .flatMap(c => c.dataset.ids.split(',').map(Number));
   if (!ids.length) { showToast('No seleccionaste nada', 'error'); return; }
-  if (!confirm(`¿Eliminar ${ids.length} comentarios? Esta acción no se puede deshacer.`)) return;
+  const okSpam = await askConfirm({
+    variante: 'danger', icono: 'fa-broom', titulo: 'Eliminar spam',
+    mensaje: `Se eliminarán ${ids.length} comentarios marcados como spam.`,
+    detalle: 'Esta acción es permanente y no se puede deshacer.', detalleLabel: 'Atención',
+    confirmar: `Sí, eliminar ${ids.length}`,
+  });
+  if (!okSpam) return;
   try {
     const r = await fetch('php/admin.php', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -570,7 +597,13 @@ async function gamGuardar() {
 }
 
 async function gamEliminar(id) {
-  if (!confirm('¿Eliminar este elemento? Si ya lo tienen usuarios, se desactivará en vez de borrarse.')) return;
+  const okGam = await askConfirm({
+    variante: 'danger', icono: 'fa-trash', titulo: 'Eliminar elemento',
+    mensaje: '¿Seguro que quieres eliminarlo?',
+    detalle: 'Si algún usuario ya lo tiene, se desactivará en vez de borrarse para no romper su perfil.',
+    detalleLabel: 'Ten en cuenta', confirmar: 'Sí, eliminar',
+  });
+  if (!okGam) return;
   try {
     const r = await fetch('php/admin.php', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -658,7 +691,13 @@ async function loadAdminStats() {
 
 // ── Acciones de administración (destacar / ocultar / suspender) ──
 async function adminAccion(payload, confirmMsg) {
-  if (confirmMsg && !confirm(confirmMsg)) return false;
+  if (confirmMsg) {
+    const okAcc = await askConfirm({
+      variante: 'warning', icono: 'fa-circle-question',
+      titulo: 'Confirmar acción', mensaje: confirmMsg, confirmar: 'Sí, continuar',
+    });
+    if (!okAcc) return false;
+  }
   try {
     const r = await fetch('php/admin.php', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -685,8 +724,14 @@ async function ocultarContenido(tipo, id) {
 }
 
 async function suspenderUsuario(id) {
-  const razon = prompt('Motivo de la suspensión (lo verá el equipo de moderación):', 'Incumplimiento de las normas de la comunidad');
-  if (razon === null) return;
+  const razon = await askConfirm({
+    variante: 'danger', icono: 'fa-user-slash', titulo: 'Suspender usuario',
+    mensaje: 'El usuario no podrá acceder hasta que lo reactives.',
+    input: { label: 'Motivo de la suspensión', valor: 'Incumplimiento de las normas de la comunidad',
+             placeholder: 'Lo verá el equipo de moderación' },
+    confirmar: 'Suspender',
+  });
+  if (razon === false) return;
   if (await adminAccion({ accion: 'suspender', id, razon })) loadAdminUsuarios();
 }
 
@@ -824,22 +869,106 @@ async function changeUserRole(userId, nuevoRol) {
   } catch(e) { showToast('Error de conexión', 'error'); }
 }
 
+let _alertasCache = [];
+
+const ASK_VARIANTES = {
+  danger:  { color: '#e74c3c', icono: 'fa-triangle-exclamation', btn: 'btn-danger' },
+  success: { color: '#22c55e', icono: 'fa-circle-check',         btn: 'btn-primary' },
+  warning: { color: '#f59e0b', icono: 'fa-eye-slash',            btn: 'btn-primary' },
+  info:    { color: '#4a9eff', icono: 'fa-circle-info',          btn: 'btn-primary' },
+};
+let _askResolver = null;
+let _askConInput = false;
+
+function askConfirm(opts = {}) {
+  const v = ASK_VARIANTES[opts.variante] || ASK_VARIANTES.danger;
+  const modal = document.getElementById('askModal');
+
+  const ico = document.getElementById('askIcon');
+  ico.style.background = v.color + '1f';
+  ico.style.color = v.color;
+  ico.innerHTML = `<i class="fas ${opts.icono || v.icono}"></i>`;
+
+  document.getElementById('askTitle').textContent = opts.titulo || '¿Confirmar acción?';
+  document.getElementById('askMsg').textContent   = opts.mensaje || '';
+
+  const det = document.getElementById('askDetail');
+  if (opts.detalle) {
+    document.getElementById('askDetailLbl').textContent = opts.detalleLabel || 'Contenido afectado';
+    document.getElementById('askDetailTxt').textContent = opts.detalle;
+    det.style.borderLeftColor = v.color;
+    det.hidden = false;
+  } else {
+    det.hidden = true;
+  }
+
+  const inp = document.getElementById('askInput');
+  const inpWrap = document.getElementById('askInputWrap');
+  if (opts.input) {
+    document.getElementById('askInputLbl').textContent = opts.input.label || 'Motivo';
+    inp.value = opts.input.valor || '';
+    inp.placeholder = opts.input.placeholder || '';
+    inpWrap.hidden = false;
+  } else {
+    inpWrap.hidden = true;
+  }
+
+  const ok = document.getElementById('askOk');
+  ok.className = `btn btn-sm ${v.btn}`;
+  ok.style.background = v.color;
+  ok.style.borderColor = v.color;
+  ok.innerHTML = `<i class="fas ${opts.icono || v.icono}"></i> ${opts.confirmar || 'Confirmar'}`;
+  document.getElementById('askCancel').textContent = opts.cancelar || 'Cancelar';
+
+  modal.classList.add('open');
+  _askConInput = !!opts.input;
+  setTimeout(() => (opts.input ? inp.focus() : ok.focus()), 60);
+
+  return new Promise((resolve) => { _askResolver = resolve; });
+}
+
+function askCerrar(valor) {
+  // con campo de texto, confirmar devuelve el texto; cancelar devuelve false
+  let salida = valor;
+  if (valor === true && _askConInput) salida = document.getElementById('askInput').value.trim();
+  document.getElementById('askModal').classList.remove('open');
+  _askConInput = false;
+  if (_askResolver) { _askResolver(salida); _askResolver = null; }
+}
+
+document.getElementById('askOk').addEventListener('click', () => askCerrar(true));
+document.getElementById('askCancel').addEventListener('click', () => askCerrar(false));
+document.getElementById('askModal').addEventListener('click', (e) => {
+  if (e.target.id === 'askModal') askCerrar(false);   // clic fuera = cancelar
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('askModal').classList.contains('open')) askCerrar(false);
+});
+
+
+document.getElementById('askInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); askCerrar(true); }
+});
+
 // ── Confirm + Delete ──────────────────────────────────────
 let pendingDelete = null;
-function confirmDelete(tipo, id, msg) {
-  pendingDelete = { tipo, id };
-  document.getElementById('confirmTitle').textContent = 'Confirmar eliminación';
-  document.getElementById('confirmMsg').textContent = '¿Estás seguro de que deseas eliminar esto? ' + msg + '. Esta acción no se puede deshacer.';
-  document.getElementById('confirmModal').classList.add('open');
+const _TIPO_LABEL = { propuesta: 'la propuesta', comentario: 'el comentario', usuario: 'el usuario' };
+async function confirmDelete(tipo, id, msg) {
+  const ok = await askConfirm({
+    variante: 'danger', icono: 'fa-trash',
+    titulo: `Eliminar ${_TIPO_LABEL[tipo] || 'este elemento'}`,
+    mensaje: 'Esta acción es permanente y no se puede deshacer.',
+    detalle: msg || null, detalleLabel: 'Se eliminará',
+    confirmar: 'Sí, eliminar',
+  });
+  if (!ok) return;
+  ejecutarBorrado(tipo, id);
 }
 function closeConfirm() {
   document.getElementById('confirmModal').classList.remove('open');
   pendingDelete = null;
 }
-document.getElementById('confirmBtn').addEventListener('click', async () => {
-  if (!pendingDelete) return;
-  const { tipo, id } = pendingDelete;
-  closeConfirm();
+async function ejecutarBorrado(tipo, id) {
   try {
     let url = '';
     let body = {};
@@ -856,7 +985,7 @@ document.getElementById('confirmBtn').addEventListener('click', async () => {
       loadAdminKpis();
     } else showToast(d.mensaje || 'Error al eliminar', 'error');
   } catch(e) { showToast('Error de conexión', 'error'); }
-});
+}
 
 // ── Editar propuesta ─────────────────────────────────────
 function openEditProp(id, titulo, estado) {
@@ -1090,6 +1219,7 @@ async function loadAlertas(soloPendientes = false) {
     const severidadColor = { alta: '#e74c3c', media: '#ef7e22', baja: '#36c0a1' };
     const severidadIcon  = { alta: 'fa-exclamation-circle', media: 'fa-exclamation-triangle', baja: 'fa-info-circle' };
 
+    _alertasCache = d.alertas || [];
     el.innerHTML = d.alertas.map(a => `
       <div class="contact-msg-card ${a.revisado ? '' : 'msg-unread'}"
            style="background:var(--bg-card);border:1px solid var(--border);border-left:4px solid ${severidadColor[a.severidad]||'#ef7e22'};border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:.75rem;transition:var(--trans)">
@@ -1150,7 +1280,15 @@ async function marcarAlertaRevisada(id) {
 }
 
 async function aprobarAlerta(id) {
-  if (!confirm('¿Publicar este contenido de todas formas? Se restaurará/publicará pese a la alerta de la IA.')) return;
+  const _a = _alertasCache.find(x => x.id === id);
+  const okAp = await askConfirm({
+    variante: 'success', icono: 'fa-unlock', titulo: 'Aprobar contenido',
+    mensaje: 'Se publicará o restaurará pese a la alerta de la IA, y la alerta quedará cerrada.',
+    detalle: _a ? _a.contenido_original : null,
+    detalleLabel: _a ? `Contenido marcado · ${_a.razon || 'sin motivo'}` : null,
+    confirmar: 'Sí, aprobar',
+  });
+  if (!okAp) return;
   try {
     const r = await fetch('php/ia.php', {
       method: 'POST',
@@ -1168,7 +1306,15 @@ async function aprobarAlerta(id) {
 }
 
 async function censurarAlerta(id) {
-  if (!confirm('¿Censurar este contenido? Se ocultará a los usuarios y quedará como retirado por moderación.')) return;
+  const _c = _alertasCache.find(x => x.id === id);
+  const okCe = await askConfirm({
+    variante: 'warning', icono: 'fa-ban', titulo: 'Censurar contenido',
+    mensaje: 'Se ocultará a los usuarios y quedará marcado como retirado por moderación.',
+    detalle: _c ? _c.contenido_original : null,
+    detalleLabel: _c ? `Contenido marcado · ${_c.razon || 'sin motivo'}` : null,
+    confirmar: 'Sí, censurar',
+  });
+  if (!okCe) return;
   try {
     const r = await fetch('php/ia.php', {
       method: 'POST',
@@ -1221,6 +1367,36 @@ document.querySelectorAll('[data-admin-tab]').forEach(tab => {
 </script>
 <style>
 .admin-section { display: none; }
+
+/* ── Modal de confirmación (moderación IA / borrados) ── */
+.ask-modal { max-width: 420px; text-align: center; padding: 1.9rem 1.6rem 1.5rem; }
+.ask-icon {
+  width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 1.1rem;
+  display: flex; align-items: center; justify-content: center; font-size: 1.6rem;
+  animation: askPop .32s cubic-bezier(.34,1.5,.5,1);
+}
+@keyframes askPop { from { transform: scale(.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.ask-title { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; color: var(--text); margin: 0 0 .5rem; }
+.ask-msg { font-size: .88rem; line-height: 1.55; color: var(--text-muted); margin: 0; }
+.ask-detail {
+  margin-top: 1rem; text-align: left; background: var(--surface);
+  border: 1px solid var(--border); border-left: 3px solid var(--verde);
+  border-radius: 10px; padding: .7rem .85rem;
+}
+.ask-detail-lbl { display: block; font-size: .68rem; font-weight: 800; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: .3rem; }
+.ask-detail p { margin: 0; font-size: .83rem; line-height: 1.5; color: var(--text);
+  max-height: 120px; overflow: auto; word-break: break-word; }
+.ask-actions { display: flex; gap: .6rem; justify-content: center; margin-top: 1.4rem; }
+.ask-actions .btn { min-width: 120px; justify-content: center; }
+#askModal .modal { animation: askIn .28s cubic-bezier(.34,1.4,.5,1); }
+@keyframes askIn { from { transform: translateY(16px) scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
+.admin-section.active { display: block; }
+
+.ask-input { margin-top: 1rem; text-align: left; }
+.ask-input-lbl { display: block; font-size: .72rem; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .03em; margin-bottom: .35rem; }
+
 .admin-section.active { display: block; }
 
 /* ── Estadísticas del panel ───────────────────────────── */

@@ -4,6 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Debates – CIVINSIS</title>
+  <meta name="description" content="Participa en debates abiertos sobre los temas que importan en tu comunidad.">
+  <meta name="theme-color" content="#36c0a1">
+  <link rel="canonical" href="debates.php">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CIVINSIS">
+  <meta property="og:locale" content="es_SV">
+  <meta property="og:title" content="Debates – CIVINSIS">
+  <meta property="og:description" content="Participa en debates abiertos sobre los temas que importan en tu comunidad.">
+  <meta property="og:url" content="debates.php">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Debates – CIVINSIS">
+  <meta name="twitter:description" content="Participa en debates abiertos sobre los temas que importan en tu comunidad.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -18,10 +30,13 @@
 <main style="padding-top:calc(var(--nav-height) + 2rem);padding-bottom:4rem;min-height:100vh">
   <div class="container">
 
-    <div class="debates-hero">
-      <div class="debates-hero-badge"><i class="fas fa-comments"></i> Debates ciudadanos</div>
-      <h1>Escucha otras <span>perspectivas</span></h1>
-      <p>Las propuestas buscan resolver un problema. Los debates buscan entender los distintos puntos de vista de tu comunidad. Participa, responde y descubre cómo piensan otros jóvenes salvadoreños.</p>
+    <div class="cv-dos-col" style="margin-bottom:1.5rem">
+      <div class="debates-hero" style="margin-bottom:0">
+        <div class="debates-hero-badge"><i class="fas fa-comments"></i> Debates ciudadanos</div>
+        <h1>Escucha otras <span>perspectivas</span></h1>
+        <p>Las propuestas buscan resolver un problema. Los debates buscan entender los distintos puntos de vista de tu comunidad. Participa, responde y descubre cómo piensan otros jóvenes salvadoreños.</p>
+      </div>
+      <div class="cv-anim cv-anim-ancha" id="anim-debates"></div>
     </div>
 
     <div class="dash-topbar">

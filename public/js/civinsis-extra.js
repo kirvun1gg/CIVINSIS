@@ -424,9 +424,30 @@
           body: JSON.stringify({ accion: 'crecimiento' }),
         });
         const d = await res.json();
-        if (d && d.disponible) {
-          sessionStorage.setItem('civi_nivel', d.nivel);
-          sessionStorage.setItem('civi_logros', d.logros);
+        if (!d || !d.disponible) return;
+
+        // Se usa localStorage (no sessionStorage) para que el dato sobreviva a
+        // las recargas y redirecciones que hacen las acciones de la plataforma.
+        const prevN = localStorage.getItem('civi_nivel');
+        const prevL = localStorage.getItem('civi_logros');
+        localStorage.setItem('civi_nivel', d.nivel);
+        localStorage.setItem('civi_logros', d.logros);
+
+        // Si subiste de nivel justo antes de una recarga, se celebra aquí.
+        if (prevN !== null && d.nivel > parseInt(prevN, 10)) {
+          setTimeout(() => {
+            if (window.CV) window.CV.celebrarNivel(d.nivel);
+            else this.suggest({ id: 'lvl_' + d.nivel, once: true, sticky: true,
+              texto: `¡Felicidades! 🎉 Acabas de subir al nivel ${d.nivel}.` });
+          }, 700);
+          return;
+        }
+        if (prevL !== null && d.logros > parseInt(prevL, 10)) {
+          setTimeout(() => {
+            if (window.CV) window.CV.celebrarLogro('¡Nuevo logro!', d.logros);
+            else this.suggest({ id: 'logro_' + d.logros, once: true, sticky: true,
+              texto: `¡Desbloqueaste un nuevo logro! 🏅 Ya llevas ${d.logros}.` });
+          }, 700);
         }
       } catch (e) { /* silencioso */ }
     },
@@ -439,7 +460,7 @@
             if (node.nodeType === 1 && node.classList && node.classList.contains('toast')
                 && node.querySelector && node.querySelector('.toast-icon.success')) {
               clearTimeout(this._growthT);
-              this._growthT = setTimeout(() => this.checkGrowth(), 950);
+              this._growthT = setTimeout(() => this.checkGrowth(), 350);
               return;
             }
           }
@@ -457,20 +478,25 @@
         const d = await res.json();
         if (!d || !d.disponible) return;
 
-        const prevNivel  = parseInt(sessionStorage.getItem('civi_nivel')  || '0', 10);
-        const prevLogros = parseInt(sessionStorage.getItem('civi_logros') || '-1', 10);
-        sessionStorage.setItem('civi_nivel', d.nivel);
-        sessionStorage.setItem('civi_logros', d.logros);
+        const pn = localStorage.getItem('civi_nivel');
+        const pl = localStorage.getItem('civi_logros');
+        const prevNivel  = pn !== null ? parseInt(pn, 10) : null;
+        const prevLogros = pl !== null ? parseInt(pl, 10) : null;
+        localStorage.setItem('civi_nivel', d.nivel);
+        localStorage.setItem('civi_logros', d.logros);
 
         // 1) ¡Subió de nivel!
-        if (prevNivel && d.nivel > prevNivel) {
-          this.suggest({ id: 'lvl_' + d.nivel, once: true, sticky: true,
+        if (prevNivel !== null && d.nivel > prevNivel) {
+          // Celebración a pantalla completa si la capa de pulido está cargada
+          if (window.CV) window.CV.celebrarNivel(d.nivel);
+          else this.suggest({ id: 'lvl_' + d.nivel, once: true, sticky: true,
             texto: `¡Felicidades! 🎉 Acabas de subir al nivel ${d.nivel}. Estás creciendo como ciudadano.` });
           return;
         }
         // 2) ¡Nuevo logro!
-        if (prevLogros >= 0 && d.logros > prevLogros) {
-          this.suggest({ id: 'logro_' + d.logros, once: true, sticky: true,
+        if (prevLogros !== null && d.logros > prevLogros) {
+          if (window.CV) window.CV.celebrarLogro('¡Nuevo logro!', d.logros);
+          else this.suggest({ id: 'logro_' + d.logros, once: true, sticky: true,
             texto: `¡Desbloqueaste un nuevo logro! 🏅 Ya llevas ${d.logros}. Sigue así.` });
           return;
         }

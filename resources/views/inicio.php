@@ -4,6 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inicio – CIVINSIS</title>
+  <meta name="description" content="Tu centro de actividad en CIVINSIS: novedades, propuestas y debates de tu comunidad.">
+  <meta name="robots" content="noindex, follow">
+  <meta name="theme-color" content="#36c0a1">
+  <link rel="canonical" href="inicio.php">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CIVINSIS">
+  <meta property="og:locale" content="es_SV">
+  <meta property="og:title" content="Inicio – CIVINSIS">
+  <meta property="og:description" content="Tu centro de actividad en CIVINSIS: novedades, propuestas y debates de tu comunidad.">
+  <meta property="og:url" content="inicio.php">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Inicio – CIVINSIS">
+  <meta name="twitter:description" content="Tu centro de actividad en CIVINSIS: novedades, propuestas y debates de tu comunidad.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -42,6 +55,8 @@
 
 <main style="padding-top:calc(var(--nav-height) + 1.5rem);padding-bottom:4rem;min-height:100vh">
   <div class="container" style="max-width:1140px">
+    <div class="cv-anim cv-anim-banner" id="anim-inicio" style="margin-bottom:1.75rem"></div>
+
     <div id="actividadPanel">
       <div class="inicio-skeleton">
         <div class="skeleton" style="height:120px;border-radius:20px;margin-bottom:1.5rem"></div>

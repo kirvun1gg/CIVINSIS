@@ -172,7 +172,7 @@ $activeTab = $_GET['tab'] ?? 'login';
 </div><!-- /auth-split -->
 
 <div class="toast-container" id="toastContainer"></div>
-<script src="js/auth.js"></script>
+<script src="js/auth.js?v=2"></script>
 <script>
 // ── Conectar frontend con backend PHP ──────────────────────
 document.addEventListener('DOMContentLoaded', () => {

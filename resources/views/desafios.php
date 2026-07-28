@@ -4,6 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Desafíos – CIVINSIS</title>
+  <meta name="description" content="Acepta desafíos cívicos, gana experiencia y mejora tu comunidad participando.">
+  <meta name="theme-color" content="#36c0a1">
+  <link rel="canonical" href="desafios.php">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CIVINSIS">
+  <meta property="og:locale" content="es_SV">
+  <meta property="og:title" content="Desafíos – CIVINSIS">
+  <meta property="og:description" content="Acepta desafíos cívicos, gana experiencia y mejora tu comunidad participando.">
+  <meta property="og:url" content="desafios.php">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Desafíos – CIVINSIS">
+  <meta name="twitter:description" content="Acepta desafíos cívicos, gana experiencia y mejora tu comunidad participando.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -19,12 +31,15 @@
 <main style="padding-top:calc(var(--nav-height) + 2rem);padding-bottom:4rem;min-height:100vh">
   <div class="container">
 
-    <div class="debates-hero">
-      <div class="debates-hero-badge" style="background:var(--naranja-alpha);border-color:var(--naranja-alpha2);color:var(--naranja-700)">
-        <i class="fas fa-flag-checkered"></i> Desafíos ciudadanos
+    <div class="cv-dos-col" style="margin-bottom:1.5rem">
+      <div class="debates-hero" style="margin-bottom:0">
+        <div class="debates-hero-badge" style="background:var(--naranja-alpha);border-color:var(--naranja-alpha2);color:var(--naranja-700)">
+          <i class="fas fa-flag-checkered"></i> Desafíos ciudadanos
+        </div>
+        <h1>¿Sin ideas? <span>Prueba uno de nuestros desafíos</span></h1>
+        <p>Cada desafío representa una problemática real de tu comunidad. Acéptalo, crea una propuesta inspirada en él y gana XP, reputación y hasta insignias exclusivas.</p>
       </div>
-      <h1>¿Sin ideas? <span>Prueba uno de nuestros desafíos</span></h1>
-      <p>Cada desafío representa una problemática real de tu comunidad. Acéptalo, crea una propuesta inspirada en él y gana XP, reputación y hasta insignias exclusivas.</p>
+      <div class="cv-anim cv-anim-ancha" id="anim-desafios"></div>
     </div>
 
     <div class="filters-bar">

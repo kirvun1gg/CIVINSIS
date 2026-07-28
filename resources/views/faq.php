@@ -7,6 +7,18 @@ $activeNav = 'faq';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Preguntas Frecuentes – CIVINSIS</title>
+  <meta name="description" content="Preguntas frecuentes sobre CIVINSIS, la participación ciudadana y cómo empezar.">
+  <meta name="theme-color" content="#36c0a1">
+  <link rel="canonical" href="faq.php">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CIVINSIS">
+  <meta property="og:locale" content="es_SV">
+  <meta property="og:title" content="Preguntas Frecuentes – CIVINSIS">
+  <meta property="og:description" content="Preguntas frecuentes sobre CIVINSIS, la participación ciudadana y cómo empezar.">
+  <meta property="og:url" content="faq.php">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Preguntas Frecuentes – CIVINSIS">
+  <meta name="twitter:description" content="Preguntas frecuentes sobre CIVINSIS, la participación ciudadana y cómo empezar.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">

@@ -8,6 +8,19 @@ $esAdmin    = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard – CIVINSIS</title>
+  <meta name="description" content="Explora las propuestas ciudadanas de la comunidad y apoya las ideas que quieres ver realidad.">
+  <meta name="robots" content="noindex, follow">
+  <meta name="theme-color" content="#36c0a1">
+  <link rel="canonical" href="dashboard.php">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CIVINSIS">
+  <meta property="og:locale" content="es_SV">
+  <meta property="og:title" content="Dashboard – CIVINSIS">
+  <meta property="og:description" content="Explora las propuestas ciudadanas de la comunidad y apoya las ideas que quieres ver realidad.">
+  <meta property="og:url" content="dashboard.php">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Dashboard – CIVINSIS">
+  <meta name="twitter:description" content="Explora las propuestas ciudadanas de la comunidad y apoya las ideas que quieres ver realidad.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -69,6 +82,8 @@ $esAdmin    = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
 
   <!-- Main -->
   <main class="dash-main">
+    <div class="cv-anim cv-anim-banner" id="anim-propuestas" style="margin-bottom:1.5rem"></div>
+
     <div class="dash-kpi-grid" id="kpiGrid">
       <div class="kpi-card"><div class="kpi-num" id="kpiTotal">–</div><div class="kpi-label"><i class="fas fa-file-alt"></i> Propuestas totales</div></div>
       <div class="kpi-card"><div class="kpi-num" id="kpiVotos">–</div><div class="kpi-label"><i class="fas fa-arrow-up"></i> Votos totales</div></div>

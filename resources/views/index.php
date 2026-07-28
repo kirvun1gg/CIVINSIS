@@ -7,6 +7,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CIVINSIS – Participación Social Juvenil</title>
+  <meta name="description" content="CIVINSIS es la plataforma de participación social juvenil: propón ideas, debate y transforma tu comunidad.">
+  <meta name="theme-color" content="#36c0a1">
+  <link rel="canonical" href="index.php">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CIVINSIS">
+  <meta property="og:locale" content="es_SV">
+  <meta property="og:title" content="CIVINSIS – Participación Social Juvenil">
+  <meta property="og:description" content="CIVINSIS es la plataforma de participación social juvenil: propón ideas, debate y transforma tu comunidad.">
+  <meta property="og:url" content="index.php">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="CIVINSIS – Participación Social Juvenil">
+  <meta name="twitter:description" content="CIVINSIS es la plataforma de participación social juvenil: propón ideas, debate y transforma tu comunidad.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
@@ -338,6 +350,8 @@
   </div>
 
   <div class="hero-content">
+   <div class="hero-split">
+    <div class="hero-col-texto">
     <div class="hero-badge">
       <i class="fas fa-bolt"></i>
       Plataforma de Participación Juvenil
@@ -387,6 +401,12 @@
         <span class="hero-stat-label">Votos registrados</span>
       </div>
     </div>
+    </div>
+
+    <div class="hero-col-anim">
+      <div class="cv-anim cv-anim-cuadrada" id="anim-hero"></div>
+    </div>
+   </div>
   </div>
 
   <div class="hero-wave">
@@ -452,6 +472,9 @@
       <h2 class="section-title">¿Cómo <span>funciona</span>?</h2>
       <p class="section-desc" style="margin:0 auto">En 4 pasos sencillos, tu idea puede convertirse en una propuesta con impacto real.</p>
     </div>
+
+    <div class="cv-anim cv-anim-panoramica" id="anim-proceso" style="margin:0 auto 2.5rem"></div>
+
     <div class="features-grid animate-stagger">
       <div class="feature-card reveal">
         <div class="feature-icon"><i class="fas fa-user-plus"></i></div>
@@ -518,6 +541,8 @@
 <section class="section-sm" style="background:var(--grad-primary);color:#fff;position:relative;overflow:hidden">
   <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 20% 50%,rgba(255,255,255,.1) 0%,transparent 60%);pointer-events:none"></div>
   <div class="container text-center" style="position:relative;z-index:1">
+    <div class="cv-anim cv-anim-cuadrada cv-anim-sm" id="anim-cta" style="margin:0 auto 1.4rem"></div>
+
     <h2 class="reveal" style="font-family:var(--font-display);font-size:clamp(1.4rem,3vw,2.1rem);font-weight:800;margin-bottom:.6rem">
       ¿Listo para hacer la diferencia?
     </h2>

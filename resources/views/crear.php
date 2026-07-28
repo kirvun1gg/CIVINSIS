@@ -7,6 +7,19 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crear propuesta – CIVINSIS</title>
+  <meta name="description" content="Crea tu propuesta ciudadana y conviértela en una idea clara con ayuda de CIVI.">
+  <meta name="robots" content="noindex, follow">
+  <meta name="theme-color" content="#36c0a1">
+  <link rel="canonical" href="crear.php">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CIVINSIS">
+  <meta property="og:locale" content="es_SV">
+  <meta property="og:title" content="Crear propuesta – CIVINSIS">
+  <meta property="og:description" content="Crea tu propuesta ciudadana y conviértela en una idea clara con ayuda de CIVI.">
+  <meta property="og:url" content="crear.php">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Crear propuesta – CIVINSIS">
+  <meta name="twitter:description" content="Crea tu propuesta ciudadana y conviértela en una idea clara con ayuda de CIVI.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">

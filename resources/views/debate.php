@@ -9,6 +9,18 @@ $iniciales = $usuarioLogueado ? strtoupper(substr($usuarioNombre, 0, 1)) : 'U';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Debate – CIVINSIS</title>
+  <meta name="description" content="Debate ciudadano en CIVINSIS: aporta tu punto de vista de forma respetuosa y constructiva.">
+  <meta name="theme-color" content="#36c0a1">
+  <link rel="canonical" href="debate.php">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CIVINSIS">
+  <meta property="og:locale" content="es_SV">
+  <meta property="og:title" content="Debate – CIVINSIS">
+  <meta property="og:description" content="Debate ciudadano en CIVINSIS: aporta tu punto de vista de forma respetuosa y constructiva.">
+  <meta property="og:url" content="debate.php">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Debate – CIVINSIS">
+  <meta name="twitter:description" content="Debate ciudadano en CIVINSIS: aporta tu punto de vista de forma respetuosa y constructiva.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">

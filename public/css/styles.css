@@ -2,10 +2,10 @@
    CIVINSIS - Hoja de Estilos Principal v2.0
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Bebas+Neue&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Bebas+Neue&display=swap');
 
 :root {
-  --font-hero: 'Bebas Neue', 'Syne', sans-serif;
+  --font-hero: 'Baloo 2', 'Nunito', sans-serif;
   --verde:        #36c0a1;
   --naranja:      #ef7e22;
   --verde-100:    #d1f4ec;
@@ -47,8 +47,8 @@
   --shadow:       0 4px 24px rgba(0,0,0,.07);
   --shadow-lg:    0 8px 48px rgba(0,0,0,.12);
   --shadow-color: 0 8px 32px rgba(54,192,161,.18);
-  --font-display: 'Syne', sans-serif;
-  --font-body:    'DM Sans', sans-serif;
+  --font-display: 'Baloo 2', 'Nunito', sans-serif;
+  --font-body:    'Nunito', sans-serif;
   --radius:    12px;
   --radius-lg: 20px;
   --radius-xl: 32px;
@@ -245,6 +245,15 @@ input, textarea, select { font-family: inherit; }
   box-shadow: 0 4px 14px rgba(54,192,161,.4);
 }
 .nav-link.active:hover { color: #fff; }
+
+/* Logo marcado como sección actual (en la portada).
+   El nombre, que normalmente solo aparece al pasar el cursor, se
+   queda desplegado: es la señal más clara de "estás aquí". */
+.nav-logo.active .nav-logo-text { max-width: 220px; opacity: 1; margin-left: 0; }
+.nav-logo.active .nav-logo-text-inner { transform: translateX(0); }
+.nav-logo.active .nav-logo-box {
+  box-shadow: 0 0 0 3px var(--verde-alpha2), 0 6px 18px rgba(54,192,161,.32);
+}
 
 /* ISLA DERECHA · Acciones */
 .nav-actions {

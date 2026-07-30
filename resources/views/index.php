@@ -7,21 +7,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CIVINSIS – Participación Social Juvenil</title>
-  <meta name="description" content="CIVINSIS es la plataforma de participación social juvenil: propón ideas, debate y transforma tu comunidad.">
-  <meta name="theme-color" content="#36c0a1">
-  <link rel="canonical" href="index.php">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="CIVINSIS">
-  <meta property="og:locale" content="es_SV">
-  <meta property="og:title" content="CIVINSIS – Participación Social Juvenil">
-  <meta property="og:description" content="CIVINSIS es la plataforma de participación social juvenil: propón ideas, debate y transforma tu comunidad.">
-  <meta property="og:url" content="index.php">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="CIVINSIS – Participación Social Juvenil">
-  <meta name="twitter:description" content="CIVINSIS es la plataforma de participación social juvenil: propón ideas, debate y transforma tu comunidad.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@300;400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/gamificacion.css">
@@ -339,7 +327,7 @@
 </head>
 <body>
 
-<?php echo view('layouts.navbar', ['activeNav' => 'inicio'])->render(); ?>
+<?php echo view('layouts.navbar', ['activeNav' => 'logo'])->render(); ?>
 
 <!-- ── HERO ────────────────────────────────────────────────── -->
 <section class="hero" id="hero">

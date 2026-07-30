@@ -20,13 +20,13 @@ $esAdminNav   = in_array($usuarioRol ?? '', ['admin','moderador']);
 ?>
 <nav class="navbar" id="navbar">
   <div class="container nav-inner">
-    <a href="index.php" class="nav-logo" aria-label="CIVINSIS - Inicio">
+    <a href="index.php" class="nav-logo <?= ($activeNav === 'logo') ? 'active' : '' ?>" aria-label="CIVINSIS - Inicio"<?= ($activeNav === 'logo') ? ' aria-current="page"' : '' ?>>
       <div class="nav-logo-box"><img src="/media/logo.png" alt="CIVINSIS"></div>
       <span class="nav-logo-text"><span class="nav-logo-text-inner">CIVINSIS</span></span>
     </a>
     <div class="nav-links">
       <?php foreach ($navLinks as $l): ?>
-        <a href="<?= $l['href'] ?>" class="nav-link <?= ($activeNav === $l['key']) ? 'active' : '' ?>">
+        <a href="<?= $l['href'] ?>" class="nav-link <?= ($activeNav === $l['key']) ? 'active' : '' ?>"<?= ($activeNav === $l['key']) ? ' aria-current="page"' : '' ?>>
           <i class="fas <?= $l['icon'] ?>"></i> <?= $l['label'] ?>
         </a>
       <?php endforeach; ?>

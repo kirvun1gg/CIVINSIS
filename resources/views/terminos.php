@@ -7,20 +7,8 @@ $activeNav = '';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Términos de Uso – CIVINSIS</title>
-  <meta name="description" content="Términos y condiciones de uso de CIVINSIS.">
-  <meta name="theme-color" content="#36c0a1">
-  <link rel="canonical" href="terminos.php">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="CIVINSIS">
-  <meta property="og:locale" content="es_SV">
-  <meta property="og:title" content="Términos de Uso – CIVINSIS">
-  <meta property="og:description" content="Términos y condiciones de uso de CIVINSIS.">
-  <meta property="og:url" content="terminos.php">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Términos de Uso – CIVINSIS">
-  <meta name="twitter:description" content="Términos y condiciones de uso de CIVINSIS.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@300;400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css">
   <style>

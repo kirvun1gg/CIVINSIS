@@ -4,20 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ranking – CIVINSIS</title>
-  <meta name="description" content="Descubre a los ciudadanos más activos de CIVINSIS y su aporte a la comunidad.">
-  <meta name="theme-color" content="#36c0a1">
-  <link rel="canonical" href="ranking.php">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="CIVINSIS">
-  <meta property="og:locale" content="es_SV">
-  <meta property="og:title" content="Ranking – CIVINSIS">
-  <meta property="og:description" content="Descubre a los ciudadanos más activos de CIVINSIS y su aporte a la comunidad.">
-  <meta property="og:url" content="ranking.php">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Ranking – CIVINSIS">
-  <meta name="twitter:description" content="Descubre a los ciudadanos más activos de CIVINSIS y su aporte a la comunidad.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/gamificacion.css">

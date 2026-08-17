@@ -1,0 +1,844 @@
+/* ═══════════════════════════════════════════════════════════
+   CIVINSIS · Sistema de cosméticos
+   Marcos, fondos y efectos con identidad propia.
+   Todo en CSS puro: sin librerías y sin JS por fotograma.
+   Las animaciones continuas se limitan a transform/opacity/filter
+   para que el navegador las resuelva en la GPU.
+   ═══════════════════════════════════════════════════════════ */
+
+/* Variables de rareza — se usan en tarjetas, glows y bordes */
+:root {
+  --rar-comun:      #8fa3ad;
+  --rar-raro:       #4a9eff;
+  --rar-epico:      #a855f7;
+  --rar-legendario: #ffb703;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   1 · MARCOS
+   Se aplican a: .avatar-wrap (widget), .comment-avatar,
+   .profile-avatar / .profile-avatar-wrap (perfil)
+   ═══════════════════════════════════════════════════════════ */
+
+/* Base común de los marcos.
+   Importante: los anillos se dibujan con ::before/::after, y NUNCA con
+   border-radius:inherit — el contenedor del perfil no es redondo y el
+   anillo saldria cuadrado. Siempre se fija 50% de forma explicita.
+   Ademas .profile-avatar tiene overflow:hidden (para recortar la foto),
+   asi que los anillos van SOLO en el contenedor, nunca dentro de el. */
+.cos-marco,
+.avatar-wrap[class*="marco-"],
+.comment-avatar[class*="marco-"],
+.profile-avatar[class*="marco-"],
+.profile-avatar-wrap[class*="marco-"] { position: relative; }
+
+/* Los cosmeticos se dibujan sobre el AVATAR, no sobre su contenedor.
+   Motivo: el contenedor del perfil tambien envuelve el boton de la
+   camara, asi que no es cuadrado y el anillo salia ovalado.
+   El avatar, en cambio, siempre es cuadrado y redondo. */
+.profile-avatar[class*="marco-"],
+.profile-avatar[class*="efecto-"],
+.comment-avatar[class*="marco-"],
+.comment-avatar[class*="efecto-"],
+.avatar-wrap[class*="marco-"],
+.avatar-wrap[class*="efecto-"],
+.author-avatar[class*="marco-"],
+.author-avatar[class*="efecto-"],
+/* Un avatar que CONTIENE la capa de efectos tambien debe dejar de recortar,
+   porque el efecto ocurre FUERA del circulo. */
+.profile-avatar:has(> .cos-fx),
+.comment-avatar:has(> .cos-fx),
+.avatar-wrap:has(> .cos-fx),
+.author-avatar:has(> .cos-fx),
+.tiene-fx {
+  overflow: visible !important;   /* si no, el anillo exterior se recorta */
+  position: relative;
+}
+/* La capa de efectos tampoco recorta lo que dibuja fuera */
+/* ── CAPA DE EFECTOS ──────────────────────────────────────
+   Definida AQUI (fuera de la seccion de efectos) para que no se
+   pierda si esa seccion se reescribe.
+   Va centrada sobre el avatar y mide un 160% de el: como los marcos
+   ocupan hasta un 19%, los efectos suceden por fuera del marco.
+   Orden: contenido del avatar (2) > efecto (1) > marco (0). */
+.cos-fx {
+  position: absolute;
+  top: -30%; left: -30%; right: -30%; bottom: -30%;
+  display: block; border-radius: 50%;
+  pointer-events: none; overflow: visible;
+  z-index: 1;
+}
+.author-avatar > img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+/* Al liberar el overflow, la foto se recorta en el propio <img> */
+.profile-avatar img, .comment-avatar img, .avatar-wrap img,
+.profile-avatar span, .comment-avatar span { border-radius: 50%; }
+
+/* El contenido del avatar siempre por delante de los anillos */
+/* El contenido del avatar (foto, iniciales) por delante de todo.
+   Se excluye .cos-fx: es la capa de efectos, debe quedar detras del
+   contenido y conservar su propio position/tamano. */
+/* Excluidas las DOS capas de cosmeticos (.cos-fx = efectos,
+   .mk-capa = marcos SVG): necesitan conservar su position:absolute
+   y quedarse detras del contenido del avatar. */
+.profile-avatar > *:not(.cos-fx):not(.mk-capa):not(.fx-efecto),
+.comment-avatar > *:not(.cos-fx):not(.mk-capa):not(.fx-efecto),
+.avatar-wrap    > *:not(.cos-fx):not(.mk-capa):not(.fx-efecto),
+.author-avatar  > *:not(.cos-fx):not(.mk-capa):not(.fx-efecto) { position: relative; z-index: 2; }
+[class*="marco-"]::before, [class*="marco-"]::after,
+[class*="efecto-"]::before, [class*="efecto-"]::after { z-index: 0; }
+
+/* El boton de cambiar foto, por encima de todo */
+.profile-avatar-edit { z-index: 3; }
+
+/* ── BÁSICO · común ────────────────────────────────────────
+   Un borde limpio que reacciona al pasar el cursor. */
+.marco-basico {
+  border: 3px solid var(--verde, #36c0a1) !important;
+  transition: box-shadow .3s ease, border-color .3s ease;
+}
+.marco-basico:hover { box-shadow: 0 0 0 4px rgba(54, 192, 161, .18); }
+
+/* ── RADIANTE · raro ───────────────────────────────────────
+   Anillo dorado con un reflejo que gira. El reflejo es un
+   cónico rotando bajo una máscara de anillo: un solo elemento. */
+.marco-radiante {
+  border: 3px solid #f2c14e !important;
+  box-shadow: 0 0 14px rgba(255, 200, 80, .45);
+}
+.marco-radiante::before {
+  content: ''; position: absolute; inset: -6px; border-radius: 50%;
+  background: conic-gradient(from 0deg,
+    transparent 0deg, rgba(255,235,160,.9) 40deg, transparent 90deg, transparent 360deg);
+  animation: cosGirar 3.5s linear infinite;
+  pointer-events: none; z-index: 0;
+}
+@keyframes cosGirar { to { transform: rotate(360deg); } }
+
+/* ── HEXA · raro ───────────────────────────────────────────
+   Recorte hexagonal con un borde que cambia de tono por pasos,
+   como segmentos que se encienden. */
+.marco-hexa {
+  border: 3px solid #4a9eff !important;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  border-radius: 0 !important;
+  animation: cosHexa 3s steps(6, end) infinite;
+}
+@keyframes cosHexa {
+  0%   { border-color: #4a9eff; filter: drop-shadow(0 0 4px rgba(74,158,255,.6)); }
+  50%  { border-color: #7fd4ff; filter: drop-shadow(0 0 9px rgba(127,212,255,.85)); }
+  100% { border-color: #4a9eff; filter: drop-shadow(0 0 4px rgba(74,158,255,.6)); }
+}
+
+/* ── DUAL · épico ──────────────────────────────────────────
+   Dos identidades que se mezclan: gradiente cónico girando. */
+.marco-dual {
+  border: 3px solid transparent !important;
+  box-shadow: 0 0 16px rgba(120, 90, 255, .4);
+}
+.marco-dual::before {
+  content: ''; position: absolute; inset: -4px; border-radius: 50%;
+  background: conic-gradient(from 0deg, #4a9eff, #a855f7, #4a9eff);
+  animation: cosGirar 6s linear infinite;
+  pointer-events: none; z-index: 0;
+}
+
+/* ── CONEXIÓN · épico ──────────────────────────────────────
+   Puntos alrededor del avatar unidos por un anillo punteado
+   que gira despacio, con un pulso de luz periódico. */
+.marco-conexion {
+  border: 2px solid rgba(54, 192, 161, .55) !important;
+}
+/* Anillo de enlace + nodos reales orbitando (no un simple punteado) */
+.marco-conexion::before {
+  content: ''; position: absolute; inset: -9px; border-radius: 50%;
+  border: 1px solid rgba(54, 192, 161, .45);
+  box-shadow: 0 0 14px rgba(54, 192, 161, .35), inset 0 0 10px rgba(54, 192, 161, .2);
+  animation: cosPulso 3s ease-in-out infinite;
+  pointer-events: none;
+}
+.marco-conexion::after {
+  content: ''; position: absolute; inset: -20%;
+  /* Sin border-radius: recortaria los puntos que quedan en el borde.
+     Las posiciones se calculan sobre una circunferencia al 45% del
+     recuadro, asi ningun punto toca el limite y todos se ven enteros. */
+  background-image:
+    radial-gradient(circle 4px at 50.0% 5.0%, #5ce6c4 96%, transparent),
+    radial-gradient(circle 4px at 89.0% 27.5%, #3fd4ae 96%, transparent),
+    radial-gradient(circle 4px at 89.0% 72.5%, #5ce6c4 96%, transparent),
+    radial-gradient(circle 4px at 50.0% 95.0%, #3fd4ae 96%, transparent),
+    radial-gradient(circle 4px at 11.0% 72.5%, #5ce6c4 96%, transparent),
+    radial-gradient(circle 4px at 11.0% 27.5%, #3fd4ae 96%, transparent);
+  filter: drop-shadow(0 0 5px rgba(90, 230, 200, .95));
+  animation: cosGirar 14s linear infinite;
+  pointer-events: none;
+}
+@keyframes cosPulso { 0%, 100% { opacity: .25; } 50% { opacity: .9; } }
+
+/* ── IDEA · épico ──────────────────────────────────────────
+   Borde cálido y una chispa que recorre la circunferencia. */
+.marco-idea {
+  border: 3px solid #ffd166 !important;
+  box-shadow: 0 0 12px rgba(255, 209, 102, .4);
+}
+.marco-idea::before {
+  content: ''; position: absolute; inset: -10%; border-radius: 50%;
+  border: 1px dashed rgba(255, 214, 120, .5);
+  animation: cosGirarInv 16s linear infinite;
+  pointer-events: none;
+}
+/* La chispa: un punto luminoso colocado en el borde del anillo */
+.marco-idea::after {
+  content: ''; position: absolute; inset: -20%;
+  /* La chispa es un punto sobre un recuadro que gira: asi recorre el
+     borde de verdad. Antes usaba transform-origin con un calc erroneo
+     y giraba sobre un punto que no correspondia al centro. */
+  background-image:
+    radial-gradient(circle 5px at 50% 5%, #fff6d0 92%, transparent),
+    radial-gradient(circle 8px at 50% 5%, rgba(255,220,130,.35) 70%, transparent);
+  filter: drop-shadow(0 0 6px rgba(255, 224, 130, .95));
+  animation: cosGirar 4s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes cosChispa {
+  0%   { transform: rotate(0deg);   opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: rotate(360deg); opacity: 0; }
+}
+
+/* ── AURORA · legendario ───────────────────────────────────
+   Gradiente cónico multicolor girando + halo que respira. */
+.marco-aurora {
+  border: 3px solid transparent !important;
+  animation: cosAuroraHalo 4s ease-in-out infinite;
+}
+.marco-aurora::before {
+  content: ''; position: absolute; inset: -5px; border-radius: 50%;
+  background: conic-gradient(from 0deg,
+    #36c0a1, #4a9eff, #a855f7, #ff7ac6, #36c0a1);
+  animation: cosGirar 8s linear infinite;
+  pointer-events: none; z-index: 0;
+}
+.marco-aurora::after {
+  content: ''; position: absolute; inset: -12px; border-radius: 50%;
+  background: radial-gradient(circle, transparent 58%, rgba(120, 200, 255, .22) 100%);
+  animation: cosPulso 4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes cosAuroraHalo {
+  0%, 100% { box-shadow: 0 0 16px rgba(80, 200, 220, .5); }
+  50%      { box-shadow: 0 0 30px rgba(160, 120, 255, .75); }
+}
+/* Animación de dibujado al equiparlo */
+.marco-aurora.cos-equipando::before { animation: cosGirar 1s linear, cosDibujar .9s ease-out; }
+@keyframes cosDibujar {
+  from { clip-path: polygon(50% 50%, 50% 0%, 50% 0%, 50% 0%); opacity: 0; }
+  to   { clip-path: polygon(50% 50%, -50% -50%, 150% -50%, 150% 150%, -50% 150%); opacity: 1; }
+}
+
+/* ── CÍVICO · legendario ───────────────────────────────────
+   Insignia de comunidad: doble anillo, uno sólido y otro de
+   segmentos que rotan en sentido contrario. */
+.marco-civico {
+  border: 3px solid #36c0a1 !important;
+  box-shadow: 0 0 0 2px rgba(239, 126, 34, .55), 0 0 20px rgba(54, 192, 161, .5);
+}
+.marco-civico::before {
+  content: ''; position: absolute; inset: -10px; border-radius: 50%;
+  background: conic-gradient(from 0deg,
+    #36c0a1 0deg 18deg, transparent 18deg 45deg,
+    #ef7e22 45deg 63deg, transparent 63deg 90deg,
+    #36c0a1 90deg 108deg, transparent 108deg 135deg,
+    #ef7e22 135deg 153deg, transparent 153deg 180deg,
+    #36c0a1 180deg 198deg, transparent 198deg 225deg,
+    #ef7e22 225deg 243deg, transparent 243deg 270deg,
+    #36c0a1 270deg 288deg, transparent 288deg 315deg,
+    #ef7e22 315deg 333deg, transparent 333deg 360deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 62%, #000 63%);
+          mask: radial-gradient(circle, transparent 0 62%, #000 63%);
+  animation: cosGirarInv 14s linear infinite;
+  pointer-events: none;
+}
+@keyframes cosGirarInv { to { transform: rotate(-360deg); } }
+
+/* ── CONSTELACIÓN · legendario (secreto) ───────────────────
+   Puntos que orbitan a distinta velocidad, unidos por un
+   anillo tenue. Cada punto es un box-shadow: cero DOM extra. */
+.marco-constelacion {
+  border: 2px solid rgba(180, 200, 255, .5) !important;
+  box-shadow: 0 0 18px rgba(150, 180, 255, .45);
+}
+.marco-constelacion::before {
+  content: ''; position: absolute; inset: -10px; border-radius: 50%;
+  border: 1px solid rgba(180, 200, 255, .25);
+  animation: cosGirar 20s linear infinite;
+  pointer-events: none;
+}
+.marco-constelacion::after {
+  content: ''; position: absolute; inset: -20%;
+  /* Sin border-radius: recortaria los puntos que quedan en el borde.
+     Las posiciones se calculan sobre una circunferencia al 45% del
+     recuadro, asi ningun punto toca el limite y todos se ven enteros. */
+  background-image:
+    radial-gradient(circle 3px at 59.4% 6.0%, #ffffff 96%, transparent),
+    radial-gradient(circle 2.2px at 87.7% 25.5%, #cfe0ff 96%, transparent),
+    radial-gradient(circle 3px at 94.0% 59.4%, #eaf2ff 96%, transparent),
+    radial-gradient(circle 2.2px at 74.5% 87.7%, #b9d4ff 96%, transparent),
+    radial-gradient(circle 3px at 40.6% 94.0%, #ffffff 96%, transparent),
+    radial-gradient(circle 2.2px at 12.3% 74.5%, #cfe0ff 96%, transparent),
+    radial-gradient(circle 3px at 6.0% 40.6%, #eaf2ff 96%, transparent),
+    radial-gradient(circle 2.2px at 25.5% 12.3%, #b9d4ff 96%, transparent);
+  filter: drop-shadow(0 0 4px rgba(210, 228, 255, .95));
+  animation: cosGirar 26s linear infinite reverse;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   2 · FONDOS DE PERFIL
+   Se aplican sobre .profile-hero (y .public-hero)
+   ═══════════════════════════════════════════════════════════ */
+.profile-hero[class*="fondo-"],
+.public-hero[class*="fondo-"] { position: relative; overflow: hidden; }
+
+/* Capa de textura reutilizable por los fondos */
+.profile-hero[class*="fondo-"]::before,
+.public-hero[class*="fondo-"]::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+}
+/* El contenido siempre por encima de la decoración */
+.profile-hero > *, .public-hero > * { position: relative; z-index: 1; }
+
+/* ── NOCHE ESTELAR · común ─────────────────────────────────
+   Estrellas hechas con radial-gradients: sin elementos extra. */
+.fondo-noche { background: linear-gradient(160deg, #0a1420 0%, #101d2e 60%, #0a1420 100%) !important; }
+.fondo-noche::before {
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 22%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 34% 68%, #dbe9ff 50%, transparent 51%),
+    radial-gradient(1px 1px   at 58% 18%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 74% 54%, #cfe0ff 50%, transparent 51%),
+    radial-gradient(1px 1px   at 88% 30%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 46% 84%, #dbe9ff 50%, transparent 51%);
+  animation: cosParpadeo 5s ease-in-out infinite;
+}
+@keyframes cosParpadeo { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+
+/* ── AURORA · común ────────────────────────────────────────
+   Cortinas de luz que se desplazan muy despacio. */
+.fondo-aurora { background: linear-gradient(160deg, #08211c 0%, #0d2b26 100%) !important; }
+.fondo-aurora::before {
+  background:
+    radial-gradient(60% 45% at 25% 20%, rgba(54,192,161,.35), transparent 70%),
+    radial-gradient(55% 40% at 75% 35%, rgba(74,158,255,.28), transparent 70%);
+  animation: cosDeriva 14s ease-in-out infinite alternate;
+}
+@keyframes cosDeriva {
+  from { transform: translate3d(-4%, 0, 0) scale(1); }
+  to   { transform: translate3d(4%, -3%, 0) scale(1.08); }
+}
+
+/* ── HORIZONTE · común ─────────────────────────────────────
+   Una fuente de luz que asoma y se desplaza. */
+.fondo-horizonte { background: linear-gradient(180deg, #0b1a24 0%, #142c33 70%, #1d3b3a 100%) !important; }
+.fondo-horizonte::before {
+  background: radial-gradient(50% 70% at 50% 108%, rgba(255,190,110,.42), transparent 70%);
+  animation: cosHorizonte 16s ease-in-out infinite alternate;
+}
+@keyframes cosHorizonte {
+  from { transform: translateX(-12%); opacity: .75; }
+  to   { transform: translateX(12%);  opacity: 1; }
+}
+
+/* ── ASCENSO · raro ────────────────────────────────────────
+   Partículas cálidas que suben. */
+.fondo-ascenso { background: linear-gradient(180deg, #1d0f06 0%, #2e1608 60%, #1a0d05 100%) !important; }
+.fondo-ascenso::before {
+  background-image:
+    radial-gradient(2px 2px at 18% 100%, rgba(255,170,80,.95) 50%, transparent 51%),
+    radial-gradient(2px 2px at 42% 100%, rgba(255,120,60,.9)  50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 63% 100%, rgba(255,200,120,.9) 50%, transparent 51%),
+    radial-gradient(2px 2px at 81% 100%, rgba(255,150,70,.9)  50%, transparent 51%);
+  animation: cosSubir 7s linear infinite;
+}
+@keyframes cosSubir {
+  from { transform: translateY(0);     opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  to   { transform: translateY(-120%); opacity: 0; }
+}
+
+/* ── FLUJO · raro ──────────────────────────────────────────
+   Líneas curvas que recorren el fondo. */
+.fondo-flujo { background: linear-gradient(135deg, #0a1f24 0%, #103038 100%) !important; }
+.fondo-flujo::before {
+  background-image: repeating-linear-gradient(115deg,
+    transparent 0 28px,
+    rgba(90, 200, 220, .16) 28px 30px,
+    transparent 30px 58px);
+  animation: cosFluir 9s linear infinite;
+}
+@keyframes cosFluir { from { background-position: 0 0; } to { background-position: 200px 0; } }
+
+/* ── COSMOS · épico ────────────────────────────────────────
+   Estrellas + nebulosa que cambia de intensidad. */
+.fondo-cosmos { background: linear-gradient(150deg, #070a1c 0%, #14092b 55%, #060d1e 100%) !important; }
+.fondo-cosmos::before {
+  background-image:
+    radial-gradient(45% 40% at 22% 30%, rgba(150,90,255,.35), transparent 70%),
+    radial-gradient(40% 35% at 78% 65%, rgba(60,150,255,.3), transparent 70%),
+    radial-gradient(1.5px 1.5px at 15% 55%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 38% 25%, #e6ddff 50%, transparent 51%),
+    radial-gradient(1px 1px   at 62% 72%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 85% 40%, #d8e6ff 50%, transparent 51%),
+    radial-gradient(1px 1px   at 50% 88%, #fff 50%, transparent 51%);
+  animation: cosNebulosa 12s ease-in-out infinite alternate;
+}
+@keyframes cosNebulosa {
+  from { opacity: .7;  transform: scale(1); }
+  to   { opacity: 1;   transform: scale(1.06); }
+}
+
+/* ── CONEXIONES · épico ────────────────────────────────────
+   Malla de nodos con un pulso que la recorre. */
+.fondo-conexiones { background: linear-gradient(135deg, #08201d 0%, #0d2a2f 100%) !important; }
+.fondo-conexiones::before {
+  background-image:
+    linear-gradient(rgba(54,192,161,.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(54,192,161,.13) 1px, transparent 1px),
+    radial-gradient(2.5px 2.5px at 20% 30%, rgba(90,230,200,.95) 50%, transparent 51%),
+    radial-gradient(2.5px 2.5px at 60% 55%, rgba(90,230,200,.9) 50%, transparent 51%),
+    radial-gradient(2.5px 2.5px at 82% 25%, rgba(90,230,200,.9) 50%, transparent 51%),
+    radial-gradient(2.5px 2.5px at 40% 78%, rgba(90,230,200,.9) 50%, transparent 51%);
+  background-size: 46px 46px, 46px 46px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  animation: cosParpadeo 4.5s ease-in-out infinite;
+}
+
+/* ── NEBULOSA · épico ──────────────────────────────────────
+   Masas de color que se expanden y contraen. */
+.fondo-nebulosa { background: linear-gradient(140deg, #0a0f24 0%, #17103a 60%, #0b1430 100%) !important; }
+.fondo-nebulosa::before {
+  background:
+    radial-gradient(50% 45% at 30% 35%, rgba(120,80,255,.42), transparent 72%),
+    radial-gradient(45% 40% at 70% 60%, rgba(50,190,200,.35), transparent 72%),
+    radial-gradient(35% 30% at 55% 20%, rgba(255,120,200,.22), transparent 72%);
+  animation: cosNebulosa 10s ease-in-out infinite alternate;
+}
+
+/* ── EVOLUCIÓN · legendario ────────────────────────────────
+   La malla se densifica y vuelve a empezar: un ciclo de
+   crecimiento. Se logra animando el tamaño de la rejilla. */
+.fondo-evolucion { background: linear-gradient(140deg, #071a1f 0%, #0d2733 55%, #091d28 100%) !important; }
+.fondo-evolucion::before {
+  background-image:
+    linear-gradient(rgba(90,220,255,.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90,220,255,.16) 1px, transparent 1px),
+    radial-gradient(60% 50% at 50% 50%, rgba(80,200,255,.2), transparent 75%);
+  animation: cosEvolucion 11s ease-in-out infinite;
+}
+@keyframes cosEvolucion {
+  0%   { background-size: 90px 90px, 90px 90px, 100% 100%; opacity: .45; }
+  50%  { background-size: 26px 26px, 26px 26px, 100% 100%; opacity: 1; }
+  100% { background-size: 90px 90px, 90px 90px, 100% 100%; opacity: .45; }
+}
+
+/* ── LEGADO · legendario ───────────────────────────────────
+   Partículas doradas y una onda que barre el fondo. */
+.fondo-legado { background: linear-gradient(140deg, #16110a 0%, #241a08 55%, #120d05 100%) !important; }
+.fondo-legado::before {
+  background-image:
+    radial-gradient(2px 2px at 18% 40%, rgba(255,210,120,.95) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 44% 68%, rgba(255,225,150,.9) 50%, transparent 51%),
+    radial-gradient(2px 2px at 70% 30%, rgba(255,200,100,.9) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 88% 62%, rgba(255,230,160,.9) 50%, transparent 51%);
+  animation: cosParpadeo 6s ease-in-out infinite;
+}
+.fondo-legado::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(100deg, transparent 35%, rgba(255,215,130,.18) 50%, transparent 65%);
+  animation: cosOnda 7s ease-in-out infinite;
+}
+@keyframes cosOnda {
+  0%   { transform: translateX(-120%); }
+  60%  { transform: translateX(120%); }
+  100% { transform: translateX(120%); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   3 · EFECTOS
+   REGLA: un marco PERMANECE, un efecto OCURRE.
+
+   GEOMETRIA UNICA (esto es lo que evita que se descentren):
+   · La capa .cos-fx esta CENTRADA sobre el avatar y mide un 160% de el.
+   · TODOS los pseudo-elementos ocupan la capa entera (inset: 0), asi
+     que su centro coincide siempre con el del avatar.
+   · Lo que se dibuja va en PORCENTAJES de la capa, nunca en pixeles
+     fijos: al cambiar el tamano del avatar todo escala igual.
+   · Los puntos se situan al 46% de la capa (= 73px en el perfil), por
+     fuera del marco mas grande (69px).
+   ═══════════════════════════════════════════════════════════ */
+/* Ojo: la capa .cos-fx queda EXCLUIDA de esta regla. Si no, este
+   'position: relative' pisaria su 'position: absolute' (misma
+   especificidad, gana la ultima) y la capa colapsaba a 0x0. */
+[class*="efecto-"]:not(.cos-fx) { position: relative; }
+
+/* Todos los pseudo-elementos comparten centro y tamano */
+.cos-fx::before, .cos-fx::after,
+[class*="efecto-"]::before, [class*="efecto-"]::after {
+  content: ''; position: absolute; inset: 0;
+  pointer-events: none; border-radius: 50%;
+}
+
+/* ── CHISPA · comun ─────────────────────────────────────── */
+.efecto-chispa::before {
+  background-image: radial-gradient(circle 6px at 76% 16%, #fff6d5 92%, transparent);
+  filter: drop-shadow(0 0 8px rgba(255,235,160,.95));
+  opacity: 0; animation: fxChispa 7s ease-in-out infinite;
+}
+.efecto-chispa::after {
+  background-image:
+    radial-gradient(circle 2.4px at 68% 10%, #fff0c0 96%, transparent),
+    radial-gradient(circle 2px   at 84% 22%, #ffe9a8 96%, transparent),
+    radial-gradient(circle 2.2px at 80% 6%,  #fff6d5 96%, transparent);
+  opacity: 0; animation: fxChispaPart 7s ease-out infinite;
+}
+@keyframes fxChispa {
+  0%, 84%, 100% { opacity: 0; transform: scale(.75); }
+  88%           { opacity: 1; transform: scale(1.06); }
+  94%           { opacity: 0; transform: scale(.85); }
+}
+@keyframes fxChispaPart {
+  0%, 88%, 100% { opacity: 0; transform: scale(.92); }
+  91%           { opacity: 1; transform: scale(1); }
+  98%           { opacity: 0; transform: scale(1.18); }
+}
+
+/* ── IDEA · raro ─ particulas -> convergen -> destello ──── */
+.efecto-idea::before {
+  background-image:
+    radial-gradient(circle 3px at 50.0% 4.0%, #ffe9a8 96%, transparent),
+    radial-gradient(circle 2.6px at 93.7% 35.8%, #ffd98a 96%, transparent),
+    radial-gradient(circle 3px at 77.0% 87.2%, #ffe9a8 96%, transparent),
+    radial-gradient(circle 2.6px at 23.0% 87.2%, #ffd98a 96%, transparent),
+    radial-gradient(circle 3px at 6.3% 35.8%, #ffe9a8 96%, transparent);
+  filter: drop-shadow(0 0 5px rgba(255,215,120,.9));
+  opacity: 0; animation: fxIdea 8s ease-in-out infinite;
+}
+.efecto-idea::after {
+  background: radial-gradient(circle 14px at 50% 50%, #fff8dc 20%, rgba(255,225,140,0) 70%);
+  opacity: 0; animation: fxIdeaFlash 8s ease-out infinite;
+}
+@keyframes fxIdea {
+  0%, 55%, 100% { opacity: 0; transform: scale(1) rotate(0deg); }
+  62%           { opacity: 1; transform: scale(1) rotate(8deg); }
+  70%           { opacity: 1; transform: scale(.94) rotate(-6deg); }
+  78%           { opacity: 1; transform: scale(.14) rotate(0deg); }
+  82%           { opacity: 0; transform: scale(.14); }
+  90%           { opacity: .8; transform: scale(1.35); }
+  96%           { opacity: 0; transform: scale(1.5); }
+}
+@keyframes fxIdeaFlash {
+  0%, 79%, 100% { opacity: 0; transform: scale(.3); }
+  83%           { opacity: 1; transform: scale(1); }
+  89%           { opacity: 0; transform: scale(1.4); }
+}
+
+/* ── IMPULSO · raro ─ onda que sale y se desvanece ──────── */
+.efecto-impulso::after {
+  border: 2px solid rgba(54, 192, 161, .9);
+  opacity: 0; animation: fxImpulso 6s cubic-bezier(.2,.7,.3,1) infinite;
+}
+@keyframes fxImpulso {
+  0%, 74%, 100% { opacity: 0; transform: scale(.62); }
+  78%           { opacity: .95; transform: scale(.68); }
+  96%           { opacity: 0; transform: scale(1.15); }
+}
+
+/* ── PULSO · epico ─ senal que viaja y rebota ───────────── */
+.efecto-pulso::before {
+  background-image: radial-gradient(circle 5px at 50% 50%, #7fe9ff 92%, transparent);
+  filter: drop-shadow(0 0 10px rgba(120,220,255,.95));
+  opacity: 0; animation: fxPulsoSenal 7s cubic-bezier(.3,.1,.2,1) infinite;
+}
+.efecto-pulso::after {
+  border: 2px solid rgba(120, 220, 255, .85);
+  opacity: 0; animation: fxPulsoOnda 7s ease-out infinite;
+}
+@keyframes fxPulsoSenal {
+  0%, 70%, 100% { opacity: 0; transform: translateY(0) scale(.4); }
+  73%           { opacity: 1; transform: translateY(0) scale(1); }
+  84%           { opacity: 1; transform: translateY(-42%) scale(.75); }
+  88%           { opacity: 0; transform: translateY(-48%) scale(.4); }
+}
+@keyframes fxPulsoOnda {
+  0%, 86%, 100% { opacity: 0; transform: scale(.7); }
+  90%           { opacity: .85; transform: scale(.88); }
+  99%           { opacity: 0; transform: scale(1.12); }
+}
+
+/* ── ESTRELLA FUGAZ · epico ─ cruza con rastro ──────────── */
+.efecto-estrella-fugaz::before,
+.efecto-estrella-fugaz::after {
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0 62%, #ffffff 78%, rgba(255,255,255,0) 82%);
+  -webkit-mask: linear-gradient(#000 0 0) 0 46%/100% 3px no-repeat;
+          mask: linear-gradient(#000 0 0) 0 46%/100% 3px no-repeat;
+  filter: drop-shadow(0 0 6px rgba(200,230,255,.9));
+  opacity: 0;
+}
+.efecto-estrella-fugaz::before { animation: fxFugaz  9s linear infinite; }
+.efecto-estrella-fugaz::after  { animation: fxFugaz2 9s linear infinite; }
+@keyframes fxFugaz {
+  0%, 62%, 100% { opacity: 0; transform: rotate(-24deg) translateX(-70%); }
+  66%           { opacity: 1; transform: rotate(-24deg) translateX(-35%); }
+  74%           { opacity: 0; transform: rotate(-24deg) translateX(60%); }
+}
+@keyframes fxFugaz2 {
+  0%, 86%, 100% { opacity: 0; transform: rotate(16deg) translateX(-70%) translateY(30%); }
+  89%           { opacity: .95; transform: rotate(16deg) translateX(-30%) translateY(30%); }
+  97%           { opacity: 0; transform: rotate(16deg) translateX(65%) translateY(30%); }
+}
+
+/* ── ENLACE · epico ─ senal enviada a la comunidad ──────── */
+.efecto-enlace::before {
+  background-image: radial-gradient(circle 4.5px at 50% 50%, #5ce6c4 92%, transparent);
+  filter: drop-shadow(0 0 8px rgba(90,230,200,.95));
+  opacity: 0; animation: fxEnlaceViaje 8s cubic-bezier(.35,.05,.25,1) infinite;
+}
+.efecto-enlace::after {
+  background-image: radial-gradient(circle 5px at 92% 14%, rgba(90,230,200,.95) 92%, transparent);
+  filter: drop-shadow(0 0 9px rgba(90,230,200,.9));
+  opacity: 0; animation: fxEnlaceDestino 8s ease-out infinite;
+}
+@keyframes fxEnlaceViaje {
+  0%, 66%, 100% { opacity: 0; transform: translate(0,0) scale(.5); }
+  70%           { opacity: 1; transform: translate(0,0) scale(1); }
+  80%           { opacity: 1; transform: translate(42%,-36%) scale(.8); }
+  83%           { opacity: 0; transform: translate(46%,-40%) scale(.5); }
+}
+@keyframes fxEnlaceDestino {
+  0%, 81%, 100% { opacity: 0; transform: scale(.85); }
+  85%           { opacity: 1; transform: scale(1); }
+  95%           { opacity: 0; transform: scale(1.25); }
+}
+
+/* ── ASCENSO · epico ─ particulas que suben ─────────────── */
+.efecto-ascenso::before {
+  background-image:
+    radial-gradient(circle 3px   at 22% 88%, #9ef0d4 96%, transparent),
+    radial-gradient(circle 2.4px at 44% 94%, #7fe6c8 96%, transparent),
+    radial-gradient(circle 3px   at 68% 90%, #9ef0d4 96%, transparent),
+    radial-gradient(circle 2.2px at 84% 96%, #7fe6c8 96%, transparent);
+  filter: drop-shadow(0 0 5px rgba(140,240,205,.85));
+  opacity: 0; animation: fxAscenso 8s ease-out infinite;
+}
+.efecto-ascenso::after {
+  background-image:
+    radial-gradient(circle 2.6px at 34% 14%, #dfffef 96%, transparent),
+    radial-gradient(circle 2.2px at 72% 8%,  #dfffef 96%, transparent);
+  filter: drop-shadow(0 0 6px rgba(200,255,235,.9));
+  opacity: 0; animation: fxAscensoDestello 8s ease-out infinite;
+}
+@keyframes fxAscenso {
+  0%, 58%, 100% { opacity: 0; transform: translateY(6%); }
+  64%           { opacity: 1; transform: translateY(0); }
+  80%           { opacity: .85; transform: translateY(-42%); }
+  90%           { opacity: 0; transform: translateY(-72%); }
+}
+@keyframes fxAscensoDestello {
+  0%, 82%, 100% { opacity: 0; transform: scale(.85); }
+  86%           { opacity: 1; transform: scale(1); }
+  93%           { opacity: 0; transform: scale(1.15); }
+}
+
+/* ── AURORA · legendario ─ onda de luz detras ───────────── */
+.efecto-aurora::before {
+  background: radial-gradient(circle, rgba(54,192,161,.5) 26%, rgba(74,158,255,.32) 52%, transparent 68%);
+  opacity: 0; z-index: -1;
+  animation: fxAurora 10s ease-in-out infinite;
+}
+.efecto-aurora::after {
+  background-image:
+    radial-gradient(circle 2.6px at 69.4% 8.3%, #a8f0ff 96%, transparent),
+    radial-gradient(circle 2.2px at 91.7% 69.4%, #d9b8ff 96%, transparent),
+    radial-gradient(circle 2.6px at 30.6% 91.7%, #a8f0ff 96%, transparent),
+    radial-gradient(circle 2.2px at 8.3% 30.6%, #ffc8ea 96%, transparent);
+  filter: drop-shadow(0 0 5px rgba(190,230,255,.9));
+  opacity: 0; animation: fxAuroraPart 10s ease-out infinite;
+}
+@keyframes fxAurora {
+  0%, 60%, 100% { opacity: 0; transform: scale(.55); filter: hue-rotate(0deg); }
+  68%           { opacity: .55; transform: scale(.8);  filter: hue-rotate(0deg); }
+  80%           { opacity: .9;  transform: scale(1.05); filter: hue-rotate(60deg); }
+  92%           { opacity: 0;   transform: scale(1.25); filter: hue-rotate(120deg); }
+}
+@keyframes fxAuroraPart {
+  0%, 80%, 100% { opacity: 0; transform: scale(.92); }
+  86%           { opacity: 1; transform: scale(1); }
+  96%           { opacity: 0; transform: scale(1.12); }
+}
+
+/* ── METAMORFOSIS · legendario ─ transformacion ─────────── */
+.efecto-metamorfosis::before {
+  background-image:
+    radial-gradient(circle 2.8px at 50.0% 4.0%, #ffe9b0 96%, transparent),
+    radial-gradient(circle 2.4px at 89.8% 27.0%, #ffd98a 96%, transparent),
+    radial-gradient(circle 2.8px at 89.8% 73.0%, #ffe9b0 96%, transparent),
+    radial-gradient(circle 2.4px at 50.0% 96.0%, #ffd98a 96%, transparent),
+    radial-gradient(circle 2.8px at 10.2% 73.0%, #ffe9b0 96%, transparent),
+    radial-gradient(circle 2.4px at 10.2% 27.0%, #ffd98a 96%, transparent);
+  filter: drop-shadow(0 0 6px rgba(255,220,140,.9));
+  opacity: 0; animation: fxMeta 9s cubic-bezier(.4,0,.3,1) infinite;
+}
+.efecto-metamorfosis::after {
+  background: radial-gradient(circle 34px at 50% 50%, rgba(255,240,190,.9) 18%, transparent 62%);
+  opacity: 0; animation: fxMetaFlash 9s ease-out infinite;
+}
+@keyframes fxMeta {
+  0%, 52%, 100% { opacity: 0; transform: rotate(0deg) scale(.7); }
+  58%           { opacity: 1; transform: rotate(30deg) scale(1); }
+  74%           { opacity: 1; transform: rotate(230deg) scale(1.04); }
+  84%           { opacity: 1; transform: rotate(300deg) scale(.2); }
+  90%           { opacity: 0; transform: rotate(320deg) scale(.15); }
+}
+@keyframes fxMetaFlash {
+  0%, 50%, 100% { opacity: 0; transform: scale(.4); }
+  54%           { opacity: .8; transform: scale(.85); }
+  60%           { opacity: 0; transform: scale(1.05); }
+  85%           { opacity: 0; transform: scale(.4); }
+  88%           { opacity: 1; transform: scale(1.1); }
+  95%           { opacity: 0; transform: scale(1.5); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   4 · TARJETAS DE LA COLECCIÓN
+   ═══════════════════════════════════════════════════════════ */
+.cos-card {
+  position: relative; background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.1rem .9rem .95rem; text-align: center;
+  cursor: pointer; overflow: hidden;
+  transition: transform .25s cubic-bezier(.2,.9,.3,1), box-shadow .25s ease, border-color .25s ease;
+}
+.cos-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.cos-card.rar-raro:hover       { border-color: var(--rar-raro);       box-shadow: 0 8px 24px rgba(74,158,255,.25); }
+.cos-card.rar-epico:hover      { border-color: var(--rar-epico);      box-shadow: 0 8px 26px rgba(168,85,247,.28); }
+.cos-card.rar-legendario:hover { border-color: var(--rar-legendario); box-shadow: 0 8px 30px rgba(255,183,3,.32); }
+
+/* Lienzo de la vista previa.
+   Los efectos ocurren FUERA del circulo, asi que la tarjeta no recorta
+   y ademas se recentra el lienzo para que quepa la animacion. */
+.cos-preview[class*="efecto-"] { overflow: visible; }
+.cos-card { overflow: visible; }
+
+.cos-preview {
+  width: 76px; height: 76px; margin: 0 auto .75rem; border-radius: 50%;
+  background: var(--grad-primary); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1.1rem; position: relative;
+}
+/* Vista previa de fondos: rectángulo en vez de círculo */
+.cos-preview.es-fondo {
+  width: 100%; height: 76px; border-radius: 12px; background: #101820;
+  overflow: hidden;
+}
+
+.cos-nombre { font-weight: 700; font-size: .88rem; color: var(--text); margin-bottom: .2rem; }
+.cos-desc   { font-size: .74rem; color: var(--text-muted); line-height: 1.35; margin-bottom: .5rem;
+              display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cos-rareza {
+  display: inline-block; font-size: .64rem; font-weight: 800; letter-spacing: .07em;
+  text-transform: uppercase; padding: .15rem .5rem; border-radius: 999px; margin-bottom: .35rem;
+}
+.rar-comun      .cos-rareza { background: rgba(143,163,173,.16); color: var(--rar-comun); }
+.rar-raro       .cos-rareza { background: rgba(74,158,255,.16);  color: var(--rar-raro); }
+.rar-epico      .cos-rareza { background: rgba(168,85,247,.16);  color: var(--rar-epico); }
+.rar-legendario .cos-rareza { background: rgba(255,183,3,.18);   color: var(--rar-legendario); }
+
+.cos-req { font-size: .72rem; color: var(--text-muted); }
+.cos-req i { margin-right: .25rem; }
+
+/* Estado bloqueado: visible pero apagado */
+.cos-card.bloqueado .cos-preview { filter: grayscale(1) brightness(.55); }
+.cos-card.bloqueado .cos-nombre  { color: var(--text-muted); }
+.cos-card.bloqueado::after {
+  content: '\f023'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+  position: absolute; top: .6rem; right: .7rem;
+  font-size: .8rem; color: var(--text-muted); opacity: .8;
+}
+
+/* Estado equipado */
+.cos-card.equipado { border-color: var(--verde); box-shadow: 0 0 0 2px var(--verde-alpha2); }
+.cos-card.equipado::before {
+  content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+  position: absolute; top: .55rem; left: .7rem; z-index: 2;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--grad-primary); color: #fff;
+  font-size: .62rem; display: flex; align-items: center; justify-content: center;
+}
+
+/* Cosmético misterioso */
+.cos-card.misterioso .cos-preview {
+  background: linear-gradient(135deg, #1c2430, #2a3340);
+  color: rgba(255,255,255,.5); font-size: 1.9rem;
+}
+.cos-card.misterioso .cos-nombre { color: var(--text-muted); letter-spacing: .1em; }
+
+/* Animación de descubrimiento */
+.cos-card.revelando { animation: cosRevelar 1.1s cubic-bezier(.2,1.2,.3,1); }
+@keyframes cosRevelar {
+  0%   { transform: scale(.9); filter: brightness(.4); }
+  45%  { transform: scale(1.06); filter: brightness(1.9); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* Transición al equipar */
+.cos-preview.cos-saliendo { animation: cosSalir .28s ease-in forwards; }
+.cos-preview.cos-entrando { animation: cosEntrar .55s cubic-bezier(.2,1.3,.35,1); }
+@keyframes cosSalir  { to { opacity: .15; transform: scale(.85); } }
+@keyframes cosEntrar { from { opacity: .2; transform: scale(.8) rotate(-8deg); } to { opacity: 1; transform: none; } }
+
+/* ═══════════════════════════════════════════════════════════
+   5 · RENDIMIENTO Y ACCESIBILIDAD
+   Si el sistema pide menos movimiento, todo se queda quieto
+   pero los cosméticos siguen viéndose (colores y bordes).
+   ═══════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  [class*="marco-"], [class*="marco-"]::before, [class*="marco-"]::after,
+  [class*="fondo-"], [class*="fondo-"]::before, [class*="fondo-"]::after,
+  [class*="efecto-"], [class*="efecto-"]::before, [class*="efecto-"]::after,
+  .cos-card, .cos-preview {
+    animation: none !important;
+    transition: none !important;
+  }
+  /* Los efectos basados solo en animación se dejan en un estado visible */
+  .efecto-chispa::after, .efecto-idea::before, .efecto-idea::after,
+  .efecto-impulso::after, .efecto-ascenso::before, .efecto-ascenso::after,
+  .efecto-legado::before { opacity: .85; }
+}
+
+/* Modo de rendimiento reducido (lo activa el usuario) */
+body.cos-sin-animacion [class*="marco-"]::before,
+body.cos-sin-animacion [class*="marco-"]::after,
+body.cos-sin-animacion [class*="fondo-"]::before,
+body.cos-sin-animacion [class*="fondo-"]::after,
+body.cos-sin-animacion [class*="efecto-"]::before,
+body.cos-sin-animacion [class*="efecto-"]::after { animation: none !important; }
+
+
+/* ═══════════════════════════════════════════════════════════
+   Los cinco marcos rediseñados (Aurora, Dual, Conexion,
+   Constelacion, Idea) se dibujan ahora con SVG en marcos-svg.css.
+   Aqui solo se conserva un borde discreto de base y se anulan los
+   anillos CSS antiguos, que competian con el nuevo diseno.
+   ═══════════════════════════════════════════════════════════ */
+.marco-aurora::before, .marco-aurora::after,
+.marco-dual::before, .marco-dual::after,
+.marco-conexion::before, .marco-conexion::after,
+.marco-constelacion::before, .marco-constelacion::after,
+.marco-idea::before, .marco-idea::after { content: none !important; }
+
+.marco-aurora        { border: 2px solid rgba(120, 200, 255, .55) !important; box-shadow: none !important; animation: none !important; }
+.marco-dual          { border: 2px solid rgba(150, 140, 255, .5) !important;  box-shadow: none !important; }
+.marco-conexion      { border: 2px solid rgba(54, 192, 161, .5) !important;   box-shadow: none !important; }
+.marco-constelacion  { border: 2px solid rgba(180, 200, 255, .4) !important;  box-shadow: none !important; }
+.marco-idea          { border: 2px solid rgba(255, 209, 102, .55) !important; box-shadow: none !important; }

@@ -1,0 +1,57 @@
+/* ═══════════════════════════════════════════════════════════
+   CIVINSIS · Efectos · soporte del canvas
+   El lienzo se superpone al avatar SIN taparlo ni capturar
+   clics, y desaparece solo cuando el efecto termina.
+   ═══════════════════════════════════════════════════════════ */
+/* ── SISTEMA DE CAPAS ──────────────────────────────────────
+   El orden de apilado dentro del avatar queda asi:
+     0  marco (SVG)
+     1  fx-atras   parte trasera del efecto
+     2  contenido del avatar (la foto)
+     3  fx-frente  parte delantera del efecto
+   Un mismo efecto puede nacer detras y cruzar por delante, que es
+   lo que da sensacion de profundidad. Y si algo quedaria escondido
+   tras la foto, se dibuja delante: la visibilidad manda.
+   ────────────────────────────────────────────────────────── */
+.fx-efecto {
+  position: absolute;
+  /* 260% del avatar: en avatares pequeños los halos necesitan mas
+     margen relativo, y si el lienzo se queda corto el degradado se
+     corta de golpe y se nota el borde. */
+  top: -80%; left: -80%; right: -80%; bottom: -80%;
+  width: 260%; height: 260%;
+  pointer-events: none;
+  display: block;
+}
+.fx-efecto.fx-atras  { z-index: 1; }    /* detras de la foto */
+/* La capa delantera va MUY arriba: dentro del avatar conviven el
+   marco, la foto, el boton de la camara y a veces una insignia, y
+   cualquiera de ellos podia quedar por encima y esconder el efecto. */
+.fx-efecto.fx-frente { z-index: 50 !important; }
+/* El avatar que esta reproduciendo un efecto no debe recortarlo */
+/* El anfitrion se marca con .fx-host desde JS. Antes esto dependia de
+   :has(), que no todos los navegadores soportan: donde fallaba, el
+   avatar seguia recortando y el efecto parecia quedar "detras" de la
+   foto cuando en realidad estaba cortado. */
+.fx-host { overflow: visible !important; position: relative; }
+.cos-preview.fx-host { overflow: hidden !important; }   /* la tarjeta si recorta */
+
+/* Dentro de la tarjeta de la coleccion la preview se queda contenida */
+.cos-preview { position: relative; overflow: hidden; }
+.cos-preview > .fx-efecto {
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100%; height: 100%;
+}
+
+/* Confirmacion al equipar: independiente del efecto real */
+@keyframes fxEquipado {
+  0%   { box-shadow: 0 0 0 0 rgba(54,192,161,.55); }
+  70%  { box-shadow: 0 0 0 10px rgba(54,192,161,0); }
+  100% { box-shadow: 0 0 0 0 rgba(54,192,161,0); }
+}
+.cos-card.recien-equipado { animation: fxEquipado .8s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-efecto { display: none !important; }
+  .cos-card.recien-equipado { animation: none; }
+}

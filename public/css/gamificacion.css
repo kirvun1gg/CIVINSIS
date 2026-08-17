@@ -284,10 +284,44 @@
 /* ══ MARCOS DE AVATAR ══════════════════════════════════════ */
 .avatar-wrap.marco-basico      { border: 3px solid #36c0a1 !important; }
 .avatar-wrap.marco-dorado      { border: 3px solid #ffe066 !important; box-shadow: 0 0 14px rgba(255,224,102,.5); }
-.avatar-wrap.marco-epico       { border: 3px solid transparent !important; background: linear-gradient(var(--bg-card),var(--bg-card)) padding-box, linear-gradient(135deg,#36c0a1,#ef7e22,#9b59b6) border-box; }
+/* El marco épico usaba un degradado de fondo que TAPABA el avatar
+   (el degradado de padding-box se pinta sobre la foto o la inicial).
+   Se resuelve con un anillo exterior, que no cubre el contenido. */
+.avatar-wrap.marco-epico       { border: 3px solid #9b59b6 !important;
+  box-shadow: 0 0 0 2px rgba(54,192,161,.55), 0 0 14px rgba(155,89,182,.45); }
 .avatar-wrap.marco-legendario  { border: 3px solid #ffe066 !important; box-shadow: 0 0 20px rgba(255,224,102,.6), 0 0 40px rgba(255,224,102,.2); animation: legendFrame 2s ease-in-out infinite; }
 .avatar-wrap.marco-hexagono    { border: 3px solid #4a9eff !important; clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); }
 @keyframes legendFrame { 0%,100%{box-shadow:0 0 16px rgba(255,224,102,.5)}50%{box-shadow:0 0 28px rgba(255,224,102,.8),0 0 50px rgba(255,224,102,.3)} }
+
+/* Los mismos marcos en el AVATAR DEL PERFIL (propio y de otros usuarios).
+   Las reglas de arriba solo cubrian .avatar-wrap (widget) y .comment-avatar,
+   por eso el marco no se veia en la pagina de perfil. */
+.profile-avatar-wrap.marco-basico     .profile-avatar,
+.profile-avatar.marco-basico          { border: 4px solid #36c0a1 !important; }
+
+.profile-avatar-wrap.marco-dorado     .profile-avatar,
+.profile-avatar.marco-dorado          { border: 4px solid #ffe066 !important;
+  box-shadow: 0 0 18px rgba(255,224,102,.55); }
+
+.profile-avatar-wrap.marco-epico      .profile-avatar,
+.profile-avatar.marco-epico           { border: 4px solid #9b59b6 !important;
+  box-shadow: 0 0 0 3px rgba(54,192,161,.55), 0 0 18px rgba(155,89,182,.5); }
+
+.profile-avatar-wrap.marco-legendario .profile-avatar,
+.profile-avatar.marco-legendario      { border: 4px solid #ffe066 !important;
+  animation: legendFrame 2s ease-in-out infinite; }
+
+.profile-avatar-wrap.marco-hexagono   .profile-avatar,
+.profile-avatar.marco-hexagono        { border: 4px solid #4a9eff !important;
+  clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  border-radius: 0 !important; }
+
+/* El marco cosmetico manda sobre la FORMA del avatar (circulo/cuadrado/…)
+   salvo el hexagono, que define su propio recorte. */
+.profile-avatar.marco-basico,
+.profile-avatar.marco-dorado,
+.profile-avatar.marco-epico,
+.profile-avatar.marco-legendario { border-radius: 50% !important; }
 
 /* ══ FONDOS DE PERFIL ═══════════════════════════════════════ */
 .profile-hero.fondo-oscuro  { background: linear-gradient(135deg,#0f1c19,#1a3a30) !important; }

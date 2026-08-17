@@ -13,6 +13,15 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/gamificacion.css">
+  <link rel="stylesheet" href="css/cosmeticos.css">
+  <link rel="stylesheet" href="css/marcos-svg.css">
+  <link rel="stylesheet" href="css/fondos.css">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+  <script src="js/fondos.js" defer></script>
+  <link rel="stylesheet" href="css/efectos.css">
+  <script src="js/efectos.js" defer></script>
+  <script src="js/efectos-eventos.js" defer></script>
+  <script src="js/marcos-svg.js" defer></script>
   <style>
     /* ── Análisis de CIVI (perfil) ─────────────────────────── */
     .civi-analisis { display:flex; flex-direction:column; gap:1.1rem; }
@@ -314,8 +323,9 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
 
       <div id="gam-cosmeticos" class="gam-panel" style="display:none">
         <div style="display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap">
-          <button class="btn btn-sm btn-outline" onclick="Gam.filtrarCosmeticos('marco_avatar')" id="btnMarco">Marcos</button>
-          <button class="btn btn-sm btn-ghost" onclick="Gam.filtrarCosmeticos('fondo_perfil')" id="btnFondo">Fondos</button>
+          <button class="btn btn-sm btn-outline" onclick="Gam.filtrarCosmeticos('marco_avatar')" id="btnMarco"><i class="fas fa-circle-notch"></i> Marcos</button>
+          <button class="btn btn-sm btn-ghost" onclick="Gam.filtrarCosmeticos('fondo_perfil')" id="btnFondo"><i class="fas fa-image"></i> Fondos</button>
+          <button class="btn btn-sm btn-ghost" onclick="Gam.filtrarCosmeticos('efecto_avatar')" id="btnEfecto"><i class="fas fa-wand-magic-sparkles"></i> Efectos</button>
         </div>
         <div class="cosmeticos-grid" id="gamCosmeticosList"></div>
       </div>
@@ -489,6 +499,7 @@ async function loadProfileData() {
       // ── Personalización (#2) ──────────────────────────
       setTema(u.tema_perfil || 'verde');
       setMarco(u.marco_avatar || 'circulo');
+      aplicarCosmeticos(u);
       document.getElementById('editColorPerfil').value = u.color_perfil || '#36c0a1';
       document.getElementById('editColorBanner').value = u.color_banner || '#0f1c19';
       document.getElementById('editInsignia').value  = u.insignia  || '';
@@ -537,6 +548,48 @@ document.querySelectorAll('#frameGrid .frame-opt').forEach(c => {
     ava.classList.add('marco-' + m);
   }
 }
+/* Aplica los COSMÉTICOS equipados (marco y fondo).
+   Es distinto de setMarco(), que solo cambia la FORMA del avatar
+   (círculo, cuadrado, hexágono…). Aquí van los desbloqueados por gamificación. */
+function aplicarCosmeticos(u) {
+  const marco  = u.marco_clase  || (u.marco_equipado  ? u.marco_equipado.replace(/_/g,'-')  : null);
+  const fondo  = u.fondo_clase  || (u.fondo_equipado  ? u.fondo_equipado.replace(/_/g,'-')  : null);
+  const efecto = u.efecto_clase || (u.efecto_equipado ? u.efecto_equipado.replace(/_/g,'-') : null);
+  const quitar = (el, pref) => [...el.classList].filter(c => c.startsWith(pref)).forEach(c => el.classList.remove(c));
+
+  // El marco va sobre el avatar; el efecto sobre su contenedor (para no taparlo)
+  // El MARCO va sobre el avatar; el EFECTO en su propia capa superpuesta,
+  // porque ambos usan ::before/::after y se anularian entre si.
+  document.querySelectorAll('#profileAvatarDisplay, .profile-avatar').forEach(el => {
+    quitar(el, 'marco-');
+    quitar(el, 'efecto-');
+    if (marco) el.classList.add(marco);
+
+    let capa = el.querySelector(':scope > .cos-fx');
+    if (efecto) {
+      if (!capa) { capa = document.createElement('span'); capa.className = 'cos-fx'; el.appendChild(capa); }
+      quitar(capa, 'efecto-');
+      capa.classList.add(efecto);
+      el.classList.add('tiene-fx');   // respaldo si el navegador no soporta :has()
+    } else if (capa) {
+      capa.remove();
+      el.classList.remove('tiene-fx');
+    }
+  });
+  // Limpiar restos en el contenedor de versiones anteriores
+  document.querySelectorAll('.profile-avatar-wrap').forEach(el => {
+    quitar(el, 'marco-'); quitar(el, 'efecto-');
+  });
+
+  if (fondo) {
+    const hero = document.querySelector('.profile-hero') || document.querySelector('.profile-header');
+    if (hero) {
+      [...hero.classList].filter(c => c.startsWith('fondo-')).forEach(c => hero.classList.remove(c));
+      hero.classList.add(fondo);
+    }
+  }
+}
+
 function aplicarPreview(banner, acento) {
   const hero = document.querySelector('.profile-hero');
   if (hero && banner) hero.style.background = `linear-gradient(135deg, ${banner}, ${acento || '#36c0a1'})`;
@@ -860,24 +913,69 @@ const Gam = {
 
   // ── Cosméticos ───────────────────────────────────────────
   renderCosmeticos(tipo) {
-    const lista = (this.data.cosmeticos||[]).filter(c=>c.tipo===tipo);
+    const lista = (this.data.cosmeticos||[]).filter(c => c.tipo === tipo);
     const el = document.getElementById('gamCosmeticosList');
-    const rarColor = {comun:'#8892a4',raro:'#4a9eff',epico:'#9b59b6',legendario:'#ffe066'};
-    if (!lista.length) { el.innerHTML='<p style="color:var(--text-muted);font-size:.85rem">No tienes cosméticos de este tipo todavía.</p>'; return; }
-    el.innerHTML = lista.map(c => `
-      <div class="cosmetico-card ${c.equipado?'equipado':''}" onclick="Gam.equipar('${tipo==='marco_avatar'?'marco':'fondo'}','${c.clave}')">
-        ${c.equipado?'<div class="cosmetico-equipado-badge"><i class="fas fa-check"></i></div>':''}
-        <div class="cosmetico-preview" style="${c.preview||''}"></div>
-        <div class="cosmetico-nombre">${this.esc(c.nombre)}</div>
-        <div class="cosmetico-rareza" style="color:${rarColor[c.rareza]||'#8892a4'}">${c.rareza}</div>
-        <div class="cosmetico-req">Nv. ${c.nivel_requerido}</div>
-      </div>`).join('');
+    if (!lista.length) { el.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem">Todavía no hay cosméticos de este tipo.</p>'; return; }
+
+    const accion = { marco_avatar:'marco', fondo_perfil:'fondo', efecto_avatar:'efecto' }[tipo];
+    const esFondo = tipo === 'fondo_perfil';
+
+    el.innerHTML = lista.map(c => {
+      const clases = ['cos-card', 'rar-' + c.rareza];
+      if (!c.desbloqueado) clases.push('bloqueado');
+      if (c.equipado)      clases.push('equipado');
+      if (c.misterioso)    clases.push('misterioso');
+
+      // La vista previa muestra el cosmético REAL en funcionamiento
+      let preview;
+      if (c.misterioso) {
+        preview = `<div class="cos-preview${esFondo?' es-fondo':''}">?</div>`;
+      } else if (esFondo) {
+        preview = `<div class="cos-preview es-fondo profile-hero ${c.valor}"></div>`;
+      } else {
+        preview = `<div class="cos-preview ${c.valor}">${this.iniciales()}</div>`;
+      }
+
+      const req = c.desbloqueado
+        ? '<span style="color:var(--verde)"><i class="fas fa-check"></i> Desbloqueado</span>'
+        : `<i class="fas fa-lock"></i> ${this.esc(c.requisito||('Nivel '+c.nivel_requerido))}`;
+
+      return `
+        <div class="${clases.join(' ')}" data-clave="${c.clave}"
+             onclick="Gam.equipar('${accion}','${c.clave}',${c.desbloqueado?'true':'false'})"
+             title="${c.desbloqueado ? 'Clic para equipar' : 'Bloqueado'}">
+          ${preview}
+          <div class="cos-nombre">${this.esc(c.nombre)}</div>
+          <div class="cos-rareza">${c.rareza}</div>
+          <div class="cos-desc">${this.esc(c.descripcion||'')}</div>
+          <div class="cos-req">${req}</div>
+        </div>`;
+    }).join('');
+    this.montarPreviews();
+  },
+
+  /** Tras pintar las tarjetas hay que montar sus vistas previas. */
+  montarPreviews() {
+    requestAnimationFrame(() => {
+      if (window.CosFondos) { window.CosFondos.escanear(); window.CosFondos.remedir(); }
+      if (window.CosMarcos) window.CosMarcos.escanear();
+      if (window.CosEfectos) window.CosEfectos.montarPreviews();
+    });
+  },
+
+  /** Iniciales del usuario para las vistas previas de marcos y efectos. */
+  iniciales() {
+    const el = document.getElementById('profileInitials');
+    return el ? el.textContent.trim().slice(0,2) : 'CV';
   },
 
   filtrarCosmeticos(tipo) {
     this.cosmeticoFiltro = tipo;
-    document.getElementById('btnMarco').className = tipo==='marco_avatar'?'btn btn-sm btn-outline':'btn btn-sm btn-ghost';
-    document.getElementById('btnFondo').className = tipo==='fondo_perfil'?'btn btn-sm btn-outline':'btn btn-sm btn-ghost';
+    const botones = { marco_avatar:'btnMarco', fondo_perfil:'btnFondo', efecto_avatar:'btnEfecto' };
+    Object.entries(botones).forEach(([t, id]) => {
+      const b = document.getElementById(id);
+      if (b) b.className = (t === tipo) ? 'btn btn-sm btn-outline' : 'btn btn-sm btn-ghost';
+    });
     this.renderCosmeticos(tipo);
   },
 
@@ -918,18 +1016,56 @@ const Gam = {
   },
 
   // ── Equipar ítem ─────────────────────────────────────────
-  async equipar(tipo, clave) {
+  async equipar(tipo, clave, desbloqueado) {
+    if (desbloqueado === false) {
+      if (window.Toast) Toast.show('Todavía no has desbloqueado este cosmético', 'info');
+      return;
+    }
+    // Transición corta: el anterior se apaga antes de que llegue el nuevo
+    const tarjeta = document.querySelector(`.cos-card[data-clave="${clave}"]`);
+    const prev = tarjeta ? tarjeta.querySelector('.cos-preview') : null;
+    const avatar = document.getElementById('profileAvatarDisplay');
+    if (avatar) { avatar.classList.add('cos-saliendo'); setTimeout(()=>avatar.classList.remove('cos-saliendo'), 300); }
+    if (prev) { prev.classList.add('cos-entrando'); setTimeout(()=>prev.classList.remove('cos-entrando'), 600); }
+
     const r = await fetch('php/gamificacion.php', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({accion:'equipar',tipo,clave})
     });
     const d = await r.json();
     if (d.success) {
-      if (window.Toast) Toast.show('¡Ítem equipado!', 'success');
+      if (window.Toast) Toast.show('Cosmético equipado', 'success');
       await this.init();
       this.renderWidget();
       this.renderTitulos();
       this.renderCosmeticos(this.cosmeticoFiltro);
+
+      // Reflejar el cambio AL INSTANTE, sin recargar la pagina:
+      // 1) clases de marco / fondo / efecto sobre el avatar y el banner
+      if (this.data) aplicarCosmeticos(this.data);
+      // 2) que el canvas de fondos y el SVG de marcos se reconstruyan
+      if (window.CosRefrescar) window.CosRefrescar();
+      // Confirmacion visual del equipado (independiente del efecto real:
+      // el efecto solo se vera cuando ocurra su evento)
+      const tj = document.querySelector(`.cos-card[data-clave="${clave}"]`);
+      if (tj) { tj.classList.add('recien-equipado'); setTimeout(() => tj.classList.remove('recien-equipado'), 900); }
+      // decirle al motor que efecto lleva ahora el usuario
+      if (window.CosEfectos && this.data) {
+        // Retirar el efecto anterior que aun estuviera en marcha: si no,
+        // se seguia viendo el viejo hasta recargar la pagina.
+        window.CosEfectos.detenerTodo(true);
+        window.CosEfectos.configurar({ efecto: this.data.efecto_clase || null });
+        // Al equipar un EFECTO se reproduce enseguida sobre tu avatar:
+        // asi ves como te queda sin tener que ir a buscar un comentario.
+        if (tipo === 'efecto' && this.data.efecto_clase) {
+          const av = document.getElementById('profileAvatarDisplay')
+                  || document.querySelector('.profile-avatar');
+          if (av) setTimeout(() => window.CosEfectos.reproducir(av, this.data.efecto_clase), 260);
+        }
+      }
+      if (window.CIVINSIS && window.CIVINSIS.recargarEfecto) window.CIVINSIS.recargarEfecto();
+      // 3) y una vez pintado, remedir por si el banner cambio de tamano
+      requestAnimationFrame(() => { if (window.CosRefrescar) window.CosRefrescar(); });
     } else {
       if (window.Toast) Toast.show(d.mensaje||'No puedes equipar ese ítem', 'error');
     }

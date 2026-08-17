@@ -538,10 +538,14 @@ const Proposals = {
     html += '<span class="estado-chip estado-' + (p.estado || 'activa') + '"><i class="fas fa-circle" style="font-size:.45rem"></i> ' + estado + '</span>';
     html += '</div>';
     // Autor con avatar (#3)
+    // El marco va en el avatar y el efecto en su capa (.cos-fx)
+    var authorClass = p.autor_marco || '';
+    var capaEfectoProp = '';
+    var fxClsProp = '';
+    var fxAttrProp = p.autor_efecto ? ' data-efecto="' + p.autor_efecto + '"' : '';
     var avaInner = (p.autor_avatar && p.autor_avatar.indexOf('data:') === 0)
-      ? '<img class="author-avatar" src="' + p.autor_avatar + '" alt="">'
-      : '<span class="author-avatar">' + ((p.autor||'?').charAt(0).toUpperCase()) + '</span>';
-    var authorClass = p.autor_marco ? p.autor_marco : '';
+      ? '<span class="author-avatar ' + authorClass + '"' + fxAttrProp + '><img src="' + p.autor_avatar + '" alt=""></span>'
+      : '<span class="author-avatar ' + authorClass + '"' + fxAttrProp + '>' + ((p.autor||'?').charAt(0).toUpperCase()) + '</span>';
     var tituloHtml = p.autor_titulo ? '<div class="autor-titulo-row"><span class="label-titulo ' + p.autor_titulo.rareza + '" style="color:' + p.autor_titulo.color + ';border-color:' + p.autor_titulo.color + '">' + p.autor_titulo.nombre + '</span></div>' : '';
     var nivelHtml = p.autor_nivel ? ' <span class="label-nivel">Nv.' + p.autor_nivel + '</span>' : '';
     html += '<div class="card-author"><div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">' + avaInner + '<span class="author-name">' + (p.autor||'Anónimo') + '</span>' + nivelHtml + '</div>' + tituloHtml + '</div>';
@@ -1480,7 +1484,14 @@ document.addEventListener('DOMContentLoaded', () => {
       ? `<img src="${c.avatar}" alt="${c.autor}">`
       : initials;
     const hasPhoto = c.avatar ? 'comment-avatar-has-photo' : '';
-    const marcoClass = c.autor_marco ? c.autor_marco : '';
+    // El marco va en el elemento. El EFECTO ya no se pinta con la capa
+    // CSS antigua (.cos-fx), que era permanente y quedaba DETRAS de la
+    // foto: ahora lo reproduce el motor de canvas, igual que en el
+    // perfil. Aqui solo se deja anotado cual es, para que el motor lo
+    // encuentre despues.
+    const marcoClass = c.autor_marco || '';
+    const capaEfecto = '';
+    const fxCls = c.autor_efecto ? `data-efecto="${c.autor_efecto}"` : '';
     const perfilUrl = c.autor_id ? `usuario.php?id=${c.autor_id}` : '#';
 
     // Título en pequeño
@@ -1493,7 +1504,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     return `
       <div class="comment">
-        <a href="${perfilUrl}" class="comment-avatar ${hasPhoto} ${marcoClass}" style="text-decoration:none;flex-shrink:0" title="Ver perfil de ${c.autor}">${avatarContent}</a>
+        <a href="${perfilUrl}" class="comment-avatar ${hasPhoto} ${marcoClass}" ${fxCls} style="text-decoration:none;flex-shrink:0" title="Ver perfil de ${c.autor}">${avatarContent}${capaEfecto}</a>
         <div class="comment-content">
           <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
             <a href="${perfilUrl}" class="comment-author" style="text-decoration:none;color:inherit">${c.autor}</a>

@@ -12,6 +12,15 @@ $perfilId = $perfilId ?? intval(request('id'));
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/gamificacion.css">
+  <link rel="stylesheet" href="css/cosmeticos.css">
+  <link rel="stylesheet" href="css/marcos-svg.css">
+  <link rel="stylesheet" href="css/fondos.css">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+  <script src="js/fondos.js" defer></script>
+  <link rel="stylesheet" href="css/efectos.css">
+  <script src="js/efectos.js" defer></script>
+  <script src="js/efectos-eventos.js" defer></script>
+  <script src="js/marcos-svg.js" defer></script>
 </head>
 <body>
 
@@ -136,13 +145,25 @@ const PERFIL_ID = <?= $perfilId ?>;
     }
 
     // Marco equipado en el avatar
-    if (d.marco_equipado) {
-      avatarEl.classList.add(d.marco_equipado);
+    // Usar la CLASE CSS (marco-dorado), no la clave (marco_dorado)
+    const marcoCls  = d.marco_clase  || (d.marco_equipado  ? d.marco_equipado.replace(/_/g,'-')  : null);
+    const efectoCls = d.efecto_clase || (d.efecto_equipado ? d.efecto_equipado.replace(/_/g,'-') : null);
+    // Ambos van sobre el avatar (el contenedor no es cuadrado)
+    if (efectoCls) {
+      // capa propia: si compartiera elemento con el marco, uno anularia al otro
+      const capa = document.createElement('span');
+      capa.className = 'cos-fx ' + efectoCls;
+      avatarEl.appendChild(capa);
+      avatarEl.classList.add('tiene-fx');
+    }
+    if (marcoCls) {
+      avatarEl.classList.add(marcoCls);
     }
 
     // Fondo equipado en el hero
-    if (d.fondo_equipado) {
-      document.getElementById('publicHero').classList.add(d.fondo_equipado);
+    const fondoCls = d.fondo_clase || (d.fondo_equipado ? d.fondo_equipado.replace(/_/g,'-') : null);
+    if (fondoCls) {
+      document.getElementById('publicHero').classList.add(fondoCls);
     }
 
     // Título equipado

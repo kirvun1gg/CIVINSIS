@@ -42,10 +42,10 @@ class GamificacionService
         $user->save();
 
         $subio = $nuevoNivel > $nivelAntes;
-        if ($subio) {
-            $this->desbloquearTitulos($user);
-            $this->desbloquearCosmeticos($user);
-        }
+        // Se comprueba siempre: hay cosmeticos que dependen de XP,
+        // reputacion o participacion, no solo del nivel.
+        $this->desbloquearTitulos($user);
+        $this->desbloquearCosmeticos($user);
         $this->actualizarMisiones($user, $accion);
         $this->verificarLogros($user);
 
@@ -123,11 +123,81 @@ class GamificacionService
         }
     }
 
+    /**
+     * Desbloquea los cosméticos que el usuario ya se ha ganado.
+     * No todo depende del nivel: hay condiciones por XP, reputación
+     * y por participación real (propuestas, comentarios, debates, votos).
+     */
     private function desbloquearCosmeticos(User $user): void
     {
-        foreach (Cosmetico::where('nivel_requerido','<=',$user->nivel)->where('xp_requerido','<=',$user->xp_total)->where('activo',true)->get() as $c) {
-            DB::table('usuario_cosmeticos')->insertOrIgnore(['usuario_id'=>$user->id,'cosmetico_id'=>$c->id,'equipado'=>false,'desbloqueado_at'=>now()]);
+        $progreso = $this->progresoCondiciones($user);
+
+        foreach (Cosmetico::where('activo', true)->get() as $c) {
+            if ($this->cumpleCondicionCosmetico($c, $user, $progreso)) {
+                DB::table('usuario_cosmeticos')->insertOrIgnore([
+                    'usuario_id'=>$user->id, 'cosmetico_id'=>$c->id,
+                    'equipado'=>false, 'desbloqueado_at'=>now(),
+                ]);
+            }
         }
+    }
+
+    /** Texto legible del requisito de un cosmético. */
+    public function textoRequisito(Cosmetico $c): string
+    {
+        if (($c->oculto ?? false)) return 'Requisito oculto';
+        $v = (int) ($c->condicion_valor ?? 0);
+        return match ($c->condicion_tipo ?? 'nivel') {
+            'xp'          => "{$v} XP acumulados",
+            'reputacion'  => "{$v} de reputación",
+            'propuestas'  => $v === 1 ? 'Crea tu primera propuesta' : "Crea {$v} propuestas",
+            'comentarios' => "Escribe {$v} comentarios",
+            'debates'     => "Participa en {$v} debates",
+            'votos'       => "Recibe {$v} votos en tus propuestas",
+            'secreto'     => 'Requisito oculto',
+            default       => 'Nivel ' . max($v, (int) $c->nivel_requerido),
+        };
+    }
+
+    /** Contadores de participación usados por las condiciones. */
+    public function progresoCondiciones(User $user): array
+    {
+        return [
+            'nivel'       => (int) $user->nivel,
+            'xp'          => (int) $user->xp_total,
+            'reputacion'  => (int) $user->reputacion,
+            'propuestas'  => DB::table('propuestas')->where('usuario_id', $user->id)->count(),
+            'comentarios' => DB::table('comentarios')->where('usuario_id', $user->id)->count(),
+            'debates'     => DB::table('debate_respuestas')->where('usuario_id', $user->id)->count()
+                           + DB::table('debates')->where('usuario_id', $user->id)->count(),
+            'votos'       => (int) DB::table('propuestas')->where('usuario_id', $user->id)->sum('votos'),
+            'secreto'     => 0,
+        ];
+    }
+
+    /** ¿El usuario cumple la condición de este cosmético? */
+    public function cumpleCondicionCosmetico(Cosmetico $c, User $user, array $progreso): bool
+    {
+        // Los administradores tienen todo desbloqueado: necesitan poder
+        // revisar y probar cada cosmetico desde el panel.
+        if (method_exists($user, 'esAdmin') && $user->esAdmin()) return true;
+
+        // Requisitos base (compatibilidad con el sistema anterior)
+        if (($c->nivel_requerido ?? 1) > $user->nivel) return false;
+        if (($c->xp_requerido ?? 0) > $user->xp_total) return false;
+
+        $tipo  = $c->condicion_tipo ?? 'nivel';
+        $valor = (int) ($c->condicion_valor ?? 0);
+
+        // Los secretos se ganan con una combinación poco evidente:
+        // participar en las tres formas posibles.
+        if ($tipo === 'secreto') {
+            return $progreso['propuestas'] >= 1
+                && $progreso['comentarios'] >= 10
+                && $progreso['debates'] >= 3;
+        }
+
+        return ($progreso[$tipo] ?? 0) >= $valor;
     }
 
     public function actualizarMisiones(User $user, string $accion): void
@@ -174,6 +244,12 @@ class GamificacionService
                 DB::table('usuario_cosmeticos')->where('usuario_id',$user->id)->whereIn('cosmetico_id',Cosmetico::where('tipo','marco_avatar')->pluck('id'))->update(['equipado'=>false]);
                 DB::table('usuario_cosmeticos')->where('usuario_id',$user->id)->where('cosmetico_id',$c->id)->update(['equipado'=>true]);
                 $user->marco_equipado=$clave; $user->save(); return true;
+            case 'efecto':
+                $c=Cosmetico::where('clave',$clave)->where('tipo','efecto_avatar')->first();
+                if (!$c||!DB::table('usuario_cosmeticos')->where('usuario_id',$user->id)->where('cosmetico_id',$c->id)->exists()) return false;
+                DB::table('usuario_cosmeticos')->where('usuario_id',$user->id)->whereIn('cosmetico_id',Cosmetico::where('tipo','efecto_avatar')->pluck('id'))->update(['equipado'=>false]);
+                DB::table('usuario_cosmeticos')->where('usuario_id',$user->id)->where('cosmetico_id',$c->id)->update(['equipado'=>true]);
+                $user->efecto_equipado=$clave; $user->save(); return true;
             case 'fondo':
                 $c=Cosmetico::where('clave',$clave)->where('tipo','fondo_perfil')->first();
                 if (!$c||!DB::table('usuario_cosmeticos')->where('usuario_id',$user->id)->where('cosmetico_id',$c->id)->exists()) return false;
@@ -186,11 +262,31 @@ class GamificacionService
 
     public function perfilCompleto(User $user): array
     {
+        // Reevaluar desbloqueos al abrir el perfil: hay condiciones que no
+        // dependen del nivel (propuestas, debates, reputación…) y ademas
+        // asi aparecen los cosmeticos anadidos despues del registro.
+        $this->desbloquearCosmeticos($user);
+        $this->desbloquearTitulos($user);
+
         $titulo=Titulo::where('clave',$user->titulo_equipado)->first();
         $logros=DB::table('usuario_logros')->join('logros','logros.id','=','usuario_logros.logro_id')->where('usuario_logros.usuario_id',$user->id)->select('logros.*','usuario_logros.desbloqueado_at')->orderByDesc('usuario_logros.desbloqueado_at')->get();
         $insignias=DB::table('usuario_insignias')->join('insignias','insignias.id','=','usuario_insignias.insignia_id')->where('usuario_insignias.usuario_id',$user->id)->select('insignias.*','usuario_insignias.equipada','usuario_insignias.desbloqueado_at')->get();
         $titulos=DB::table('usuario_titulos')->join('titulos','titulos.id','=','usuario_titulos.titulo_id')->where('usuario_titulos.usuario_id',$user->id)->select('titulos.*','usuario_titulos.equipado','usuario_titulos.desbloqueado_at')->get();
-        $cosmeticos=DB::table('usuario_cosmeticos')->join('cosmeticos','cosmeticos.id','=','usuario_cosmeticos.cosmetico_id')->where('usuario_cosmeticos.usuario_id',$user->id)->select('cosmeticos.*','usuario_cosmeticos.equipado','usuario_cosmeticos.desbloqueado_at')->get();
+        // Catálogo COMPLETO: los bloqueados también se muestran (apagados)
+        $desbloq=DB::table('usuario_cosmeticos')->where('usuario_id',$user->id)->pluck('equipado','cosmetico_id');
+        $prog=$this->progresoCondiciones($user);
+        $cosmeticos=Cosmetico::where('activo',true)->orderBy('tipo')->orderBy('orden')->get()->map(function($c) use($desbloq,$prog,$user){
+            $tiene=$desbloq->has($c->id);
+            $a=$c->toArray();
+            $a['desbloqueado']=$tiene;
+            $a['equipado']=$tiene ? (bool)$desbloq[$c->id] : false;
+            $a['requisito']=$this->textoRequisito($c);
+            $a['progreso_actual']=$prog[$c->condicion_tipo ?? 'nivel'] ?? 0;
+            // Un cosmético oculto no revela su diseño hasta conseguirlo
+            $a['misterioso']=(bool)($c->oculto ?? false) && !$tiene;
+            if ($a['misterioso']) { $a['nombre']='???'; $a['descripcion']='Descubre cómo desbloquear este cosmético.'; $a['valor']=''; }
+            return $a;
+        });
         $hoy=now()->toDateString(); $sem=now()->startOfWeek()->toDateString();
         $misiones=Mision::where('activo',true)->get()->map(function($m) use($user,$hoy,$sem) {
             $p=DB::table('usuario_misiones')->where('usuario_id',$user->id)->where('mision_id',$m->id)->where('periodo',$m->tipo==='diaria'?$hoy:$sem)->first();
@@ -204,6 +300,12 @@ class GamificacionService
             'reputacion'=>$user->reputacion,'racha_dias'=>$user->racha_dias,
             'titulo'=>$titulo?['nombre'=>$titulo->nombre,'color'=>$titulo->color,'rareza'=>$titulo->rareza]:null,
             'marco_equipado'=>$user->marco_equipado,'fondo_equipado'=>$user->fondo_equipado,
+            'marco_clase'=>$user->marco_clase,'fondo_clase'=>$user->fondo_clase,
+            'efecto_equipado'=>$user->efecto_equipado,'efecto_clase'=>$user->efecto_clase,
+            // evento que dispara el efecto equipado (configurable en la BD)
+            'efecto_evento'=>$user->efecto_equipado
+                ? DB::table('cosmeticos')->where('clave',$user->efecto_equipado)->value('evento')
+                : null,
             'logros'=>$logros,'insignias'=>$insignias,'titulos'=>$titulos,'cosmeticos'=>$cosmeticos,
             'misiones'=>$misiones,'total_logros'=>count($logros),'total_insignias'=>count($insignias),
         ];

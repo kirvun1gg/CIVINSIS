@@ -19,7 +19,7 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
   <script src="js/fondos.js" defer></script>
   <link rel="stylesheet" href="css/efectos.css">
-  <script src="js/efectos.js" defer></script>
+  <script src="js/efectos-gsap.js" defer></script>
   <script src="js/efectos-eventos.js" defer></script>
   <script src="js/marcos-svg.js" defer></script>
   <style>
@@ -1053,8 +1053,13 @@ const Gam = {
       if (window.CosEfectos && this.data) {
         // Retirar el efecto anterior que aun estuviera en marcha: si no,
         // se seguia viendo el viejo hasta recargar la pagina.
+        // Corta cualquier efecto en curso y fija el nuevo AL MOMENTO,
+        // para que la repeticion ambiental no siga lanzando el anterior.
         window.CosEfectos.detenerTodo(true);
         window.CosEfectos.configurar({ efecto: this.data.efecto_clase || null });
+        if (window.CIVINSIS && window.CIVINSIS.fijarEfecto) {
+          window.CIVINSIS.fijarEfecto(this.data.efecto_clase || null, null);
+        }
         // Al equipar un EFECTO se reproduce enseguida sobre tu avatar:
         // asi ves como te queda sin tener que ir a buscar un comentario.
         if (tipo === 'efecto' && this.data.efecto_clase) {

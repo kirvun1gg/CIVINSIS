@@ -79,7 +79,7 @@ $categorias_footer = is_array($categorias_footer) ? $categorias_footer : $catego
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
   <script src="js/fondos.js" defer></script>
   <link rel="stylesheet" href="css/efectos.css">
-  <script src="js/efectos.js" defer></script>
+  <script src="js/efectos-gsap.js" defer></script>
   <script src="js/efectos-eventos.js" defer></script>
   <script src="js/marcos-svg.js" defer></script>
 <link rel="stylesheet" href="css/civinsis-polish.css">

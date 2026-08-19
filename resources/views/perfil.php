@@ -14,14 +14,16 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/gamificacion.css">
   <link rel="stylesheet" href="css/cosmeticos.css">
-  <link rel="stylesheet" href="css/marcos-svg.css">
+  <link rel="stylesheet" href="css/marcos-gsap.css">
   <link rel="stylesheet" href="css/fondos.css">
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
   <script src="js/fondos.js" defer></script>
   <link rel="stylesheet" href="css/efectos.css">
   <script src="js/efectos-gsap.js" defer></script>
   <script src="js/efectos-eventos.js" defer></script>
-  <script src="js/marcos-svg.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/MotionPathPlugin.min.js" defer></script>
+  <script src="js/marcos-gsap.js" defer></script>
+  <script src="js/marcos-descubrimiento.js" defer></script>
   <style>
     /* ── Análisis de CIVI (perfil) ─────────────────────────── */
     .civi-analisis { display:flex; flex-direction:column; gap:1.1rem; }

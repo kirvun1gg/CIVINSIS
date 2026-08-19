@@ -1,0 +1,17 @@
+/* ═══════════════════════════════════════════════════════════
+   CIVINSIS · Marcos · soporte
+   El SVG del marco se posiciona en linea desde JS; aqui solo se
+   libera el recorte del avatar para que la composicion pueda
+   salir de su circulo.
+   ═══════════════════════════════════════════════════════════ */
+.mk-host { overflow: visible !important; position: relative; }
+/* la foto se recorta en el propio <img>, no en el contenedor */
+.mk-host > img, .mk-host > span:not(.mk-svg) { border-radius: 50%; }
+/* el contenido del avatar, por delante del marco */
+.mk-host > *:not(.mk-svg) { position: relative; z-index: 2; }
+/* en las tarjetas de la coleccion el marco si queda contenido */
+.cos-preview.mk-host { overflow: hidden !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-svg { opacity: .85; }
+}

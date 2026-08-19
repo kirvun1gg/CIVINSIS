@@ -14,10 +14,35 @@ class GamificacionController extends Controller
 
     public function __construct(private GamificacionService $gam) {}
 
+    /**
+     * Registra que el usuario ha visitado una seccion o consultado una
+     * categoria. Alimenta los desbloqueos de exploracion.
+     * Se llama desde el frontend, es idempotente y muy barato.
+     */
+    private function explorar(Request $request)
+    {
+        $u = Auth::user();
+        if (!$u) return $this->json(false, 'No autenticado');
+
+        $tipo  = $request->input('tipo');       // seccion | categoria
+        $valor = trim((string) $request->input('valor'));
+        if (!in_array($tipo, ['seccion', 'categoria'], true) || $valor === '') {
+            return $this->json(false, 'Datos incompletos');
+        }
+
+        $svc = new \App\Services\GamificacionService();
+        $svc->registrarExploracion($u, $tipo, mb_strtolower($valor));
+        // un dia activo se registra solo, al haber cualquier actividad
+        $svc->registrarExploracion($u, 'dia_activo', now()->toDateString());
+
+        return $this->json(true, 'ok');
+    }
+
     public function handle(Request $request)
     {
         $accion = $request->input('accion', '');
         return match($accion) {
+            'explorar' => $this->explorar($request),
             'perfil'         => $this->perfil(),
             'perfil_publico' => $this->perfilPublico($request),
             'equipar'        => $this->equipar($request),

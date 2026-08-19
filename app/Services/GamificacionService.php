@@ -142,6 +142,24 @@ class GamificacionService
         }
     }
 
+    /** Cuenta valores distintos registrados de un tipo de exploracion. */
+    private function exploracion(User $user, string $tipo): int
+    {
+        if (!\Illuminate\Support\Facades\Schema::hasTable('usuario_exploracion')) return 0;
+        return DB::table('usuario_exploracion')
+            ->where('usuario_id', $user->id)->where('tipo', $tipo)->count();
+    }
+
+    /** Registra un comportamiento de exploracion (idempotente). */
+    public function registrarExploracion(User $user, string $tipo, string $valor): void
+    {
+        if (!\Illuminate\Support\Facades\Schema::hasTable('usuario_exploracion')) return;
+        DB::table('usuario_exploracion')->insertOrIgnore([
+            'usuario_id' => $user->id, 'tipo' => $tipo, 'valor' => $valor,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+    }
+
     /** Texto legible del requisito de un cosmético. */
     public function textoRequisito(Cosmetico $c): string
     {
@@ -154,7 +172,12 @@ class GamificacionService
             'comentarios' => "Escribe {$v} comentarios",
             'debates'     => "Participa en {$v} debates",
             'votos'       => "Recibe {$v} votos en tus propuestas",
-            'secreto'     => 'Requisito oculto',
+            'votos_emitidos' => "Vota en {$v} propuestas",
+            'secciones'   => "Explora {$v} secciones de CIVINSIS",
+            'categorias'  => "Consulta propuestas de {$v} categorías",
+            'dias_activos' => "Participa en {$v} días distintos",
+            'coleccion'   => "Reúne {$v} cosméticos",
+            'secreto', 'secreto_vortice', 'secreto_legado' => 'Requisito oculto',
             default       => 'Nivel ' . max($v, (int) $c->nivel_requerido),
         };
     }
@@ -171,6 +194,14 @@ class GamificacionService
             'debates'     => DB::table('debate_respuestas')->where('usuario_id', $user->id)->count()
                            + DB::table('debates')->where('usuario_id', $user->id)->count(),
             'votos'       => (int) DB::table('propuestas')->where('usuario_id', $user->id)->sum('votos'),
+
+            // ── Desbloqueos que empujan a explorar CIVINSIS ──
+            'votos_emitidos' => DB::table('votos')->where('usuario_id', $user->id)->count(),
+            'secciones'   => $this->exploracion($user, 'seccion'),
+            'categorias'  => $this->exploracion($user, 'categoria'),
+            'dias_activos' => $this->exploracion($user, 'dia_activo'),
+            'coleccion'   => DB::table('usuario_cosmeticos')
+                                ->where('usuario_id', $user->id)->count(),
             'secreto'     => 0,
         ];
     }
@@ -191,10 +222,28 @@ class GamificacionService
 
         // Los secretos se ganan con una combinación poco evidente:
         // participar en las tres formas posibles.
+        // ── Secretos: el usuario los descubre usando la plataforma ──
         if ($tipo === 'secreto') {
             return $progreso['propuestas'] >= 1
                 && $progreso['comentarios'] >= 10
                 && $progreso['debates'] >= 3;
+        }
+        // Vortice: participar de las TRES formas el mismo dia
+        if ($tipo === 'secreto_vortice') {
+            $hoy = now()->toDateString();
+            $p = DB::table('propuestas')->where('usuario_id', $user->id)
+                    ->whereDate('created_at', $hoy)->exists();
+            $c = DB::table('comentarios')->where('usuario_id', $user->id)
+                    ->whereDate('created_at', $hoy)->exists();
+            $d = DB::table('debate_respuestas')->where('usuario_id', $user->id)
+                    ->whereDate('created_at', $hoy)->exists();
+            return $p && $c && $d;
+        }
+        // Legado Vivo: huella real en la comunidad
+        if ($tipo === 'secreto_legado') {
+            return $progreso['reputacion'] >= 200
+                && $progreso['votos'] >= 40
+                && $progreso['dias_activos'] >= 20;
         }
 
         return ($progreso[$tipo] ?? 0) >= $valor;
@@ -284,7 +333,13 @@ class GamificacionService
             $a['progreso_actual']=$prog[$c->condicion_tipo ?? 'nivel'] ?? 0;
             // Un cosmético oculto no revela su diseño hasta conseguirlo
             $a['misterioso']=(bool)($c->oculto ?? false) && !$tiene;
-            if ($a['misterioso']) { $a['nombre']='???'; $a['descripcion']='Descubre cómo desbloquear este cosmético.'; $a['valor']=''; }
+            if ($a['misterioso']) {
+                $a['nombre'] = '???';
+                // la pista da una direccion sin revelar la condicion exacta
+                $a['descripcion'] = $c->pista ?: 'Aún no descubierto.';
+                $a['valor'] = '';
+                $a['requisito'] = 'Desconocido';
+            }
             return $a;
         });
         $hoy=now()->toDateString(); $sem=now()->startOfWeek()->toDateString();

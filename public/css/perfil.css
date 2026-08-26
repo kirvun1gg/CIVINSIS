@@ -1,0 +1,1837 @@
+/* ============================================================
+   CIVINSIS — Estilos Premium para la Sección de Mi Perfil
+   Diseño Cívico Moderno · Glassmorphism · Micro-animaciones
+   ============================================================ */
+
+/* ── Variables y animaciones de perfil ──────────────────────── */
+:root {
+  --pf-accent: var(--verde, #36c0a1);
+  --pf-accent-hover: var(--verde-400, #47d3b3);
+  --pf-banner: #0f1c19;
+  --pf-glass-bg: rgba(255, 255, 255, 0.82);
+  --pf-glass-border: rgba(0, 0, 0, 0.08);
+  --pf-glass-shadow: 0 12px 36px rgba(0, 0, 0, 0.06);
+  --pf-card-bg: #ffffff;
+  --pf-card-border: rgba(0, 0, 0, 0.07);
+  --pf-pill-bg: rgba(0, 0, 0, 0.04);
+  --pf-radius-lg: 24px;
+  --pf-radius-md: 16px;
+  --pf-radius-sm: 10px;
+}
+
+[data-theme="dark"] {
+  --pf-glass-bg: rgba(19, 31, 26, 0.85);
+  --pf-glass-border: rgba(255, 255, 255, 0.08);
+  --pf-glass-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+  --pf-card-bg: #131f1a;
+  --pf-card-border: rgba(255, 255, 255, 0.07);
+  --pf-pill-bg: rgba(255, 255, 255, 0.06);
+}
+
+/* ════════════════════════════════════════════════════════════
+   1 · HERO DEL PERFIL (BANNER & HEADER)
+   ════════════════════════════════════════════════════════════ */
+.pf-hero {
+  position: relative;
+  background: var(--grad-hero);
+  padding: calc(var(--nav-height) + 2rem) 0 3.5rem;
+  overflow: hidden;
+  border-bottom: 1px solid var(--pf-glass-border);
+  transition: background 0.5s ease;
+}
+
+/* Luces ambientales y auras de fondo */
+.pf-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle 500px at 15% 20%, rgba(54, 192, 161, 0.22) 0%, transparent 60%),
+    radial-gradient(circle 450px at 85% 65%, rgba(239, 126, 34, 0.18) 0%, transparent 60%),
+    radial-gradient(circle 300px at 50% 100%, rgba(59, 130, 246, 0.12) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Patrón sutil geométrico cívico */
+.pf-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.6;
+}
+
+.pf-hero-inner {
+  position: relative;
+  z-index: 3;
+}
+
+/* Tarjeta contenedora de cabecera de perfil */
+.pf-header-card {
+  background: var(--pf-glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--pf-glass-border);
+  border-radius: var(--pf-radius-lg);
+  padding: 2.2rem 2.4rem;
+  box-shadow: var(--pf-glass-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s ease;
+}
+
+.pf-header-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--verde), var(--naranja), #3b82f6);
+}
+
+/* Layout principal de la cabecera */
+.pf-header-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 2.2rem;
+  flex-wrap: wrap;
+}
+
+/* ── Avatar del Perfil ────────────────────────────────────── */
+.pf-avatar-cluster {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.pf-avatar-box {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--grad-primary);
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 800;
+  box-shadow: 0 12px 32px rgba(54, 192, 161, 0.35);
+  border: 4px solid rgba(255, 255, 255, 0.35);
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pf-avatar-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
+
+.pf-avatar-box:hover {
+  transform: scale(1.03);
+  box-shadow: 0 16px 40px rgba(54, 192, 161, 0.45);
+}
+
+/* Botón de cambio de foto */
+.pf-avatar-edit-btn {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--naranja), #d46a10);
+  color: #ffffff;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid var(--pf-card-bg);
+  box-shadow: 0 4px 14px rgba(239, 126, 34, 0.4);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 10;
+}
+
+.pf-avatar-edit-btn:hover {
+  transform: scale(1.15) rotate(10deg);
+  background: linear-gradient(135deg, #f7af4f, var(--naranja));
+}
+
+/* ── Información de Usuario ────────────────────────────────── */
+.pf-info-cluster {
+  flex: 1;
+  min-width: 280px;
+}
+
+.pf-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.35rem;
+}
+
+.pf-display-name {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.pf-insignia-badge {
+  font-size: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+  animation: pfBounce 3s ease-in-out infinite;
+}
+
+@keyframes pfBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px) scale(1.1); }
+}
+
+.pf-email-text {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Badges de rol, estado y visibilidad */
+.pf-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.pf-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--verde-alpha);
+  color: var(--verde-700);
+  border: 1px solid var(--verde-300);
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pf-role-badge.admin {
+  background: var(--naranja-alpha);
+  color: var(--naranja-700);
+  border-color: var(--naranja-300);
+}
+
+[data-theme="dark"] .pf-role-badge {
+  color: var(--verde-300);
+  border-color: rgba(54, 192, 161, 0.3);
+}
+
+[data-theme="dark"] .pf-role-badge.admin {
+  color: var(--naranja-300);
+  border-color: rgba(239, 126, 34, 0.3);
+}
+
+.pf-visibility-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--pf-pill-bg);
+  border: 1px solid var(--pf-glass-border);
+  color: var(--text-muted);
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* Frase o lema cívico */
+.pf-frase-box {
+  background: var(--pf-pill-bg);
+  border-left: 3px solid var(--verde);
+  border-radius: 0 var(--pf-radius-sm) var(--pf-radius-sm) 0;
+  padding: 0.6rem 1rem;
+  font-size: 0.92rem;
+  font-style: italic;
+  color: var(--text-2);
+  margin-bottom: 0.85rem;
+  max-width: 650px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pf-frase-box i {
+  color: var(--verde);
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+/* Metadatos de perfil (ubicación, fecha) */
+.pf-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.pf-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pf-meta-item i {
+  color: var(--verde);
+}
+
+/* Redes sociales */
+.pf-social-links {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.pf-social-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.85rem;
+  background: var(--pf-card-bg);
+  border: 1px solid var(--pf-glass-border);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-2);
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+
+.pf-social-btn:hover {
+  transform: translateY(-2px);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.pf-social-btn.twitter:hover   { background: #1da1f2; }
+.pf-social-btn.instagram:hover { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+.pf-social-btn.github:hover    { background: #24292e; }
+
+/* Botones de acción rápida de cabecera */
+.pf-header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ── Tarjetas de Estadísticas de Impacto ───────────────────── */
+.pf-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--pf-glass-border);
+}
+
+.pf-stat-card {
+  background: var(--pf-card-bg);
+  border: 1px solid var(--pf-card-border);
+  border-radius: var(--pf-radius-md);
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.pf-stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--verde-alpha);
+  filter: blur(20px);
+  pointer-events: none;
+}
+
+.pf-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  border-color: var(--verde-300);
+}
+
+.pf-stat-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--grad-soft);
+  color: var(--verde);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+  border: 1px solid var(--verde-alpha2);
+  transition: all 0.3s ease;
+}
+
+.pf-stat-card:hover .pf-stat-icon-wrap {
+  background: var(--grad-primary);
+  color: #ffffff;
+  transform: scale(1.08) rotate(5deg);
+}
+
+.pf-stat-card.votos .pf-stat-icon-wrap { color: var(--naranja); }
+.pf-stat-card.vistas .pf-stat-icon-wrap { color: #3b82f6; }
+.pf-stat-card.desafios .pf-stat-icon-wrap { color: #a855f7; }
+
+.pf-stat-card.votos:hover .pf-stat-icon-wrap { background: linear-gradient(135deg, var(--naranja), #f7af4f); }
+.pf-stat-card.vistas:hover .pf-stat-icon-wrap { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+.pf-stat-card.desafios:hover .pf-stat-icon-wrap { background: linear-gradient(135deg, #a855f7, #c084fc); }
+
+.pf-stat-info {
+  flex: 1;
+}
+
+.pf-stat-num {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.1;
+  display: block;
+}
+
+.pf-stat-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ════════════════════════════════════════════════════════════
+   2 · BARRA DE NAVEGACIÓN POR PESTAÑAS (SEGMENTED TABS)
+   ════════════════════════════════════════════════════════════ */
+.pf-nav-container {
+  padding: 2rem 0 0.5rem;
+}
+
+.pf-tabs-pill-wrap {
+  background: var(--pf-card-bg);
+  border: 1px solid var(--pf-card-border);
+  border-radius: 999px;
+  padding: 0.4rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.pf-tabs-pill-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.pf-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.4rem;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.pf-tab-btn i {
+  font-size: 1.05rem;
+  transition: transform 0.25s ease;
+}
+
+.pf-tab-btn:hover {
+  color: var(--verde);
+  background: var(--pf-pill-bg);
+}
+
+.pf-tab-btn:hover i {
+  transform: scale(1.15);
+}
+
+.pf-tab-btn.active {
+  color: #ffffff;
+  background: var(--grad-primary);
+  box-shadow: 0 4px 16px rgba(54, 192, 161, 0.35);
+}
+
+.pf-tab-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.pf-tab-btn:not(.active) .pf-tab-badge {
+  background: var(--pf-pill-bg);
+  color: var(--text-muted);
+}
+
+/* ════════════════════════════════════════════════════════════
+   3 · CONTENEDORES DE SECCIONES (PANELS)
+   ════════════════════════════════════════════════════════════ */
+.pf-content-area {
+  padding: 1.5rem 0 5rem;
+}
+
+.pf-section-panel {
+  display: none;
+  animation: pfFadeIn 0.35s ease forwards;
+}
+
+.pf-section-panel.active {
+  display: block;
+}
+
+@keyframes pfFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Tarjetas de formulario y contenido */
+.pf-card {
+  background: var(--pf-card-bg);
+  border: 1px solid var(--pf-card-border);
+  border-radius: var(--pf-radius-lg);
+  padding: 2.2rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.pf-card-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.4rem;
+}
+
+.pf-card-title i {
+  color: var(--verde);
+}
+
+.pf-card-subtitle {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 1.8rem;
+}
+
+/* ── Estilos de Formularios Cívicos ───────────────────────── */
+.pf-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.pf-form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.pf-input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pf-input-icon {
+  position: absolute;
+  left: 1rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  pointer-events: none;
+  transition: color 0.25s ease;
+}
+
+.pf-input-group .form-control {
+  padding-left: 2.75rem;
+}
+
+.pf-input-group .form-control:focus + .pf-input-icon,
+.pf-input-group:focus-within .pf-input-icon {
+  color: var(--verde);
+}
+
+.pf-input-action {
+  position: absolute;
+  right: 1rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.2s ease;
+}
+
+.pf-input-action:hover {
+  color: var(--text);
+}
+
+/* Sugerencias rápidas de biografía */
+.pf-tag-suggestions {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin-top: 0.6rem;
+}
+
+.pf-tag-chip {
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: var(--pf-pill-bg);
+  border: 1px solid var(--pf-card-border);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pf-tag-chip:hover {
+  background: var(--verde-alpha);
+  color: var(--verde-700);
+  border-color: var(--verde-300);
+  transform: translateY(-1px);
+}
+
+/* Toggle Switch de Privacidad */
+.pf-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.4rem;
+  background: var(--pf-pill-bg);
+  border-radius: var(--pf-radius-md);
+  border: 1px solid var(--pf-card-border);
+  gap: 1.5rem;
+}
+
+.pf-switch-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+  margin-bottom: 0.2rem;
+}
+
+.pf-switch-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Estilo del Switch */
+.pf-switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.pf-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.pf-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: var(--text-muted);
+  opacity: 0.4;
+  transition: 0.3s;
+  border-radius: 34px;
+}
+
+.pf-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.pf-switch input:checked + .pf-slider {
+  background-color: var(--verde);
+  opacity: 1;
+}
+
+.pf-switch input:checked + .pf-slider:before {
+  transform: translateX(24px);
+}
+
+/* ════════════════════════════════════════════════════════════
+   4 · ESTUDIO DE PERSONALIZACIÓN VISUAL (STUDIO)
+   ════════════════════════════════════════════════════════════ */
+.pf-studio-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 1.8rem;
+  align-items: start;
+}
+
+/* Paletas de Temas */
+.pf-theme-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.85rem;
+}
+
+.pf-theme-card-opt {
+  background: var(--pf-card-bg);
+  border: 2px solid var(--pf-card-border);
+  border-radius: var(--pf-radius-md);
+  padding: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.pf-theme-card-opt:hover {
+  transform: translateY(-2px);
+  border-color: var(--verde);
+}
+
+.pf-theme-card-opt.active {
+  border-color: var(--verde);
+  background: var(--verde-alpha);
+  box-shadow: 0 0 0 3px var(--verde-alpha2);
+}
+
+.pf-theme-swatch-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 1.1rem;
+}
+
+.pf-theme-card-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+}
+
+/* Marcos de Avatar Interactivos */
+.pf-frame-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.85rem;
+}
+
+.pf-frame-card-opt {
+  background: var(--pf-card-bg);
+  border: 2px solid var(--pf-card-border);
+  border-radius: var(--pf-radius-md);
+  padding: 1rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.pf-frame-card-opt:hover {
+  transform: translateY(-2px);
+  border-color: var(--naranja);
+}
+
+.pf-frame-card-opt.active {
+  border-color: var(--naranja);
+  background: var(--naranja-alpha);
+  box-shadow: 0 0 0 3px var(--naranja-alpha2);
+}
+
+.pf-frame-demo {
+  width: 50px;
+  height: 50px;
+  background: var(--grad-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 1.2rem;
+}
+
+.pf-frame-demo.circulo  { border-radius: 50%; }
+.pf-frame-demo.cuadrado { border-radius: 12px; }
+.pf-frame-demo.hexagono { clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+.pf-frame-demo.estrella { clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+
+.pf-frame-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+/* Selector de Emojis de Insignia */
+.pf-emoji-picker-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+
+.pf-emoji-opt-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--pf-radius-sm);
+  background: var(--pf-pill-bg);
+  border: 1px solid var(--pf-card-border);
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pf-emoji-opt-btn:hover {
+  transform: scale(1.2);
+  background: var(--verde-alpha);
+  border-color: var(--verde-300);
+}
+
+/* Tarjeta de Previsualización en Vivo (Live Card Preview) */
+.pf-preview-sticky-card {
+  position: sticky;
+  top: calc(var(--nav-height) + 1.5rem);
+  background: var(--pf-card-bg);
+  border: 1px solid var(--pf-card-border);
+  border-radius: var(--pf-radius-lg);
+  padding: 1.6rem;
+  box-shadow: var(--pf-glass-shadow);
+}
+
+.pf-preview-badge-header {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--verde);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1.1rem;
+}
+
+.pf-live-card-mock {
+  border-radius: var(--pf-radius-md);
+  overflow: hidden;
+  border: 1px solid var(--pf-card-border);
+  background: var(--pf-card-bg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.pf-mock-banner {
+  height: 80px;
+  background: linear-gradient(135deg, var(--pf-banner), var(--pf-accent));
+  position: relative;
+  transition: background 0.3s ease;
+}
+
+.pf-mock-body {
+  padding: 0 1.25rem 1.25rem;
+  position: relative;
+}
+
+.pf-mock-avatar-wrap {
+  margin-top: -36px;
+  display: inline-block;
+  margin-bottom: 0.6rem;
+}
+
+.pf-mock-avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--grad-primary);
+  border: 3px solid var(--pf-card-bg);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.pf-mock-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pf-mock-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.pf-mock-frase {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+/* ════════════════════════════════════════════════════════════
+   5 · MIS PROPUESTAS (TARJETAS MEJORADAS & FILTROS)
+   ════════════════════════════════════════════════════════════ */
+.pf-proposals-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.pf-filter-pills {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.pf-filter-btn {
+  padding: 0.45rem 0.95rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: var(--pf-card-bg);
+  border: 1px solid var(--pf-card-border);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pf-filter-btn.active,
+.pf-filter-btn:hover {
+  color: var(--verde);
+  border-color: var(--verde);
+  background: var(--verde-alpha);
+}
+
+.pf-proposal-card {
+  background: var(--pf-card-bg);
+  border: 1px solid var(--pf-card-border);
+  border-radius: var(--pf-radius-md);
+  padding: 1.35rem 1.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.pf-proposal-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+  border-color: var(--verde-300);
+}
+
+.pf-proposal-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.pf-proposal-cat-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.pf-cat-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--verde-700);
+  background: var(--verde-alpha);
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+}
+
+[data-theme="dark"] .pf-cat-tag {
+  color: var(--verde-300);
+}
+
+.pf-proposal-title {
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: var(--text);
+  text-decoration: none;
+  display: block;
+  margin-bottom: 0.35rem;
+  transition: color 0.2s ease;
+}
+
+.pf-proposal-title:hover {
+  color: var(--verde);
+}
+
+.pf-proposal-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.pf-proposal-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pf-proposal-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Empty State Hermoso */
+.pf-empty-state {
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  background: var(--pf-card-bg);
+  border: 2px dashed var(--pf-card-border);
+  border-radius: var(--pf-radius-lg);
+}
+
+.pf-empty-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--grad-soft);
+  color: var(--verde);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin: 0 auto 1.25rem;
+}
+
+.pf-empty-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+
+.pf-empty-desc {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  max-width: 420px;
+  margin: 0 auto 1.5rem;
+}
+
+/* ════════════════════════════════════════════════════════════
+   6 · MEDIDOR DE SEGURIDAD (PASSWORD STRENGTH)
+   ════════════════════════════════════════════════════════════ */
+.pf-strength-wrap {
+  margin-top: 0.65rem;
+}
+
+.pf-strength-bars {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  height: 5px;
+  margin-bottom: 0.45rem;
+}
+
+.pf-strength-bar {
+  background: var(--surface);
+  border-radius: 999px;
+  transition: background 0.3s ease;
+}
+
+.pf-strength-bar.active-1 { background: #ef4444; }
+.pf-strength-bar.active-2 { background: #f97316; }
+.pf-strength-bar.active-3 { background: #eab308; }
+.pf-strength-bar.active-4 { background: #22c55e; }
+
+.pf-strength-text {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.pf-security-checklist {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  background: var(--pf-pill-bg);
+  border-radius: var(--pf-radius-sm);
+}
+
+.pf-check-item {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pf-check-item.valid {
+  color: var(--verde-700);
+  font-weight: 700;
+}
+
+[data-theme="dark"] .pf-check-item.valid {
+  color: var(--verde-300);
+}
+
+.pf-check-item i {
+  font-size: 0.85rem;
+}
+
+/* ════════════════════════════════════════════════════════════
+   7 · BOTONES DE ACCESO RÁPIDO A COSMÉTICOS (HERO)
+   ════════════════════════════════════════════════════════════ */
+.pf-cosmetic-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.pf-cos-quick-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-2);
+  background: var(--pf-card-bg);
+  border: 1px solid var(--pf-glass-border);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.pf-cos-quick-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--grad-primary);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: inherit;
+}
+
+.pf-cos-quick-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  border-color: var(--verde-300);
+  box-shadow: 0 6px 20px rgba(54, 192, 161, 0.2);
+  color: #ffffff;
+}
+
+.pf-cos-quick-btn:hover::before {
+  opacity: 1;
+}
+
+.pf-cos-quick-btn i,
+.pf-cos-quick-btn span {
+  position: relative;
+  z-index: 2;
+}
+
+.pf-cos-quick-btn i {
+  font-size: 0.92rem;
+  transition: transform 0.3s ease;
+}
+
+.pf-cos-quick-btn:hover i {
+  transform: rotate(15deg) scale(1.15);
+}
+
+/* Variantes de color para cada tipo */
+.pf-cos-quick-btn[data-cos-type="marco"]:hover {
+  box-shadow: 0 6px 20px rgba(239, 126, 34, 0.25);
+}
+.pf-cos-quick-btn[data-cos-type="marco"]:hover::before {
+  background: linear-gradient(135deg, var(--naranja), #d46a10);
+}
+
+.pf-cos-quick-btn[data-cos-type="efecto"]:hover {
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.25);
+}
+.pf-cos-quick-btn[data-cos-type="efecto"]:hover::before {
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+}
+
+/* Indicador de cosmético equipado (dot) */
+.pf-cos-quick-btn .pf-cos-equipped-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--verde);
+  box-shadow: 0 0 8px var(--verde);
+  flex-shrink: 0;
+  animation: pfCosEquipPulse 2s ease-in-out infinite;
+}
+
+@keyframes pfCosEquipPulse {
+  0%, 100% { box-shadow: 0 0 4px var(--verde); }
+  50% { box-shadow: 0 0 12px var(--verde), 0 0 24px rgba(54, 192, 161, 0.3); }
+}
+
+/* ════════════════════════════════════════════════════════════
+   8 · DRAWER LATERAL DE COSMÉTICOS
+   ════════════════════════════════════════════════════════════ */
+.pf-cos-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.1); /* Ligero oscurecimiento sin tapar la visibilidad */
+  z-index: 9998;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pf-cos-drawer-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.pf-cos-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(480px, 92vw);
+  height: 100vh;
+  height: 100dvh;
+  background: var(--pf-card-bg);
+  border-left: 1px solid var(--pf-glass-border);
+  box-shadow: -16px 0 64px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  overflow: hidden;
+}
+
+.pf-cos-drawer.open {
+  transform: translateX(0);
+}
+
+/* Header del drawer */
+.pf-cos-drawer-header {
+  padding: 1.5rem 1.75rem 1.25rem;
+  border-bottom: 1px solid var(--pf-card-border);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.pf-cos-drawer-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--grad-primary);
+}
+
+.pf-cos-drawer-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--grad-soft);
+  border: 1px solid var(--verde-alpha2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--verde);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.pf-cos-drawer-header:hover .pf-cos-drawer-icon {
+  background: var(--grad-primary);
+  color: #ffffff;
+  transform: rotate(10deg) scale(1.05);
+}
+
+.pf-cos-drawer-title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.pf-cos-drawer-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.pf-cos-drawer-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.pf-cos-drawer-close {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--pf-pill-bg);
+  border: 1px solid var(--pf-card-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.pf-cos-drawer-close:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+  transform: rotate(90deg);
+}
+
+/* Filtros del drawer */
+.pf-cos-drawer-filters {
+  padding: 1rem 1.75rem;
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--pf-card-border);
+  flex-shrink: 0;
+}
+
+.pf-cos-drawer-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: var(--pf-pill-bg);
+  border: 1px solid var(--pf-card-border);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.pf-cos-drawer-filter-btn:hover {
+  color: var(--verde);
+  border-color: var(--verde-300);
+  background: var(--verde-alpha);
+}
+
+.pf-cos-drawer-filter-btn.active {
+  color: #ffffff;
+  background: var(--grad-primary);
+  border-color: transparent;
+  box-shadow: 0 3px 12px rgba(54, 192, 161, 0.3);
+}
+
+.pf-cos-drawer-filter-btn.active i {
+  color: #ffffff;
+}
+
+/* Body scrollable del drawer */
+.pf-cos-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1.75rem 2rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--verde-400) transparent;
+}
+
+.pf-cos-drawer-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.pf-cos-drawer-body::-webkit-scrollbar-thumb {
+  background: var(--verde-400);
+  border-radius: 4px;
+}
+
+/* Grid de cosméticos dentro del drawer */
+.pf-cos-drawer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.85rem;
+}
+
+/* Tarjeta individual de cosmético en el drawer */
+.pf-cos-drawer-item {
+  background: var(--pf-card-bg);
+  border: 2px solid var(--pf-card-border);
+  border-radius: var(--pf-radius-md);
+  padding: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.pf-cos-drawer-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--grad-soft);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.pf-cos-drawer-item:hover {
+  transform: translateY(-3px);
+  border-color: var(--verde-300);
+  box-shadow: 0 8px 24px rgba(54, 192, 161, 0.12);
+}
+
+.pf-cos-drawer-item:hover::after {
+  opacity: 1;
+}
+
+.pf-cos-drawer-item.equipado {
+  border-color: var(--verde);
+  background: var(--verde-alpha);
+  box-shadow: 0 0 0 3px var(--verde-alpha2);
+}
+
+.pf-cos-drawer-item.bloqueado {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.6);
+}
+
+.pf-cos-drawer-item.bloqueado:hover {
+  transform: none;
+  border-color: var(--pf-card-border);
+  box-shadow: none;
+}
+
+.pf-cos-drawer-item-preview {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--grad-primary);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.4rem;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.pf-cos-drawer-item-preview.es-fondo {
+  border-radius: var(--pf-radius-sm);
+  width: 100%;
+  height: 56px;
+}
+
+.pf-cos-drawer-item-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+  position: relative;
+  z-index: 1;
+}
+
+.pf-cos-drawer-item-rareza {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Rareza colors en el drawer */
+.pf-cos-drawer-item-rareza.comun { color: #8892a4; background: rgba(136,146,164,.12); }
+.pf-cos-drawer-item-rareza.raro { color: #4a9eff; background: rgba(74,158,255,.12); }
+.pf-cos-drawer-item-rareza.epico { color: #9b59b6; background: rgba(155,89,182,.12); }
+.pf-cos-drawer-item-rareza.legendario { color: #f59e0b; background: rgba(245,158,11,.12); }
+
+/* Badge de equipado en drawer */
+.pf-cos-drawer-item .pf-cos-equipped-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--verde);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  z-index: 5;
+  box-shadow: 0 2px 8px rgba(54, 192, 161, 0.4);
+}
+
+.pf-cos-drawer-item .pf-cos-lock-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--pf-pill-bg);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  z-index: 5;
+  border: 1px solid var(--pf-card-border);
+}
+
+/* Empty state del drawer */
+.pf-cos-drawer-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+}
+
+.pf-cos-drawer-empty i {
+  font-size: 2.5rem;
+  color: var(--text-muted);
+  opacity: 0.4;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.pf-cos-drawer-empty p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+/* ════════════════════════════════════════════════════════════
+   9 · SECCIONES COLAPSABLES / ACORDEÓN
+   ════════════════════════════════════════════════════════════ */
+.pf-accordion {
+  margin-bottom: 1rem;
+}
+
+.pf-accordion-trigger {
+  width: 100%;
+  background: var(--pf-card-bg);
+  border: 1px solid var(--pf-card-border);
+  border-radius: var(--pf-radius-lg);
+  padding: 1.25rem 1.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.pf-accordion-trigger:hover {
+  border-color: var(--verde-300);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.pf-accordion.open .pf-accordion-trigger {
+  border-radius: var(--pf-radius-lg) var(--pf-radius-lg) 0 0;
+  border-bottom-color: transparent;
+  background: var(--pf-card-bg);
+}
+
+.pf-accordion-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--grad-soft);
+  border: 1px solid var(--verde-alpha2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  color: var(--verde);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.pf-accordion:hover .pf-accordion-icon {
+  background: var(--grad-primary);
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+.pf-accordion-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.pf-accordion-label-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.pf-accordion-label-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.pf-accordion-chevron {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+}
+
+.pf-accordion.open .pf-accordion-chevron {
+  transform: rotate(180deg);
+  color: var(--verde);
+}
+
+.pf-accordion-body {
+  background: var(--pf-card-bg);
+  border: 1px solid var(--pf-card-border);
+  border-top: none;
+  border-radius: 0 0 var(--pf-radius-lg) var(--pf-radius-lg);
+  padding: 0 1.8rem;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.35s ease;
+}
+
+.pf-accordion.open .pf-accordion-body {
+  padding: 1.5rem 1.8rem 2rem;
+  max-height: 2000px;
+}
+
+/* ════════════════════════════════════════════════════════════
+   10 · COACH CIVI INTEGRADO (compacto para la pestaña de progreso)
+   ════════════════════════════════════════════════════════════ */
+.pf-civi-inline-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--pf-card-border);
+}
+
+.pf-civi-inline-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.pf-civi-inline-header:hover {
+  opacity: 0.85;
+}
+
+.pf-civi-inline-header .pf-civi-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--verde), #2aa082);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(54, 192, 161, 0.3);
+}
+
+.pf-civi-inline-header .pf-civi-label {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.pf-civi-inline-header .pf-civi-sublabel {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ════════════════════════════════════════════════════════════
+   11 · RESPONSIVE / ADAPTABILIDAD
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .pf-studio-layout {
+    grid-template-columns: 1fr;
+  }
+  .pf-preview-sticky-card {
+    position: static;
+    margin-top: 1.5rem;
+  }
+  .pf-form-grid-2,
+  .pf-form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+  .pf-cos-drawer {
+    width: 100vw;
+  }
+  .pf-cos-drawer-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .pf-header-card {
+    padding: 1.5rem 1.25rem;
+  }
+  .pf-header-main {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .pf-name-row,
+  .pf-badges-row,
+  .pf-meta-row,
+  .pf-social-links,
+  .pf-header-actions,
+  .pf-cosmetic-actions {
+    justify-content: center;
+  }
+  .pf-frase-box {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .pf-display-name {
+    font-size: 1.75rem;
+  }
+  .pf-stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .pf-proposal-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .pf-proposal-actions {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+  }
+  .pf-accordion-trigger {
+    padding: 1rem 1.25rem;
+  }
+  .pf-accordion.open .pf-accordion-body {
+    padding: 1.25rem;
+  }
+  .pf-cos-drawer-header {
+    padding: 1.25rem;
+  }
+  .pf-cos-drawer-filters {
+    padding: 0.85rem 1.25rem;
+  }
+  .pf-cos-drawer-body {
+    padding: 1rem 1.25rem;
+  }
+}
+

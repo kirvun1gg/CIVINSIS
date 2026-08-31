@@ -7,7 +7,6 @@ use App\Models\Categoria;
 use App\Models\Proposal;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class CategoriaController extends Controller
 {
@@ -20,7 +19,7 @@ class CategoriaController extends Controller
 
         if ($accion === 'listar') return $this->listar();
 
-        $u = Auth::user();
+        $u = auth_user();
         if (!$u || !in_array($u->rol_nombre, ['admin', 'moderador'])) return $this->json(false, 'Sin permisos');
 
         return match ($accion) {
@@ -68,7 +67,7 @@ class CategoriaController extends Controller
 
     private function eliminar(Request $request)
     {
-        if (Auth::user()->rol_nombre !== 'admin')
+        if (auth_user()->rol_nombre !== 'admin')
             return $this->json(false, 'Solo administradores pueden eliminar categorías');
         $id = (int) $request->input('id');
         if (!$id) return $this->json(false, 'ID inválido');

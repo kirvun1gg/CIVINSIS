@@ -4,14 +4,17 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Categoria;
+use App\Services\Translation\DeepLProvider;
+use App\Services\Translation\TranslationProviderInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register()
     {
-        //
+        // Deja la puerta abierta a cambiar de proveedor de traducción sin
+        // tocar TranslationService ni el resto de la app.
+        $this->app->bind(TranslationProviderInterface::class, DeepLProvider::class);
     }
 
     public function boot()
@@ -19,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
         // Comparte con TODAS las vistas las variables que el frontend espera,
         // reemplazando al antiguo session_helper.php / getCategorias().
         View::composer('*', function ($view) {
-            $user = Auth::user();
+            $user = auth_user();
 
             $view->with([
                 'usuarioLogueado' => (bool) $user,

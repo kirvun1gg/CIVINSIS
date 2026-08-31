@@ -489,9 +489,9 @@ const Proposals = {
 
   cardHTML(p) {
     // Estilos por diseño — solo para diseños no-default
-    var diseno = p.diseno || 'default';
-    var cardExtraStyle = '';
-    var cardExtraClass = '';
+    let diseno = p.diseno || 'default';
+    let cardExtraStyle = '';
+    let cardExtraClass = '';
 
     if (diseno === 'dark') {
       cardExtraStyle = 'background:#131f1a;border-color:rgba(54,192,161,.25);';
@@ -519,15 +519,15 @@ const Proposals = {
     }
     if (p.destacada == 1 || p.destacada === true) cardExtraClass += ' is-destacada';
 
-    var imageHtml = (p.imagen && p.imagen.length > 10 && p.imagen.indexOf('data:') === 0)
+    let imageHtml = (p.imagen && p.imagen.length > 10 && p.imagen.indexOf('data:') === 0)
       ? '<div class="card-image"><img src="' + p.imagen + '" alt="" loading="lazy"></div>'
       : '';
 
-    var estado = (p.estado || 'activa').replace('_', ' ');
+    let estado = (p.estado || 'activa').replace('_', ' ');
 
-    var catFx = (p.efecto_categoria === false || p.efecto_categoria == 0) ? '' : (p.categoria_efecto || 'default');
+    let catFx = (p.efecto_categoria === false || p.efecto_categoria == 0) ? '' : (p.categoria_efecto || 'default');
     if (p.color_acento) { cardExtraStyle += 'border-color:' + p.color_acento + ';box-shadow:inset 4px 0 0 ' + p.color_acento + ';'; }
-    var html = '<article class="proposal-card reveal' + cardExtraClass + '" data-id="' + p.id + '" data-cat-effect="' + catFx + '" style="cursor:pointer;' + cardExtraStyle + '">';
+    let html = '<article class="proposal-card reveal' + cardExtraClass + '" data-id="' + p.id + '" data-cat-effect="' + catFx + '" style="cursor:pointer;' + cardExtraStyle + '">';
     html += imageHtml;
     html += '<div class="card-header">';
     html += '<div class="card-cat"><i class="' + p.categoria_icono + '" style="color:' + p.categoria_color + '"></i>' + p.categoria + '</div>';
@@ -539,30 +539,30 @@ const Proposals = {
     html += '</div>';
     // Autor con avatar (#3)
     // El marco va en el avatar y el efecto en su capa (.cos-fx)
-    var authorClass = p.autor_marco || '';
-    var capaEfectoProp = '';
-    var fxClsProp = '';
-    var fxAttrProp = p.autor_efecto ? ' data-efecto="' + p.autor_efecto + '"' : '';
-    var avaInner = (p.autor_avatar && p.autor_avatar.indexOf('data:') === 0)
+    let authorClass = p.autor_marco || '';
+    let capaEfectoProp = '';
+    let fxClsProp = '';
+    let fxAttrProp = p.autor_efecto ? ' data-efecto="' + p.autor_efecto + '"' : '';
+    let avaInner = (p.autor_avatar && p.autor_avatar.indexOf('data:') === 0)
       ? '<span class="author-avatar ' + authorClass + '"' + fxAttrProp + '><img src="' + p.autor_avatar + '" alt=""></span>'
       : '<span class="author-avatar ' + authorClass + '"' + fxAttrProp + '>' + ((p.autor||'?').charAt(0).toUpperCase()) + '</span>';
-    var tituloHtml = p.autor_titulo ? '<div class="autor-titulo-row"><span class="label-titulo ' + p.autor_titulo.rareza + '" style="color:' + p.autor_titulo.color + ';border-color:' + p.autor_titulo.color + '">' + p.autor_titulo.nombre + '</span></div>' : '';
-    var nivelHtml = p.autor_nivel ? ' <span class="label-nivel">Nv.' + p.autor_nivel + '</span>' : '';
-    html += '<div class="card-author"><div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">' + avaInner + '<span class="author-name">' + (p.autor||'Anónimo') + '</span>' + nivelHtml + '</div>' + tituloHtml + '</div>';
+    let tituloHtml = p.autor_titulo ? '<div class="autor-titulo-row"><span class="label-titulo ' + p.autor_titulo.rareza + '" style="color:' + p.autor_titulo.color + ';border-color:' + p.autor_titulo.color + '">' + p.autor_titulo.nombre + '</span></div>' : '';
+    let nivelHtml = p.autor_nivel ? ' <span class="label-nivel">Nv.' + p.autor_nivel + '</span>' : '';
+    html += '<div class="card-author"><div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">' + avaInner + '<span class="author-name">' + (p.autor||CIVI_I18N.anonimo) + '</span>' + nivelHtml + '</div>' + tituloHtml + '</div>';
     html += '</div>';
     html += '<div class="card-footer">';
     html += '<div class="card-meta"><span><i class="fas fa-eye"></i>' + p.vistas + '</span><span><i class="fas fa-calendar"></i>' + p.fecha_formateada + '</span></div>';
-    var aspectoTopHtml = p.aspecto_top
+    let aspectoTopHtml = p.aspecto_top
       ? '<span class="card-aspecto-top" title="' + p.aspecto_top.label + '">' + p.aspecto_top.icono + ' ' + p.aspecto_top.label + '</span>'
       : '';
-    var votosClass = (p.votos < 0) ? ' negativo' : '';
+    let votosClass = (p.votos < 0) ? ' negativo' : '';
     html += '<div class="card-valoracion">' + aspectoTopHtml + '<span class="card-valoracion-count' + votosClass + '"><i class="fas fa-hand-sparkles"></i> ' + p.votos + '</span></div>';
     html += '</div></article>';
     return html;
   },
 
   attachCardEvents() {
-    var container = this.container;
+    let container = this.container;
     if (!container) return;
     // Click en card -> navegar
     container.querySelectorAll('.proposal-card[data-id]').forEach(function(card) {
@@ -644,13 +644,14 @@ const ProposalDetail = {
             <i class="${p.categoria_icono}"></i>${p.categoria}
           </span>${designBadge}
         </div>
-        <h1 class="detail-title">${p.titulo}</h1>
+        <h1 class="detail-title" id="detailTitulo">${p.titulo}</h1>
         <div class="detail-meta">
           <a href="${p.autor_id ? 'usuario.php?id='+p.autor_id : '#'}" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:.35rem"><i class="fas fa-user"></i>${p.autor}</a>${p.autor_nivel ? ` <span class="label-nivel">Nv.${p.autor_nivel}</span>` : ''}${p.autor_titulo ? `<span class="label-titulo ${p.autor_titulo.rareza}" style="color:${p.autor_titulo.color};border-color:${p.autor_titulo.color};margin-left:.4rem">${p.autor_titulo.nombre}</span>` : ''}
           <span><i class="fas fa-calendar"></i>${p.fecha_formateada}</span>
-          <span><i class="fas fa-eye"></i>${p.vistas} vistas</span>
+          <span><i class="fas fa-eye"></i>${p.vistas} ${CIVI_I18N.vistas_sufijo}</span>
         </div>
-        <p class="detail-desc">${p.descripcion}</p>
+        ${this.traduccionBadgeHTML(p)}
+        <p class="detail-desc" id="detailDesc">${p.descripcion}</p>
         ${this.valoracionHTML(p)}
         <div class="detail-actions">
           ${p.es_autor ? `
@@ -664,13 +665,40 @@ const ProposalDetail = {
         </div>
       </div>
       <div class="detail-content animate-fade-up">
-        <h2 class="content-title"><i class="fas fa-align-left"></i> Descripción completa</h2>
-        <div class="content-body">${p.contenido}</div>
+        <h2 class="content-title"><i class="fas fa-align-left"></i> ${CIVI_I18N.descripcion_completa}</h2>
+        <div class="content-body" id="detailContenido">${p.contenido}</div>
       </div>
       ${this.timelineHTML(p.progreso_timeline)}`;
 
     // Guardar propuesta para edición ya se hizo arriba (this._propuesta = p)
     this.loadComments(id);
+  },
+
+  /** Aviso de "traducido automáticamente" + enlace para alternar con el original, sin otra llamada a la API. */
+  traduccionBadgeHTML(p) {
+    if (!p.traducido) return '';
+    return `
+      <div class="traduccion-badge" id="traduccionBadge">
+        <i class="fas fa-language"></i> ${CIVI_I18N.traducido_automaticamente} ·
+        <a href="#" onclick="ProposalDetail.toggleOriginal(event)" id="traduccionToggleLink">${CIVI_I18N.ver_original}</a>
+      </div>`;
+  },
+
+  _mostrandoOriginal: false,
+  toggleOriginal(e) {
+    if (e) e.preventDefault();
+    const p = this._propuesta;
+    if (!p || !p.traducido) return;
+    this._mostrandoOriginal = !this._mostrandoOriginal;
+
+    const titulo = document.getElementById('detailTitulo');
+    const desc = document.getElementById('detailDesc');
+    const contenido = document.getElementById('detailContenido');
+    const link = document.getElementById('traduccionToggleLink');
+    if (titulo) titulo.innerHTML = this._mostrandoOriginal ? p.titulo_es : p.titulo;
+    if (desc) desc.innerHTML = this._mostrandoOriginal ? p.descripcion_es : p.descripcion;
+    if (contenido) contenido.innerHTML = this._mostrandoOriginal ? p.contenido_es : p.contenido;
+    if (link) link.textContent = this._mostrandoOriginal ? CIVI_I18N.ver_traduccion : CIVI_I18N.ver_original;
   },
 
   timelineHTML(timeline) {
@@ -687,7 +715,7 @@ const ProposalDetail = {
 
     return `
       <div class="detail-content animate-fade-up progreso-timeline-wrap">
-        <h2 class="content-title"><i class="fas fa-route"></i> Progreso de la propuesta</h2>
+        <h2 class="content-title"><i class="fas fa-route"></i> ${CIVI_I18N.progreso_titulo}</h2>
         <div class="progreso-timeline">${steps}</div>
         ${this._propuesta && this._propuesta.mostrar_decision_mejora ? this.decisionMejoraHTML() : ''}
         ${this.esAdmin ? this.progresoAdminHTML() : ''}
@@ -698,17 +726,17 @@ const ProposalDetail = {
     const p = this._propuesta;
     return `
       <div class="decision-mejora-box">
-        <div class="decision-mejora-header"><i class="fas fa-comment-dots"></i> Parece que ya hay suficientes comentarios como para mejorar la propuesta</div>
-        <p class="decision-mejora-desc">Tu propuesta ya tiene ${p.comentarios_comunidad} comentarios de la comunidad. ¿Quieres ajustarla con base en el feedback, o prefieres dejarla como está y pasar a votación?</p>
+        <div class="decision-mejora-header"><i class="fas fa-comment-dots"></i> ${CIVI_I18N.decision_header}</div>
+        <p class="decision-mejora-desc">${CIVI_I18N.decision_desc.replace('{n}', p.comentarios_comunidad)}</p>
         <div class="decision-mejora-buttons">
           <button class="btn btn-outline btn-sm" onclick="ProposalDetail.pedirSugerenciasIA()">
-            <i class="fas fa-robot"></i> Pregunta a CIVI sobre lo que puedes mejorar
+            <i class="fas fa-robot"></i> ${CIVI_I18N.decision_btn_pregunta}
           </button>
           <button class="btn btn-primary btn-sm" onclick="ProposalDetail.decidirFase('mejoras')">
-            <i class="fas fa-pen-ruler"></i> Mejorar propuesta
+            <i class="fas fa-pen-ruler"></i> ${CIVI_I18N.decision_btn_mejorar}
           </button>
           <button class="btn btn-outline btn-sm" onclick="ProposalDetail.decidirFase('votacion')">
-            <i class="fas fa-square-poll-vertical"></i> Dejar como está y pasar a votación
+            <i class="fas fa-square-poll-vertical"></i> ${CIVI_I18N.decision_btn_votacion}
           </button>
         </div>
         <div id="civiSugerenciasBox" style="display:none"></div>
@@ -733,7 +761,7 @@ const ProposalDetail = {
     const box = document.getElementById('civiSugerenciasBox');
     if (!box || !this._propuesta) return;
     box.style.display = 'block';
-    box.innerHTML = `<div class="civi-sugerencias-loading"><i class="fas fa-spinner fa-spin"></i> CIVI está pensando...</div>`;
+    box.innerHTML = `<div class="civi-sugerencias-loading"><i class="fas fa-spinner fa-spin"></i> ${CIVI_I18N.civi_pensando}</div>`;
 
     const res = await API.get('php/ia.php', { accion: 'sugerir_mejoras', id: this._propuesta.id });
     if (!res.success) {
@@ -742,7 +770,7 @@ const ProposalDetail = {
     }
     box.innerHTML = `
       <div class="civi-sugerencias-card">
-        <div class="civi-sugerencias-header"><i class="fas fa-robot"></i> CIVI sugiere:</div>
+        <div class="civi-sugerencias-header"><i class="fas fa-robot"></i> ${CIVI_I18N.civi_sugiere}</div>
         <div class="civi-sugerencias-text">${this._nl2br(this._esc(res.sugerencias))}</div>
       </div>`;
   },
@@ -758,22 +786,17 @@ const ProposalDetail = {
   progresoAdminHTML() {
     if (!this._propuesta) return '';
     const p = this._propuesta;
-    const stages = [
-      ['idea', 'Idea', 'fa-lightbulb'],
-      ['discusion', 'Discusión', 'fa-comments'],
-      ['mejoras', 'Mejoras', 'fa-pen-ruler'],
-      ['votacion', 'Votación', 'fa-square-poll-vertical'],
-      ['destacada', 'Destacada', 'fa-star'],
-    ];
-    const botones = stages.map(([clave, label, icon]) => `
-      <button class="btn btn-sm ${p.progreso === clave ? 'btn-primary' : 'btn-outline'}"
-        onclick="ProposalDetail.cambiarProgreso('${clave}')" ${p.progreso === clave ? 'disabled' : ''}>
-        <i class="fas ${icon}"></i> ${label}
+    // Reutiliza p.progreso_timeline (ya viene con label/icono traducidos desde
+    // el backend) en vez de una lista propia para no duplicar texto fijo.
+    const botones = (p.progreso_timeline || []).map(t => `
+      <button class="btn btn-sm ${p.progreso === t.clave ? 'btn-primary' : 'btn-outline'}"
+        onclick="ProposalDetail.cambiarProgreso('${t.clave}')" ${p.progreso === t.clave ? 'disabled' : ''}>
+        <i class="${t.icono}"></i> ${t.label}
       </button>`).join('');
 
     return `
       <div class="progreso-admin-panel">
-        <div class="progreso-admin-label"><i class="fas fa-user-shield"></i> Mover a fase (admin/moderador)</div>
+        <div class="progreso-admin-label"><i class="fas fa-user-shield"></i> ${CIVI_I18N.admin_mover_fase}</div>
         <div class="progreso-admin-buttons">${botones}</div>
       </div>`;
   },
@@ -789,17 +812,18 @@ const ProposalDetail = {
     }
   },
 
-  // Metadatos visuales de cada aspecto (descripción + color). El backend solo
-  // envía label/icono/signo/total; aquí enriquecemos la presentación sin tocarlo.
+  // Metadatos visuales de cada aspecto (color + clave de descripción i18n).
+  // El backend envía label/icono/signo/total (ya traducidos); aquí solo
+  // enriquecemos con el color y la descripción corta, leída de CIVI_I18N.aspectos.
   ASPECTO_META: {
-    creativa:    { desc: 'Presenta una idea novedosa',  color: '#e0a800' },
-    argumentada: { desc: 'Está bien fundamentada',      color: '#3b82f6' },
-    comunidad:   { desc: 'Genera impacto colectivo',    color: '#22a06b' },
-    factible:    { desc: 'Es realista de aplicar',      color: '#14b8a6' },
-    innovadora:  { desc: 'Aporta algo diferente',       color: '#8b5cf6' },
-    poco_clara:  { desc: 'Cuesta entenderla',           color: '#f97316' },
-    inviable:    { desc: 'Difícil de realizar',         color: '#94a3b8' },
-    poco_util:   { desc: 'Aporta poco valor',           color: '#ef4444' },
+    creativa:    { descKey: 'creativa_desc',    color: '#e0a800' },
+    argumentada: { descKey: 'argumentada_desc', color: '#3b82f6' },
+    comunidad:   { descKey: 'comunidad_desc',   color: '#22a06b' },
+    factible:    { descKey: 'factible_desc',    color: '#14b8a6' },
+    innovadora:  { descKey: 'innovadora_desc',  color: '#8b5cf6' },
+    poco_clara:  { descKey: 'poco_clara_desc',  color: '#f97316' },
+    inviable:    { descKey: 'inviable_desc',    color: '#94a3b8' },
+    poco_util:   { descKey: 'poco_util_desc',   color: '#ef4444' },
   },
 
   valoracionHTML(p) {
@@ -816,38 +840,38 @@ const ProposalDetail = {
     if (p.es_autor) {
       return `
         <div class="valoracion-box ${votacionAbierta ? '' : 'apagada'}">
-          <div class="valoracion-titulo"><i class="fas fa-chart-simple"></i> Cómo valora la comunidad tu propuesta</div>
+          <div class="valoracion-titulo"><i class="fas fa-chart-simple"></i> ${CIVI_I18N.valoracion_titulo_autor}</div>
           <div class="valoracion-apagable">
             ${!votacionAbierta ? this.overlayApagado(p) : ''}
             <div class="valoracion-seccion positiva">
-              <div class="valoracion-seccion-label"><i class="fas fa-thumbs-up"></i> Aspectos positivos</div>
+              <div class="valoracion-seccion-label"><i class="fas fa-thumbs-up"></i> ${CIVI_I18N.aspectos_positivos}</div>
               <div class="aspectos-grid">${positivos.map(a => this.aspectoCard(p.id, a, miVoto, false, false)).join('')}</div>
             </div>
             <div class="valoracion-seccion negativa">
-              <div class="valoracion-seccion-label"><i class="fas fa-thumbs-down"></i> Aspectos por mejorar</div>
+              <div class="valoracion-seccion-label"><i class="fas fa-thumbs-down"></i> ${CIVI_I18N.aspectos_mejorar}</div>
               <div class="aspectos-grid">${negativos.map(a => this.aspectoCard(p.id, a, miVoto, false, false)).join('')}</div>
             </div>
           </div>
           ${this.resumenValoracionHTML(aspectos, totalVotos)}
-          ${totalVotos === 0 ? '<p class="valoracion-vacio">Todavía nadie ha valorado tu propuesta.</p>' : ''}
+          ${totalVotos === 0 ? `<p class="valoracion-vacio">${CIVI_I18N.valoracion_vacio}</p>` : ''}
         </div>`;
     }
 
     return `
       <div class="valoracion-box ${votacionAbierta ? '' : 'apagada'}">
-        <div class="valoracion-titulo"><i class="fas fa-hand-sparkles"></i> ¿Qué te parece esta propuesta?</div>
+        <div class="valoracion-titulo"><i class="fas fa-hand-sparkles"></i> ${CIVI_I18N.valoracion_titulo_otros}</div>
         ${votacionAbierta
-          ? '<p class="valoracion-sub">Elige la opción que mejor la describe. Solo puedes votar una vez (puedes cambiar o quitar tu voto).</p>'
+          ? `<p class="valoracion-sub">${CIVI_I18N.valoracion_sub}</p>`
           : ''}
         <div class="valoracion-apagable">
           ${!votacionAbierta ? this.overlayApagado(p) : ''}
           <div class="valoracion-seccion positiva">
-            <div class="valoracion-seccion-label"><i class="fas fa-thumbs-up"></i> Aspectos positivos</div>
-            <div class="aspectos-grid" id="aspectosGridPos" role="radiogroup" aria-label="Aspectos positivos">${positivos.map(a => this.aspectoCard(p.id, a, miVoto, puedeVotar, false)).join('')}</div>
+            <div class="valoracion-seccion-label"><i class="fas fa-thumbs-up"></i> ${CIVI_I18N.aspectos_positivos}</div>
+            <div class="aspectos-grid" id="aspectosGridPos" role="radiogroup" aria-label="${CIVI_I18N.aspectos_positivos}">${positivos.map(a => this.aspectoCard(p.id, a, miVoto, puedeVotar, false)).join('')}</div>
           </div>
           <div class="valoracion-seccion negativa">
-            <div class="valoracion-seccion-label"><i class="fas fa-thumbs-down"></i> Aspectos por mejorar</div>
-            <div class="aspectos-grid" id="aspectosGridNeg" role="radiogroup" aria-label="Aspectos por mejorar">${negativos.map(a => this.aspectoCard(p.id, a, miVoto, puedeVotar, false)).join('')}</div>
+            <div class="valoracion-seccion-label"><i class="fas fa-thumbs-down"></i> ${CIVI_I18N.aspectos_mejorar}</div>
+            <div class="aspectos-grid" id="aspectosGridNeg" role="radiogroup" aria-label="${CIVI_I18N.aspectos_mejorar}">${negativos.map(a => this.aspectoCard(p.id, a, miVoto, puedeVotar, false)).join('')}</div>
           </div>
         </div>
         <div id="resumenValoracion">${this.resumenValoracionHTML(aspectos, totalVotos)}</div>
@@ -855,7 +879,10 @@ const ProposalDetail = {
   },
 
   overlayApagado(p) {
-    const faseActual = p.progreso_label || 'otra fase';
+    const faseActual = p.progreso_label || '';
+    const desc = CIVI_I18N.votacion_pausa_desc
+      .replace('{fase}', `<b>${this._faseVotacionLabel(p)}</b>`)
+      .replace('{actual}', `<b>${faseActual}</b>`);
     return `
       <div class="valoracion-overlay-apagado">
         <div class="apagado-bombilla">
@@ -863,19 +890,26 @@ const ProposalDetail = {
           <span class="apagado-zzz">off</span>
         </div>
         <div class="apagado-texto">
-          <strong>Votación en pausa</strong>
-          <span>Se encenderá cuando la propuesta llegue a la fase <b>Votación</b>. Ahora está en <b>${faseActual}</b>.</span>
+          <strong>${CIVI_I18N.votacion_pausa_titulo}</strong>
+          <span>${desc}</span>
         </div>
       </div>`;
   },
 
+  /** Nombre traducido de la fase "votación", tomado del timeline si está disponible. */
+  _faseVotacionLabel(p) {
+    const t = (p.progreso_timeline || []).find(s => s.clave === 'votacion');
+    return t ? t.label : 'Votación';
+  },
+
   aspectoCard(pid, a, miVoto, votable, bloqueado) {
-    const meta = this.ASPECTO_META[a.clave] || { desc: '', color: '#36c0a1' };
+    const meta = this.ASPECTO_META[a.clave] || { descKey: '', color: '#36c0a1' };
+    const desc = CIVI_I18N.aspectos[meta.descKey] || '';
     const activo = miVoto === a.clave;
     const tag = votable ? 'button' : 'div';
     const attrs = votable
       ? `onclick="ProposalDetail.valorar(${pid}, '${a.clave}')" role="radio" aria-checked="${activo}" tabindex="0"`
-      : `aria-label="${a.label}: ${a.total} votos"`;
+      : `aria-label="${a.label}: ${a.total} ${CIVI_I18N.votos_sufijo}"`;
     return `
       <${tag} class="aspecto-card ${a.signo < 0 ? 'negativo' : 'positivo'} ${activo ? 'activo' : ''} ${votable ? '' : 'readonly'}"
         style="--asp-color:${meta.color}" ${attrs} data-clave="${a.clave}">
@@ -884,27 +918,30 @@ const ProposalDetail = {
         </span>
         <span class="aspecto-card-icono">${a.icono}</span>
         <span class="aspecto-card-nombre">${a.label}</span>
-        <span class="aspecto-card-desc">${meta.desc}</span>
-        <span class="aspecto-card-count"><span class="aspecto-card-count-num">${a.total}</span> votos</span>
+        <span class="aspecto-card-desc">${desc}</span>
+        <span class="aspecto-card-count"><span class="aspecto-card-count-num">${a.total}</span> ${CIVI_I18N.votos_sufijo}</span>
       </${tag}>`;
   },
 
   resumenValoracionHTML(aspectos, totalVotos) {
     if (!totalVotos) {
-      return `<div class="valoracion-resumen vacio"><i class="fas fa-circle-info"></i> Aún no hay valoraciones suficientes para un resumen.</div>`;
+      return `<div class="valoracion-resumen vacio"><i class="fas fa-circle-info"></i> ${CIVI_I18N.resumen_vacio}</div>`;
     }
     // Aspecto más votado (global, positivo o negativo)
     let top = aspectos[0];
     for (const a of aspectos) if (a.total > top.total) top = a;
     if (!top || top.total === 0) {
-      return `<div class="valoracion-resumen vacio"><i class="fas fa-circle-info"></i> Aún no hay valoraciones suficientes para un resumen.</div>`;
+      return `<div class="valoracion-resumen vacio"><i class="fas fa-circle-info"></i> ${CIVI_I18N.resumen_vacio}</div>`;
     }
     const meta = this.ASPECTO_META[top.clave] || { color: '#36c0a1' };
     const pct = Math.round((top.total / totalVotos) * 100);
+    const texto = CIVI_I18N.resumen_mas_votada
+      .replace('{etiqueta}', `<strong>${top.icono} ${top.label}</strong>`)
+      .replace('{pct}', pct);
     return `
       <div class="valoracion-resumen" style="--asp-color:${meta.color}">
         <i class="fas fa-chart-pie"></i>
-        <span>La valoración más votada es: <strong>${top.icono} ${top.label}</strong> (${pct}%)</span>
+        <span>${texto}</span>
       </div>`;
   },
 
@@ -981,6 +1018,8 @@ const ProposalDetail = {
     if (!section) return;
     const res = await API.get('php/propuestas.php', { accion: 'comentarios', id });
     const list = section.querySelector('#commentsList');
+    this._comentarios = this._comentarios || {};
+    (res.comentarios || []).forEach(c => { this._comentarios[c.id] = c; });
     if (!res.comentarios.length) {
       list.innerHTML = '<div class="empty-state"><i class="fas fa-comment-slash"></i><p>Sé el primero en comentar.</p></div>';
     } else {
@@ -991,6 +1030,9 @@ const ProposalDetail = {
 
   commentHTML(c) {
     const initials = c.autor.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+    const traduccionHtml = c.traducido
+      ? `<div class="comment-traduccion"><i class="fas fa-language"></i> ${CIVI_I18N.traducido_corto} · <a href="#" onclick="ProposalDetail.toggleComentarioOriginal(event, ${c.id})">${CIVI_I18N.ver_original}</a></div>`
+      : '';
     return `
       <div class="comment">
         <div class="comment-avatar">${initials}</div>
@@ -999,9 +1041,23 @@ const ProposalDetail = {
             <span class="comment-author">${c.autor}</span>
             <span class="comment-date">${c.fecha_formateada}</span>
           </div>
-          <p class="comment-text">${c.contenido}</p>
+          <p class="comment-text" id="comentario-texto-${c.id}">${c.contenido}</p>
+          ${traduccionHtml}
         </div>
       </div>`;
+  },
+
+  /** Alterna un comentario entre su traducción y el original ya recibido (sin otra llamada a la API). */
+  toggleComentarioOriginal(e, id) {
+    if (e) e.preventDefault();
+    const c = (this._comentarios || {})[id];
+    if (!c || !c.traducido) return;
+    const el = document.getElementById(`comentario-texto-${id}`);
+    if (!el) return;
+    const mostrandoOriginal = el.dataset.mostrandoOriginal === '1';
+    el.innerHTML = mostrandoOriginal ? c.contenido : c.contenido_es;
+    el.dataset.mostrandoOriginal = mostrandoOriginal ? '0' : '1';
+    if (e && e.target) e.target.textContent = mostrandoOriginal ? CIVI_I18N.ver_original : CIVI_I18N.ver_traduccion;
   },
 
   async submitComment(propuestaId) {
@@ -1013,6 +1069,8 @@ const ProposalDetail = {
       const list = document.getElementById('commentsList');
       const empty = list.querySelector('.empty-state');
       if (empty) empty.remove();
+      this._comentarios = this._comentarios || {};
+      this._comentarios[res.comentario.id] = res.comentario;
       list.insertAdjacentHTML('afterbegin', this.commentHTML(res.comentario));
       textarea.value = '';
       const cnt = document.querySelector('.comments-count');
@@ -1090,9 +1148,9 @@ const CreateProposal = {
       const richEl = document.getElementById('richEditor');
       const contenidoVal = (contenidoEl && contenidoEl.value) ? contenidoEl.value : (richEl ? richEl.innerHTML : '');
 
-      var acentoEl   = document.getElementById('colorAcento');
-      var destacEl   = document.getElementById('propDestacada');
-      var efectoEl   = document.getElementById('efectoCategoria');
+      let acentoEl   = document.getElementById('colorAcento');
+      let destacEl   = document.getElementById('propDestacada');
+      let efectoEl   = document.getElementById('efectoCategoria');
 
       const data = {
         accion:        'crear',
@@ -1316,6 +1374,24 @@ function showLogoutModal() {
   }, 2500);
 }
 
+// ── Selector de idioma ──────────────────────────────────────
+const Idioma = {
+  init() {
+    const wrap = document.getElementById('idiomaToggleWrap');
+    const btn = document.getElementById('idiomaToggleBtn');
+    const dropdown = document.getElementById('idiomaDropdown');
+    if (!wrap || !btn || !dropdown) return;
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', (e) => {
+      if (!wrap.contains(e.target)) dropdown.classList.remove('open');
+    });
+  },
+};
+
 // ── Notificaciones ─────────────────────────────────────────
 const Notificaciones = {
   toastedKey: 'civinsis_notif_toasted',
@@ -1457,6 +1533,7 @@ document.addEventListener('DOMContentLoaded', () => {
   CreateProposal.init();
   TopProposals.init();
   Notificaciones.init();
+  Idioma.init();
 
   // Init detalle si aplica
   if (document.getElementById('detailContent')) ProposalDetail.init();

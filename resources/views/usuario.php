@@ -6,7 +6,7 @@ $perfilId = $perfilId ?? intval(request('id'));
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Perfil de usuario – CIVINSIS</title>
+  <title><?= __('civinsis.usuario.titulo_pagina') ?> – CIVINSIS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -25,7 +25,7 @@ $perfilId = $perfilId ?? intval(request('id'));
   <script src="js/marcos-gsap.js" defer></script>
   <script src="js/marcos-descubrimiento.js" defer></script>
 </head>
-<body>
+<body data-perfil-id="<?= $perfilId ?>">
 
 <?php echo view('layouts.navbar')->render(); ?>
 
@@ -43,7 +43,7 @@ $perfilId = $perfilId ?? intval(request('id'));
 
         <div class="pf-info-cluster">
           <div class="pf-name-row">
-            <h1 class="pf-display-name" id="pubName">Cargando...</h1>
+            <h1 class="pf-display-name" id="pubName"><?= __('civinsis.usuario.cargando') ?></h1>
             <span class="pf-insignia-badge" id="pubInsigniaDisplay">🌱</span>
           </div>
 
@@ -57,7 +57,7 @@ $perfilId = $perfilId ?? intval(request('id'));
           <div class="pf-meta-row">
             <div class="pf-meta-item">
               <i class="fas fa-calendar-check"></i>
-              <span id="pubMiembroDesde">Ciudadano activo</span>
+              <span id="pubMiembroDesde"><?= __('civinsis.usuario.ciudadano_activo') ?></span>
             </div>
           </div>
         </div>
@@ -69,7 +69,7 @@ $perfilId = $perfilId ?? intval(request('id'));
           <div class="pf-stat-icon-wrap"><i class="fas fa-lightbulb"></i></div>
           <div class="pf-stat-info">
             <span class="pf-stat-num" id="pubStatProp">0</span>
-            <span class="pf-stat-label">Propuestas</span>
+            <span class="pf-stat-label"><?= __('civinsis.nav.propuestas') ?></span>
           </div>
         </div>
 
@@ -77,7 +77,7 @@ $perfilId = $perfilId ?? intval(request('id'));
           <div class="pf-stat-icon-wrap"><i class="fas fa-heart"></i></div>
           <div class="pf-stat-info">
             <span class="pf-stat-num" id="pubStatVotos">0</span>
-            <span class="pf-stat-label">Votos recibidos</span>
+            <span class="pf-stat-label"><?= __('civinsis.usuario.votos_recibidos') ?></span>
           </div>
         </div>
 
@@ -85,7 +85,7 @@ $perfilId = $perfilId ?? intval(request('id'));
           <div class="pf-stat-icon-wrap"><i class="fas fa-comments"></i></div>
           <div class="pf-stat-info">
             <span class="pf-stat-num" id="pubStatCom">0</span>
-            <span class="pf-stat-label">Comentarios</span>
+            <span class="pf-stat-label"><?= __('civinsis.propuesta.comentarios') ?></span>
           </div>
         </div>
       </div>
@@ -102,8 +102,8 @@ $perfilId = $perfilId ?? intval(request('id'));
     <div class="nivel-header">
       <div class="nivel-badge" id="pubNivelBadge">1</div>
       <div class="nivel-info">
-        <div class="nivel-nombre">Nivel de ciudadanía</div>
-        <div class="nivel-num">Nivel <span id="pubNivel">1</span></div>
+        <div class="nivel-nombre"><?= __('civinsis.usuario.nivel_ciudadania') ?></div>
+        <div class="nivel-num"><?= __('civinsis.usuario.nivel') ?> <span id="pubNivel">1</span></div>
       </div>
     </div>
     <div class="xp-bar-wrap">
@@ -120,12 +120,12 @@ $perfilId = $perfilId ?? intval(request('id'));
       <div class="gam-stat-box">
         <span class="icon">⭐</span>
         <div class="val" id="pubRep">0</div>
-        <div class="lbl">Reputación</div>
+        <div class="lbl"><?= __('civinsis.usuario.reputacion') ?></div>
       </div>
       <div class="gam-stat-box">
         <span class="icon">🔥</span>
         <div class="val" id="pubRacha">0</div>
-        <div class="lbl">Racha días</div>
+        <div class="lbl"><?= __('civinsis.usuario.racha_dias') ?></div>
       </div>
     </div>
   </div>
@@ -133,21 +133,21 @@ $perfilId = $perfilId ?? intval(request('id'));
   <!-- Insignias obtenidas -->
   <div class="pf-card" style="margin-bottom:1.5rem">
     <h3 class="pf-card-title">
-      <i class="fas fa-shield-alt" style="color:var(--verde)"></i> Insignias desbloqueadas
+      <i class="fas fa-shield-alt" style="color:var(--verde)"></i> <?= __('civinsis.usuario.insignias_desbloqueadas') ?>
     </h3>
-    <p class="pf-card-subtitle">Méritos y reconocimientos alcanzados por este ciudadano.</p>
+    <p class="pf-card-subtitle"><?= __('civinsis.usuario.insignias_desc') ?></p>
     <div class="insignias-grid" id="pubInsignias">
-      <p style="color:var(--text-muted);font-size:.85rem">Sin insignias aún.</p>
+      <p style="color:var(--text-muted);font-size:.85rem"><?= __('civinsis.usuario.sin_insignias') ?></p>
     </div>
   </div>
 
   <!-- Logros desbloqueados -->
   <div class="pf-card">
     <h3 class="pf-card-title">
-      <i class="fas fa-medal" style="color:var(--naranja)"></i> Logros de ciudadanía
+      <i class="fas fa-medal" style="color:var(--naranja)"></i> <?= __('civinsis.usuario.logros_ciudadania') ?>
       (<span id="pubLogrosCount">0</span>)
     </h3>
-    <p class="pf-card-subtitle">Hitos cívicos alcanzados en debates y propuestas.</p>
+    <p class="pf-card-subtitle"><?= __('civinsis.usuario.logros_desc') ?></p>
     <div class="logros-grid" id="pubLogros"></div>
   </div>
 
@@ -157,111 +157,7 @@ $perfilId = $perfilId ?? intval(request('id'));
 
 <div class="toast-container"></div>
 <script src="js/app.js"></script>
-<script>
-const PERFIL_ID = <?= $perfilId ?>;
-
-(async function loadPublicProfile() {
-  try {
-    const r = await fetch('php/gamificacion.php?accion=perfil_publico&id=' + PERFIL_ID);
-    const d = await r.json();
-    if (!d.success) {
-      document.getElementById('pubName').textContent = 'Usuario no encontrado';
-      return;
-    }
-
-    const u = d.usuario;
-    document.getElementById('pubName').textContent = u.nombre;
-    document.title = u.nombre + ' – CIVINSIS';
-    const initials = (u.nombre || 'C').charAt(0).toUpperCase();
-    const avatarEl = document.getElementById('pubAvatar');
-    if (u.avatar) {
-      avatarEl.innerHTML = `<img src="${u.avatar}" alt="${u.nombre}">`;
-    } else {
-      document.getElementById('pubInitials').textContent = initials;
-    }
-
-    if (u.bio) {
-      document.getElementById('pubBio').textContent = `"${u.bio}"`;
-      document.getElementById('pubBioBox').style.display = 'flex';
-    }
-
-    if (u.miembro_desde) {
-      document.getElementById('pubMiembroDesde').textContent = 'Miembro desde ' + u.miembro_desde;
-    }
-
-    // Marco equipado en el avatar
-    const marcoCls  = d.marco_clase  || (d.marco_equipado  ? d.marco_equipado.replace(/_/g,'-')  : null);
-    const efectoCls = d.efecto_clase || (d.efecto_equipado ? d.efecto_equipado.replace(/_/g,'-') : null);
-    if (efectoCls) {
-      const capa = document.createElement('span');
-      capa.className = 'cos-fx ' + efectoCls;
-      avatarEl.appendChild(capa);
-      avatarEl.classList.add('tiene-fx');
-    }
-    if (marcoCls) {
-      avatarEl.classList.add(marcoCls);
-    }
-
-    // Fondo equipado en el hero
-    const fondoCls = d.fondo_clase || (d.fondo_equipado ? d.fondo_equipado.replace(/_/g,'-') : null);
-    if (fondoCls) {
-      document.getElementById('publicHero').classList.add(fondoCls);
-    }
-
-    // Título equipado
-    let titleHtml = '';
-    if (d.titulo) {
-      titleHtml += `<span class="titulo-chip ${d.titulo.rareza}" style="color:${d.titulo.color};border-color:${d.titulo.color}">${d.titulo.nombre}</span>`;
-    }
-    titleHtml += `<span class="pf-role-badge"><i class="fas fa-user-check"></i> ${u.rol}</span>`;
-    document.getElementById('pubTitleWrap').innerHTML = titleHtml;
-
-    // Stats
-    document.getElementById('pubStatProp').textContent  = d.stats.propuestas;
-    document.getElementById('pubStatVotos').textContent = d.stats.votos;
-    document.getElementById('pubStatCom').textContent   = d.stats.comentarios;
-
-    // Nivel + XP
-    document.getElementById('pubNivel').textContent      = d.nivel;
-    document.getElementById('pubNivelBadge').textContent = d.nivel;
-    document.getElementById('pubXpActual').textContent   = (d.xp_nivel_actual||0).toLocaleString('es') + ' XP';
-    document.getElementById('pubXpSig').textContent      = (d.xp_siguiente_nivel||0).toLocaleString('es') + ' XP';
-    document.getElementById('pubXpPct').textContent      = (d.porcentaje_nivel||0) + '%';
-    document.getElementById('pubRep').textContent        = (d.reputacion||0).toLocaleString('es');
-    document.getElementById('pubRacha').textContent      = d.racha_dias||0;
-    setTimeout(() => document.getElementById('pubXpFill').style.width = (d.porcentaje_nivel||0) + '%', 300);
-
-    // Insignias
-    if (d.insignias && d.insignias.length) {
-      document.getElementById('pubInsignias').innerHTML = d.insignias.map(i => `
-        <div class="insignia-item ${i.rareza}" title="${i.nombre}">
-          ${i.icono}
-          <div class="insignia-tooltip">${esc(i.nombre)}</div>
-        </div>`).join('');
-    }
-
-    // Logros
-    const logros = d.logros || [];
-    document.getElementById('pubLogrosCount').textContent = logros.length;
-    if (logros.length) {
-      document.getElementById('pubLogros').innerHTML = logros.map(l => `
-        <div class="logro-card ${l.rareza}">
-          <div class="logro-icono">${l.icono}</div>
-          <div>
-            <div class="logro-nombre">${esc(l.nombre)}</div>
-            <div class="logro-desc">${esc(l.descripcion)}</div>
-          </div>
-        </div>`).join('');
-    } else {
-      document.getElementById('pubLogros').innerHTML = '<p style="color:var(--text-muted);font-size:.85rem">Este usuario aún no ha desbloqueado logros.</p>';
-    }
-
-  } catch(e) {
-    document.getElementById('pubName').textContent = 'Error al cargar el perfil';
-  }
-})();
-
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-</script>
+<script src="js/utils.js"></script>
+<script src="js/usuario.js"></script>
 </body>
 </html>

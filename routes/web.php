@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\RankingController;
 use App\Http\Controllers\Api\ActividadController;
 use App\Http\Controllers\Api\TendenciasController;
 use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\LocaleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,6 +46,7 @@ Route::get('/privacidad.php', [PageController::class, 'privacidad']);
 Route::get('/terminos.php',   [PageController::class, 'terminos']);
 Route::get('/admin.php',      [PageController::class, 'admin']);
 Route::get('/auth.php',       [PageController::class, 'auth']);
+Route::get('/idioma/{locale}', [LocaleController::class, 'cambiar'])->name('idioma.cambiar');
 
 // ── API (mismas rutas que el frontend ya usa) ────────────────
 Route::match(['get', 'post'], '/php/auth.php',             [AuthController::class, 'handle']);

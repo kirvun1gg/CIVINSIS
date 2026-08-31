@@ -21,7 +21,7 @@ class GamificacionController extends Controller
      */
     private function explorar(Request $request)
     {
-        $u = Auth::user();
+        $u = auth_user();
         if (!$u) return $this->json(false, 'No autenticado');
 
         $tipo  = $request->input('tipo');       // seccion | categoria
@@ -57,7 +57,7 @@ class GamificacionController extends Controller
     private function perfil()
     {
         if (!Auth::check()) return $this->json(false, 'No autenticado');
-        $data = $this->gam->perfilCompleto(Auth::user());
+        $data = $this->gam->perfilCompleto(auth_user());
         return $this->json(true, 'OK', $data);
     }
 
@@ -102,14 +102,14 @@ class GamificacionController extends Controller
         $tipo  = $request->input('tipo');   // titulo|marco|fondo|insignia
         $clave = $request->input('clave');
         if (!$tipo || !$clave) return $this->json(false, 'Datos incompletos');
-        $ok = $this->gam->equiparItem(Auth::user(), $tipo, $clave);
+        $ok = $this->gam->equiparItem(auth_user(), $tipo, $clave);
         return $this->json($ok, $ok ? 'Ítem equipado' : 'No puedes equipar ese ítem');
     }
 
     private function misiones()
     {
         if (!Auth::check()) return $this->json(false, 'No autenticado');
-        $user = Auth::user();
+        $user = auth_user();
         $hoy  = now()->toDateString();
         $sem  = now()->startOfWeek()->toDateString();
 

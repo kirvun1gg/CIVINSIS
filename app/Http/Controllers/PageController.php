@@ -87,7 +87,7 @@ class PageController extends Controller
 
     public function admin()
     {
-        if (!Auth::check() || !Auth::user()->esAdmin()) {
+        if (!Auth::check() || !auth_user()->esAdmin()) {
             return redirect('/dashboard.php');
         }
 

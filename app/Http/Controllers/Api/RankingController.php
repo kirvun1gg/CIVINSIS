@@ -168,7 +168,7 @@ class RankingController extends Controller
         return $rows->map(fn ($p) => [
             'id'         => $p->id,
             'titulo'     => $p->titulo,
-            'autor'      => $p->autor ? trim($p->autor->nombre . ' ' . $p->autor->apellido) : 'Anónimo',
+            'autor'      => $p->autor ? trim($p->autor->nombre . ' ' . $p->autor->apellido) : __('civinsis.js.anonimo'),
             'categoria'  => $p->categoria->nombre ?? '',
             'categoria_color' => $p->categoria->color ?? '#36c0a1',
             'categoria_icono' => $p->categoria->icono ?? 'fas fa-tag',

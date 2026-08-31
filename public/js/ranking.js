@@ -135,3 +135,5 @@ const Ranking = {
       </div>`).join('');
   }
 };
+
+Ranking.init(document.body.dataset.usuarioId ? Number(document.body.dataset.usuarioId) : null);

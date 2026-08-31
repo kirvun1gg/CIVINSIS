@@ -3,17 +3,23 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Translatable;
 
 class Proposal extends Model
 {
+    use Translatable;
+
     protected $table = 'propuestas';
 
     protected $fillable = [
         'titulo', 'descripcion', 'contenido', 'categoria_id', 'usuario_id', 'desafio_id',
         'diseno', 'color_acento', 'icono_extra', 'efecto_categoria', 'destacada',
         'imagen', 'votos', 'vistas', 'estado', 'censurada', 'razon_censura', 'fecha_creacion',
-        'progreso', 'progreso_actualizado_at', 'progreso_visto',
+        'progreso', 'progreso_actualizado_at', 'progreso_visto', 'idioma_original',
     ];
+
+    /** Campos traducibles vía TranslationService (App\Traits\Translatable). */
+    protected $translatableFields = ['titulo', 'descripcion', 'contenido'];
 
     protected $casts = [
         'efecto_categoria' => 'boolean',

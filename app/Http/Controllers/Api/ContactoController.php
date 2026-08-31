@@ -50,7 +50,7 @@ class ContactoController extends Controller
 
     private function adminOnly(): bool
     {
-        $u = Auth::user();
+        $u = auth_user();
         return $u && in_array($u->rol_nombre, ['admin', 'moderador']);
     }
 

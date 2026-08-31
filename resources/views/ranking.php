@@ -1,9 +1,17 @@
+<?php
+// $usuarioLogueado y $usuarioId los inyecta el View Composer global en
+// TODAS las vistas (app/Providers/AppServiceProvider.php::boot()). El valor
+// por defecto de abajo nunca se usa en producción - solo evita que el IDE
+// marque la variable como indefinida y sirve de red de seguridad.
+$usuarioLogueado = $usuarioLogueado ?? false;
+$usuarioId       = $usuarioId ?? null;
+?>
 <!DOCTYPE html>
 <html lang="es" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ranking – CIVINSIS</title>
+  <title><?= __('civinsis.nav.ranking') ?> – CIVINSIS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -12,7 +20,7 @@
   <link rel="stylesheet" href="css/debates.css">
   <link rel="stylesheet" href="css/ranking.css">
 </head>
-<body>
+<body data-usuario-id="<?= $usuarioLogueado ? (int)$usuarioId : '' ?>">
 
 <?php echo view('layouts.navbar', ['activeNav' => 'ranking'])->render(); ?>
 
@@ -21,10 +29,10 @@
 
     <div class="debates-hero">
       <div class="debates-hero-badge" style="background:rgba(255,224,102,.14);border-color:rgba(255,224,102,.3);color:#a88600">
-        <i class="fas fa-ranking-star"></i> Ranking en tiempo real
+        <i class="fas fa-ranking-star"></i> <?= __('civinsis.ranking.badge') ?>
       </div>
-      <h1>¿Quién está <span>marcando la diferencia?</span></h1>
-      <p>Explora los distintos rankings de la comunidad. Cambia de categoría para ver quién lidera en cada aspecto de la participación ciudadana.</p>
+      <h1><?= __('civinsis.ranking.titulo') ?></h1>
+      <p><?= __('civinsis.ranking.descripcion') ?></p>
     </div>
 
     <div class="ranking-tabs" id="rankingTabs"></div>
@@ -43,6 +51,5 @@
 <div class="toast-container"></div>
 <script src="js/app.js"></script>
 <script src="js/ranking.js"></script>
-<script>Ranking.init(<?= $usuarioLogueado ? (int)$usuarioId : 'null' ?>);</script>
 </body>
 </html>

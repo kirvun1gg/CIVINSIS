@@ -1,5 +1,12 @@
 <?php
-$iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
+// $usuarioNombre, $usuarioRol y $categorias los inyecta el View Composer
+// global en TODAS las vistas (app/Providers/AppServiceProvider.php::boot()).
+// El valor por defecto de abajo nunca se usa en producción - solo evita que
+// el IDE marque la variable como indefinida y sirve de red de seguridad.
+$usuarioNombre = $usuarioNombre ?? '';
+$usuarioRol    = $usuarioRol ?? 'invitado';
+$categorias    = $categorias ?? collect();
+$iniciales = civinsis_iniciales($usuarioNombre);
 $esAdmin    = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
 ?>
 <!DOCTYPE html>
@@ -7,7 +14,7 @@ $esAdmin    = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard – CIVINSIS</title>
+  <title><?= __('civinsis.dashboard.titulo_pagina') ?> – CIVINSIS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -32,25 +39,25 @@ $esAdmin    = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
     </div>
 
     <div class="sidebar-section">
-      <div class="sidebar-label">Navegación</div>
+      <div class="sidebar-label"><?= __('civinsis.dashboard.navegacion') ?></div>
       <button class="sidebar-link active" onclick="Proposals.filterCat(0, this)">
-        <i class="fas fa-th-large"></i> Todas las propuestas
+        <i class="fas fa-th-large"></i> <?= __('civinsis.dashboard.todas_propuestas') ?>
       </button>
       <a href="crear.php" class="sidebar-link">
-        <i class="fas fa-plus-circle"></i> Nueva propuesta
+        <i class="fas fa-plus-circle"></i> <?= __('civinsis.comun.nueva_propuesta') ?>
       </a>
       <a href="perfil.php" class="sidebar-link">
-        <i class="fas fa-user"></i> Mi perfil
+        <i class="fas fa-user"></i> <?= __('civinsis.nav.mi_perfil') ?>
       </a>
       <?php if ($esAdmin): ?>
       <a href="admin.php" class="sidebar-link" style="color:var(--naranja-600)">
-        <i class="fas fa-shield-alt"></i> Panel Admin
+        <i class="fas fa-shield-alt"></i> <?= __('civinsis.dashboard.panel_admin') ?>
       </a>
       <?php endif; ?>
     </div>
 
     <div class="sidebar-section">
-      <div class="sidebar-label">Categorías</div>
+      <div class="sidebar-label"><?= __('civinsis.footer.categorias') ?></div>
       <?php foreach ($categorias as $cat): ?>
       <button class="sidebar-link" onclick="Proposals.filterCat(<?= $cat['id'] ?>, this)" data-cat="<?= $cat['id'] ?>">
         <i class="<?= $cat['icono'] ?>" style="color:<?= $cat['color'] ?>"></i>
@@ -60,9 +67,9 @@ $esAdmin    = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
     </div>
 
     <div class="sidebar-section">
-      <div class="sidebar-label">Mi cuenta</div>
+      <div class="sidebar-label"><?= __('civinsis.dashboard.mi_cuenta') ?></div>
       <button class="sidebar-link" onclick="logout()">
-        <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+        <i class="fas fa-sign-out-alt"></i> <?= __('civinsis.nav.cerrar_sesion') ?>
       </button>
     </div>
   </aside>
@@ -72,39 +79,39 @@ $esAdmin    = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
     <div class="cv-anim cv-anim-banner" id="anim-propuestas" style="margin-bottom:1.5rem"></div>
 
     <div class="dash-kpi-grid" id="kpiGrid">
-      <div class="kpi-card"><div class="kpi-num" id="kpiTotal">–</div><div class="kpi-label"><i class="fas fa-file-alt"></i> Propuestas totales</div></div>
-      <div class="kpi-card"><div class="kpi-num" id="kpiVotos">–</div><div class="kpi-label"><i class="fas fa-arrow-up"></i> Votos totales</div></div>
-      <div class="kpi-card"><div class="kpi-num" id="kpiVistas">–</div><div class="kpi-label"><i class="fas fa-eye"></i> Vistas totales</div></div>
+      <div class="kpi-card"><div class="kpi-num" id="kpiTotal">–</div><div class="kpi-label"><i class="fas fa-file-alt"></i> <?= __('civinsis.dashboard.propuestas_totales') ?></div></div>
+      <div class="kpi-card"><div class="kpi-num" id="kpiVotos">–</div><div class="kpi-label"><i class="fas fa-arrow-up"></i> <?= __('civinsis.dashboard.votos_totales') ?></div></div>
+      <div class="kpi-card"><div class="kpi-num" id="kpiVistas">–</div><div class="kpi-label"><i class="fas fa-eye"></i> <?= __('civinsis.dashboard.vistas_totales') ?></div></div>
       <div class="kpi-card">
         <a href="crear.php" style="display:block;text-decoration:none">
           <div class="kpi-num" style="font-size:1.5rem"><i class="fas fa-plus"></i></div>
-          <div class="kpi-label" style="color:var(--verde-500);font-weight:600">Crear propuesta</div>
+          <div class="kpi-label" style="color:var(--verde-500);font-weight:600"><?= __('civinsis.dashboard.crear_propuesta') ?></div>
         </a>
       </div>
     </div>
 
     <div class="dash-topbar">
       <div>
-        <div class="dash-title">Explorar propuestas</div>
-        <div class="dash-subtitle">Descubre, vota y participa en las propuestas de tu comunidad</div>
+        <div class="dash-title"><?= __('civinsis.dashboard.explorar_titulo') ?></div>
+        <div class="dash-subtitle"><?= __('civinsis.dashboard.explorar_subtitulo') ?></div>
       </div>
       <a href="crear.php" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Nueva propuesta
+        <i class="fas fa-plus"></i> <?= __('civinsis.comun.nueva_propuesta') ?>
       </a>
     </div>
 
     <div class="filters-bar">
       <div class="search-input">
         <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="Buscar propuestas...">
+        <input type="text" id="searchInput" placeholder="<?= __('civinsis.dashboard.buscar_placeholder') ?>">
       </div>
       <select id="ordenSelect" class="filter-select">
-        <option value="fecha">Más recientes</option>
-        <option value="votos">Más votadas</option>
-        <option value="vistas">Más vistas</option>
+        <option value="fecha"><?= __('civinsis.comun.mas_recientes') ?></option>
+        <option value="votos"><?= __('civinsis.comun.mas_votadas') ?></option>
+        <option value="vistas"><?= __('civinsis.comun.mas_vistas') ?></option>
       </select>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <button class="btn btn-sm btn-ghost active" data-cat="0" onclick="Proposals.filterCat(0, this)">Todas</button>
+        <button class="btn btn-sm btn-ghost active" data-cat="0" onclick="Proposals.filterCat(0, this)"><?= __('civinsis.comun.todas') ?></button>
         <?php foreach ($categorias as $cat): ?>
         <button class="btn btn-sm btn-ghost" data-cat="<?= $cat['id'] ?>" onclick="Proposals.filterCat(<?= $cat['id'] ?>, this)" style="gap:.35rem">
           <i class="<?= $cat['icono'] ?>" style="color:<?= $cat['color'] ?>"></i>
@@ -124,32 +131,6 @@ $esAdmin    = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
 
 <div class="toast-container"></div>
 <script src="js/app.js"></script>
-<script>
-Proposals.filterCat = function(cat, btn) {
-  document.querySelectorAll('[data-cat]').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  document.querySelectorAll('.sidebar-link').forEach(b => b.classList.remove('active'));
-  if (btn && btn.closest('.sidebar')) btn.classList.add('active');
-  this.currentCat = cat;
-  this.currentPage = 1;
-  this.load();
-};
-
-(async () => {
-  const r = await fetch('php/propuestas.php?accion=listar&pagina=1');
-  const d = await r.json();
-  if (d.success) {
-    document.getElementById('kpiTotal').textContent = d.total;
-    const r2 = await fetch('php/propuestas.php?accion=top&limit=100');
-    const d2 = await r2.json();
-    if (d2.success) {
-      const votos  = d2.propuestas.reduce((s, p) => s + parseInt(p.votos),  0);
-      const vistas = d2.propuestas.reduce((s, p) => s + parseInt(p.vistas), 0);
-      document.getElementById('kpiVotos').textContent  = votos.toLocaleString('es');
-      document.getElementById('kpiVistas').textContent = vistas.toLocaleString('es');
-    }
-  }
-})();
-</script>
+<script src="js/dashboard.js"></script>
 </body>
 </html>

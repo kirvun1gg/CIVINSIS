@@ -1,0 +1,42 @@
+@media(max-width:640px){.create-layout{grid-template-columns:1fr!important}}
+
+/* Diseño selector */
+.design-option { cursor:pointer; text-align:center; }
+.design-preview {
+  border:2px solid var(--border); border-radius:8px; overflow:hidden;
+  margin-bottom:.4rem; transition:var(--trans); height:54px;
+}
+.design-option input:checked + .design-preview { border-color:var(--verde); box-shadow:0 0 0 2px var(--verde-alpha2); }
+.design-label { font-size:.72rem; color:var(--text-muted); font-weight:600; }
+
+/* ── Panel CIVI en crear ─────────────────────────────────── */
+.civi-crear{
+  background:linear-gradient(135deg,var(--verde-alpha),var(--naranja-alpha));
+  border:1px solid var(--verde-200); border-radius:var(--radius-lg);
+  padding:1.1rem 1.15rem; margin-bottom:1.75rem;
+}
+.civi-crear-head{display:flex;flex-direction:column;gap:.15rem;margin-bottom:.85rem}
+.civi-crear-title{font-family:var(--font-display);font-weight:800;font-size:.95rem;color:var(--verde-700);display:flex;align-items:center;gap:.5rem}
+.civi-crear-sub{font-size:.78rem;color:var(--text-muted)}
+.civi-idea-row{display:flex;gap:.6rem;margin-bottom:.75rem}
+.civi-idea-row .form-control{flex:1;min-width:0}
+.civi-idea-row .btn{flex-shrink:0;white-space:nowrap}
+.civi-tools{display:flex;flex-wrap:wrap;gap:.5rem}
+.civi-tools .btn{font-size:.74rem}
+.civi-tools .btn i{margin-right:.3rem}
+.civi-result{margin-top:.9rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;font-size:.84rem;line-height:1.55;animation:fadeUp .3s ease}
+.civi-result-head{display:flex;align-items:center;gap:.5rem;font-weight:700;color:var(--verde-700);font-size:.82rem;margin-bottom:.55rem}
+.civi-result .btn{margin-top:.7rem}
+.civi-titulo-opt{display:block;width:100%;text-align:left;background:var(--verde-alpha);border:1px solid var(--verde-200);border-radius:8px;padding:.5rem .7rem;margin-bottom:.4rem;cursor:pointer;font-size:.82rem;color:var(--text);transition:var(--trans)}
+.civi-titulo-opt:hover{background:var(--verde-alpha2);border-color:var(--verde)}
+.civi-sim-item{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.5rem .65rem;border:1px solid var(--border);border-radius:8px;margin-bottom:.4rem}
+.civi-sim-badge{flex-shrink:0;font-size:.72rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;background:var(--naranja-alpha);color:var(--naranja-700)}
+.civi-busy{opacity:.6;pointer-events:none}
+
+/* Placeholder en contenteditable */
+.rich-editor-content:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-muted);
+  pointer-events: none;
+  white-space: pre-line;
+}

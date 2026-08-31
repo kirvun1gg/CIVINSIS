@@ -208,3 +208,5 @@ const CentroActividad = {
     return this.card('Tu actividad reciente', 'fas fa-clock-rotate-left', items);
   }
 };
+
+CentroActividad.init();

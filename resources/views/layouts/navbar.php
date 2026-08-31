@@ -1,22 +1,33 @@
 <?php
 // layouts/navbar.php  (renderizado por Laravel; las variables vienen del View Composer)
+// $usuarioLogueado, $usuarioNombre, $usuarioRol y $usuarioAvatar los inyecta
+// el View Composer global en TODAS las vistas
+// (app/Providers/AppServiceProvider.php::boot()). El valor por defecto de
+// abajo nunca se usa en producción - solo evita que el IDE marque la
+// variable como indefinida y sirve de red de seguridad.
+$usuarioLogueado = $usuarioLogueado ?? false;
+$usuarioNombre   = $usuarioNombre ?? '';
+$usuarioRol      = $usuarioRol ?? 'invitado';
+$usuarioAvatar   = $usuarioAvatar ?? null;
 $activeNav    = $activeNav ?? '';
 $navLinks = [
-  ['href'=> !empty($usuarioLogueado) ? 'inicio.php' : 'index.php', 'icon'=>'fa-home', 'label'=>'Inicio', 'key'=>'inicio'],
-  ['href'=>'dashboard.php','icon'=>'fa-layer-group','label'=>'Propuestas','key'=>'propuestas'],
-  ['href'=>'debates.php','icon'=>'fa-comments','label'=>'Debates','key'=>'debates'],
-  ['href'=>'desafios.php','icon'=>'fa-flag-checkered','label'=>'Desafíos','key'=>'desafios'],
-  ['href'=>'ranking.php','icon'=>'fa-ranking-star','label'=>'Ranking','key'=>'ranking'],
+  ['href'=> !empty($usuarioLogueado) ? 'inicio.php' : 'index.php', 'icon'=>'fa-home', 'label'=>__('civinsis.nav.inicio'), 'key'=>'inicio'],
+  ['href'=>'dashboard.php','icon'=>'fa-layer-group','label'=>__('civinsis.nav.propuestas'),'key'=>'propuestas'],
+  ['href'=>'debates.php','icon'=>'fa-comments','label'=>__('civinsis.nav.debates'),'key'=>'debates'],
+  ['href'=>'desafios.php','icon'=>'fa-flag-checkered','label'=>__('civinsis.nav.desafios'),'key'=>'desafios'],
+  ['href'=>'ranking.php','icon'=>'fa-ranking-star','label'=>__('civinsis.nav.ranking'),'key'=>'ranking'],
   // ['href'=>'tendencias.php','icon'=>'fa-fire','label'=>'Tendencias','key'=>'tendencias'],
 ];
 if (!empty($usuarioLogueado)) {
-  $navLinks[] = ['href'=>'crear.php','icon'=>'fa-plus-circle','label'=>'Crear','key'=>'crear'];
+  $navLinks[] = ['href'=>'crear.php','icon'=>'fa-plus-circle','label'=>__('civinsis.nav.crear'),'key'=>'crear'];
 }
-$navLinks[] = ['href'=>'faq.php','icon'=>'fa-question-circle','label'=>'FAQ','key'=>'faq'];
-$navLinks[] = ['href'=>'contacto.php','icon'=>'fa-envelope','label'=>'Contacto','key'=>'contacto'];
+$navLinks[] = ['href'=>'faq.php','icon'=>'fa-question-circle','label'=>__('civinsis.nav.faq'),'key'=>'faq'];
+$navLinks[] = ['href'=>'contacto.php','icon'=>'fa-envelope','label'=>__('civinsis.nav.contacto'),'key'=>'contacto'];
 $navAvatar    = $usuarioAvatar ?? null;
 $navIniciales = !empty($usuarioLogueado) ? strtoupper(mb_substr($usuarioNombre, 0, 1)) : '';
 $esAdminNav   = in_array($usuarioRol ?? '', ['admin','moderador']);
+$idiomasDisponibles = config('locales.supported', []);
+$idiomaActual       = app()->getLocale();
 ?>
 <nav class="navbar" id="navbar">
   <div class="container nav-inner">
@@ -32,21 +43,21 @@ $esAdminNav   = in_array($usuarioRol ?? '', ['admin','moderador']);
       <?php endforeach; ?>
       <?php if ($esAdminNav): ?>
         <a href="admin.php" class="nav-link nav-link-admin <?= ($activeNav === 'admin') ? 'active' : '' ?>">
-          <i class="fas fa-shield-alt"></i> Admin
+          <i class="fas fa-shield-alt"></i> <?= __('civinsis.nav.admin') ?>
         </a>
       <?php endif; ?>
     </div>
     <div class="nav-actions">
       <?php if (!empty($usuarioLogueado)): ?>
       <div class="notif-bell-wrap" id="notifBellWrap">
-        <button class="notif-bell-btn" id="notifBellBtn" aria-label="Notificaciones">
+        <button class="notif-bell-btn" id="notifBellBtn" aria-label="<?= __('civinsis.nav.notificaciones') ?>">
           <i class="fas fa-bell"></i>
           <span class="notif-badge" id="notifBadge" style="display:none">0</span>
         </button>
         <div class="notif-dropdown" id="notifDropdown">
           <div class="notif-dropdown-header">
-            <span>Notificaciones</span>
-            <button class="notif-mark-all" id="notifMarkAll">Marcar todas como leídas</button>
+            <span><?= __('civinsis.nav.notificaciones') ?></span>
+            <button class="notif-mark-all" id="notifMarkAll"><?= __('civinsis.nav.marcar_todas_leidas') ?></button>
           </div>
           <div class="notif-dropdown-list" id="notifDropdownList">
             <div class="notif-empty">Cargando...</div>
@@ -54,9 +65,21 @@ $esAdminNav   = in_array($usuarioRol ?? '', ['admin','moderador']);
         </div>
       </div>
       <?php endif; ?>
+      <div class="idioma-toggle-wrap" id="idiomaToggleWrap">
+        <button class="idioma-toggle" id="idiomaToggleBtn" aria-label="<?= __('civinsis.nav.idioma') ?>">
+          <?= $idiomasDisponibles[$idiomaActual]['bandera'] ?? '🌐' ?>
+        </button>
+        <div class="idioma-dropdown" id="idiomaDropdown">
+          <?php foreach ($idiomasDisponibles as $codigo => $meta): ?>
+            <a href="/idioma/<?= $codigo ?>" class="idioma-opcion <?= $codigo === $idiomaActual ? 'active' : '' ?>">
+              <span><?= $meta['bandera'] ?></span> <?= htmlspecialchars($meta['nombre']) ?>
+            </a>
+          <?php endforeach; ?>
+        </div>
+      </div>
       <div class="dark-toggle-wrap">
         <i class="fas fa-sun"></i>
-        <button class="dark-toggle" data-dark-toggle aria-label="Cambiar tema"></button>
+        <button class="dark-toggle" data-dark-toggle aria-label="<?= __('civinsis.nav.cambiar_tema') ?>"></button>
         <i class="fas fa-moon"></i>
       </div>
       <?php if (!empty($usuarioLogueado)): ?>
@@ -66,12 +89,12 @@ $esAdminNav   = in_array($usuarioRol ?? '', ['admin','moderador']);
           </div>
           <span class="nav-user-name"><?= htmlspecialchars($usuarioNombre) ?></span>
         </a>
-        <button class="btn btn-outline btn-sm" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Salir</button>
+        <button class="btn btn-outline btn-sm" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <?= __('civinsis.nav.salir') ?></button>
       <?php else: ?>
-        <a href="auth.php" class="btn btn-outline btn-sm"><i class="fas fa-sign-in-alt"></i> Ingresar</a>
-        <a href="auth.php?tab=registro" class="btn btn-primary btn-sm"><i class="fas fa-user-plus"></i> Registrarse</a>
+        <a href="auth.php" class="btn btn-outline btn-sm"><i class="fas fa-sign-in-alt"></i> <?= __('civinsis.nav.ingresar') ?></a>
+        <a href="auth.php?tab=registro" class="btn btn-primary btn-sm"><i class="fas fa-user-plus"></i> <?= __('civinsis.nav.registrarse') ?></a>
       <?php endif; ?>
-      <button class="hamburger" aria-label="Menú" id="hamburger">
+      <button class="hamburger" aria-label="<?= __('civinsis.nav.menu') ?>" id="hamburger">
         <span class="ham-line ham-top"></span>
         <span class="ham-line ham-mid"></span>
         <span class="ham-line ham-bot"></span>
@@ -97,15 +120,22 @@ $esAdminNav   = in_array($usuarioRol ?? '', ['admin','moderador']);
           <span class="mobile-drawer-link-icon"><i class="fas <?= $l['icon'] ?>"></i></span><?= $l['label'] ?>
         </a>
       <?php endforeach; ?>
-      <?php if ($esAdminNav): ?><a href="admin.php" class="mobile-drawer-link"><span class="mobile-drawer-link-icon"><i class="fas fa-shield-alt"></i></span>Admin</a><?php endif; ?>
+      <?php if ($esAdminNav): ?><a href="admin.php" class="mobile-drawer-link"><span class="mobile-drawer-link-icon"><i class="fas fa-shield-alt"></i></span><?= __('civinsis.nav.admin') ?></a><?php endif; ?>
+    </div>
+    <div class="mobile-drawer-idiomas">
+      <?php foreach ($idiomasDisponibles as $codigo => $meta): ?>
+        <a href="/idioma/<?= $codigo ?>" class="mobile-drawer-idioma <?= $codigo === $idiomaActual ? 'active' : '' ?>">
+          <?= $meta['bandera'] ?> <?= htmlspecialchars($meta['nombre']) ?>
+        </a>
+      <?php endforeach; ?>
     </div>
     <div class="mobile-drawer-footer">
       <?php if (!empty($usuarioLogueado)): ?>
-        <a href="perfil.php" class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:.5rem"><i class="fas fa-user"></i> Mi Perfil</a>
-        <button onclick="logout()" class="btn btn-ghost" style="width:100%;justify-content:center"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
+        <a href="perfil.php" class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:.5rem"><i class="fas fa-user"></i> <?= __('civinsis.nav.mi_perfil') ?></a>
+        <button onclick="logout()" class="btn btn-ghost" style="width:100%;justify-content:center"><i class="fas fa-sign-out-alt"></i> <?= __('civinsis.nav.cerrar_sesion') ?></button>
       <?php else: ?>
-        <a href="auth.php" class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:.5rem"><i class="fas fa-sign-in-alt"></i> Ingresar</a>
-        <a href="auth.php?tab=registro" class="btn btn-primary" style="width:100%;justify-content:center"><i class="fas fa-user-plus"></i> Registrarse</a>
+        <a href="auth.php" class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:.5rem"><i class="fas fa-sign-in-alt"></i> <?= __('civinsis.nav.ingresar') ?></a>
+        <a href="auth.php?tab=registro" class="btn btn-primary" style="width:100%;justify-content:center"><i class="fas fa-user-plus"></i> <?= __('civinsis.nav.registrarse') ?></a>
       <?php endif; ?>
     </div>
   </div>

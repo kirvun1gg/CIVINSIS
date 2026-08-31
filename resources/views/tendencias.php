@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tendencias – CIVINSIS</title>
+  <title><?= __('civinsis.nav.tendencias') ?> – CIVINSIS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -22,10 +22,10 @@
 
     <div class="debates-hero">
       <div class="debates-hero-badge" style="background:rgba(239,126,34,.12);border-color:rgba(239,126,34,.3);color:var(--naranja-700)">
-        <i class="fas fa-fire"></i> Tendencias
+        <i class="fas fa-fire"></i> <?= __('civinsis.tendencias.badge') ?>
       </div>
-      <h1>Lo más <span>activo</span> ahora mismo</h1>
-      <p>Descubre qué está moviendo a la comunidad: los debates más calientes, las propuestas que crecen, y las personas que están marcando la diferencia.</p>
+      <h1><?= __('civinsis.tendencias.titulo') ?></h1>
+      <p><?= __('civinsis.tendencias.descripcion') ?></p>
     </div>
 
     <div id="tendenciasPanel">
@@ -43,6 +43,5 @@
 <div class="toast-container"></div>
 <script src="js/app.js"></script>
 <script src="js/tendencias.js"></script>
-<script>Tendencias.init();</script>
 </body>
 </html>

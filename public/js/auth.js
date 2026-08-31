@@ -289,6 +289,4 @@ document.addEventListener('DOMContentLoaded', () => {
         `translate(${xPct * factor}px, ${yPct * factor}px)`;
     });
   }, { passive: true });
-
-  console.log('[CIVINSIS] Auth v2 iniciado correctamente ✓');
 });

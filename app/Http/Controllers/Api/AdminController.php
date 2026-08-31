@@ -162,7 +162,7 @@ class AdminController extends Controller
 
     private function esAdmin(): bool
     {
-        return Auth::check() && in_array(Auth::user()->rol_nombre, ['admin', 'moderador']);
+        return Auth::check() && in_array(auth_user()->rol_nombre, ['admin', 'moderador']);
     }
 
     // ═════════════════════════════════════════════════════════════

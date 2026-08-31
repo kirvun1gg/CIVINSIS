@@ -182,3 +182,4 @@ const DesafioWidget = {
 };
 
 document.addEventListener('DOMContentLoaded', () => DesafioWidget.init());
+Desafios.init(document.body.dataset.logueado === 'true');

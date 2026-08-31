@@ -64,7 +64,7 @@ class IaController extends Controller
     private function systemPrompt(): string
     {
         $cats   = Categoria::pluck('nombre')->implode(', ');
-        $nombre = Auth::check() ? Auth::user()->nombre : 'visitante';
+        $nombre = Auth::check() ? auth_user()->nombre : 'visitante';
 
         return <<<TXT
 Eres "CIVI", el entrenador cívico de CIVINSIS, una plataforma salvadoreña de participación
@@ -109,7 +109,7 @@ TXT;
         // System prompt base + contexto real del usuario (para que CIVI entienda su progreso)
         $system = $this->systemPrompt();
         if (Auth::check()) {
-            $s   = $this->perfilActividad(Auth::user());
+            $s   = $this->perfilActividad(auth_user());
             $obj = $this->construirObjetivo($s);
             $catFav = $s['categoria_favorita'] ? "Tema favorito: {$s['categoria_favorita']}. " : '';
             $system .= "\n\nContexto real de esta persona (úsalo para personalizar tus respuestas, "
@@ -327,7 +327,7 @@ TXT;
     // ─────────────────────────────────────────────────────────────
     private function alertas(Request $request)
     {
-        if (!Auth::check() || !in_array(Auth::user()->rol_nombre, ['admin', 'moderador']))
+        if (!Auth::check() || !in_array(auth_user()->rol_nombre, ['admin', 'moderador']))
             return $this->json(false, 'Sin permisos');
 
         $soloSinRevisar = $request->boolean('sin_revisar', false);
@@ -357,7 +357,7 @@ TXT;
     // ─────────────────────────────────────────────────────────────
     private function marcarRevisado(Request $request)
     {
-        if (!Auth::check() || !in_array(Auth::user()->rol_nombre, ['admin', 'moderador']))
+        if (!Auth::check() || !in_array(auth_user()->rol_nombre, ['admin', 'moderador']))
             return $this->json(false, 'Sin permisos');
 
         $id    = (int) $request->input('id');
@@ -379,7 +379,7 @@ TXT;
     // ─────────────────────────────────────────────────────────────
     private function aprobar(Request $request)
     {
-        if (!Auth::check() || !in_array(Auth::user()->rol_nombre, ['admin', 'moderador']))
+        if (!Auth::check() || !in_array(auth_user()->rol_nombre, ['admin', 'moderador']))
             return $this->json(false, 'Sin permisos');
 
         $id = (int) $request->input('id'); // ID de la alerta (no del contenido)
@@ -643,7 +643,7 @@ TXT;
     private function reporte(Request $request)
     {
         if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
-        $u = Auth::user();
+        $u = auth_user();
 
         $numProp        = Proposal::where('usuario_id', $u->id)->count();
         $votosRecibidos = (int) Proposal::where('usuario_id', $u->id)->sum('votos');
@@ -862,7 +862,7 @@ TXT;
     private function coach(Request $request)
     {
         if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
-        $u = Auth::user();
+        $u = auth_user();
 
         $s        = $this->perfilActividad($u);
         $objetivo = $this->construirObjetivo($s);
@@ -907,7 +907,7 @@ TXT;
     private function nudge(Request $request)
     {
         if (!Auth::check()) return $this->json(true, 'OK', ['mostrar' => false]);
-        $u        = Auth::user();
+        $u        = auth_user();
         $contexto = (string) $request->input('contexto', '');
         $s        = $this->perfilActividad($u);
 
@@ -956,7 +956,7 @@ TXT;
     private function crecimiento(Request $request)
     {
         if (!Auth::check()) return $this->json(true, 'OK', ['disponible' => false]);
-        $s = $this->perfilActividad(Auth::user());
+        $s = $this->perfilActividad(auth_user());
         return $this->json(true, 'OK', [
             'disponible'   => true,
             'nivel'        => $s['nivel'],
@@ -972,7 +972,7 @@ TXT;
     private function recomendar(Request $request)
     {
         if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
-        $u = Auth::user();
+        $u = auth_user();
 
         // Categoría favorita (por sus propuestas y comentarios)
         $catFavId = Proposal::where('usuario_id', $u->id)->whereNotNull('categoria_id')
@@ -1105,7 +1105,7 @@ TXT;
     // ── Censurar desde el panel: el moderador decide ocultar el contenido ──
     private function censurar(Request $request)
     {
-        if (!Auth::check() || !in_array(Auth::user()->rol_nombre, ['admin', 'moderador']))
+        if (!Auth::check() || !in_array(auth_user()->rol_nombre, ['admin', 'moderador']))
             return $this->json(false, 'Sin permisos');
 
         $id = (int) $request->input('id'); // ID de la alerta (no del contenido)

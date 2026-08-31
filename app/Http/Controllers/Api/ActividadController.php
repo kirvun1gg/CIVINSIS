@@ -32,7 +32,7 @@ class ActividadController extends Controller
     private function panel(Request $request)
     {
         if (!Auth::check()) return $this->json(false, 'No autenticado');
-        $user = Auth::user();
+        $user = auth_user();
 
         return $this->json(true, 'OK', [
             'saludo'              => $this->saludo($user),

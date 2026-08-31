@@ -150,3 +150,5 @@ const Tendencias = {
     return this.card('🎯', 'Desafíos más completados', '', items, 'desafios.php');
   }
 };
+
+Tendencias.init();

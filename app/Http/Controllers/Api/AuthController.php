@@ -113,7 +113,7 @@ class AuthController extends Controller
 
     private function perfil()
     {
-        $u = Auth::user();
+        $u = auth_user();
         if (!$u) return $this->json(false, 'No autenticado');
 
         $u->loadCount('propuestas');
@@ -135,7 +135,7 @@ class AuthController extends Controller
 
     private function actualizarPerfil(Request $request)
     {
-        $u = Auth::user();
+        $u = auth_user();
         if (!$u) return $this->json(false, 'No autenticado');
 
         $nombre   = trim((string) $request->input('nombre'));
@@ -175,7 +175,7 @@ class AuthController extends Controller
 
     private function cambiarPassword(Request $request)
     {
-        $u = Auth::user();
+        $u = auth_user();
         if (!$u) return $this->json(false, 'No autenticado');
 
         $actual = (string) $request->input('pass_actual');
@@ -191,7 +191,7 @@ class AuthController extends Controller
 
     private function actualizarAvatar(Request $request)
     {
-        $u = Auth::user();
+        $u = auth_user();
         if (!$u) return $this->json(false, 'No autenticado');
 
         $avatar = (string) $request->input('avatar');
@@ -207,7 +207,7 @@ class AuthController extends Controller
     // ── Acciones de administración ──────────────────────────
     private function adminUsuarios()
     {
-        $u = Auth::user();
+        $u = auth_user();
         if (!$u) return $this->json(false, 'No autenticado');
         if ($u->rol_nombre !== 'admin') return $this->json(false, 'Sin permisos');
 
@@ -226,7 +226,7 @@ class AuthController extends Controller
 
     private function cambiarRol(Request $request)
     {
-        $u = Auth::user();
+        $u = auth_user();
         if (!$u || $u->rol_nombre !== 'admin') return $this->json(false, 'Sin permisos');
 
         $userId  = (int) $request->input('usuario_id');
@@ -243,7 +243,7 @@ class AuthController extends Controller
 
     private function eliminarUsuario(Request $request)
     {
-        $u = Auth::user();
+        $u = auth_user();
         if (!$u || $u->rol_nombre !== 'admin') return $this->json(false, 'Sin permisos');
 
         $userId = (int) $request->input('id');

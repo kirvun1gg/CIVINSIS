@@ -3,12 +3,6 @@
    Depende de API, Toast y Modal definidos en app.js
    ============================================================ */
 
-function esc(str) {
-  const d = document.createElement('div');
-  d.textContent = str ?? '';
-  return d.innerHTML;
-}
-
 function timeAgoDebate(fecha) {
   if (!fecha) return '';
   const diff = (Date.now() - new Date(fecha.replace(' ', 'T'))) / 1000;
@@ -84,14 +78,14 @@ const Debates = {
       <div class="debate-card" onclick="location.href='debate.php?id=${d.id}'">
         <div class="debate-card-top">
           <span class="debate-cat-badge" style="--cat-color:${d.categoria_color}">
-            <i class="${d.categoria_icono}"></i> ${esc(d.categoria)}
+            <i class="${d.categoria_icono}"></i> ${escHtml(d.categoria)}
           </span>
           <span class="debate-estado-badge ${cerrado ? 'cerrado' : 'activo'}">
             <i class="fas ${cerrado ? 'fa-lock' : 'fa-circle'}"></i> ${cerrado ? 'Cerrado' : 'Activo'}
           </span>
         </div>
-        <h3 class="debate-card-title">${esc(d.titulo)}</h3>
-        <p class="debate-card-desc">${esc(d.descripcion)}</p>
+        <h3 class="debate-card-title">${escHtml(d.titulo)}</h3>
+        <p class="debate-card-desc">${escHtml(d.descripcion)}</p>
         <div class="debate-card-footer">
           ${this.authorHtml(d)}
           <div class="debate-card-stats">
@@ -106,14 +100,14 @@ const Debates = {
   authorHtml(d) {
     const avaInner = (d.autor_avatar && d.autor_avatar.indexOf('data:') === 0)
       ? `<img class="author-avatar" src="${d.autor_avatar}" alt="">`
-      : `<span class="author-avatar">${esc((d.autor || '?').charAt(0).toUpperCase())}</span>`;
+      : `<span class="author-avatar">${escHtml((d.autor || '?').charAt(0).toUpperCase())}</span>`;
     const nivelHtml = d.autor_nivel ? ` <span class="label-nivel">Nv.${d.autor_nivel}</span>` : '';
     const tituloHtml = d.autor_titulo
-      ? `<div class="autor-titulo-row"><span class="label-titulo ${d.autor_titulo.rareza}" style="color:${d.autor_titulo.color};border-color:${d.autor_titulo.color}">${esc(d.autor_titulo.nombre)}</span></div>`
+      ? `<div class="autor-titulo-row"><span class="label-titulo ${d.autor_titulo.rareza}" style="color:${d.autor_titulo.color};border-color:${d.autor_titulo.color}">${escHtml(d.autor_titulo.nombre)}</span></div>`
       : '';
     return `<div class="card-author">
         <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
-          ${avaInner}<span class="author-name">${esc(d.autor)}</span>${nivelHtml}
+          ${avaInner}<span class="author-name">${escHtml(d.autor)}</span>${nivelHtml}
         </div>
         ${tituloHtml}
       </div>`;
@@ -195,17 +189,18 @@ const DebateDetail = {
       <div class="debate-header-card">
         <div class="debate-card-top">
           <span class="debate-cat-badge" style="--cat-color:${d.categoria_color}">
-            <i class="${d.categoria_icono}"></i> ${esc(d.categoria)}
+            <i class="${d.categoria_icono}"></i> ${escHtml(d.categoria)}
           </span>
           <span class="debate-estado-badge ${cerrado ? 'cerrado' : 'activo'}">
             <i class="fas ${cerrado ? 'fa-lock' : 'fa-circle'}"></i> ${cerrado ? 'Cerrado' : 'Activo'}
           </span>
         </div>
-        <h1 class="debate-header-title">${esc(d.titulo)}</h1>
-        <p class="debate-header-desc">${esc(d.descripcion)}</p>
+        <h1 class="debate-header-title" id="debateHeaderTitulo">${escHtml(d.titulo)}</h1>
+        <p class="debate-header-desc" id="debateHeaderDesc">${escHtml(d.descripcion)}</p>
+        ${this.traduccionBadgeHTML(d)}
         <div class="debate-header-meta">
           ${Debates.authorHtml(d)}
-          <span><i class="fas fa-calendar"></i> ${esc(d.fecha_formateada)}</span>
+          <span><i class="fas fa-calendar"></i> ${escHtml(d.fecha_formateada)}</span>
           <span><i class="fas fa-users"></i> ${d.participantes} participantes</span>
           <span><i class="fas fa-reply"></i> ${d.respuestas_count} respuestas</span>
         </div>
@@ -240,12 +235,37 @@ const DebateDetail = {
     const res = await API.get('php/debates.php', { accion: 'resumen_ia', debate_id: this.id });
     if (!res.success) {
       box.innerHTML = `<div class="resumen-ia-header"><i class="fas fa-sparkles"></i> Resumen del debate (IA)</div>
-        <p style="color:var(--text-muted);font-size:.85rem">${esc(res.message)}</p>`;
+        <p style="color:var(--text-muted);font-size:.85rem">${escHtml(res.message)}</p>`;
       return;
     }
     box.innerHTML = `
       <div class="resumen-ia-header"><i class="fas fa-sparkles"></i> Resumen del debate (IA)</div>
-      <p class="resumen-ia-text">${esc(res.resumen)}</p>`;
+      <p class="resumen-ia-text">${escHtml(res.resumen)}</p>`;
+  },
+
+  /** Aviso de "traducido automáticamente" + enlace para alternar con el original, sin otra llamada a la API. */
+  traduccionBadgeHTML(d) {
+    if (!d.traducido) return '';
+    return `
+      <div class="traduccion-badge" id="traduccionBadge">
+        <i class="fas fa-language"></i> ${CIVI_I18N.traducido_automaticamente} ·
+        <a href="#" onclick="DebateDetail.toggleOriginal(event)" id="traduccionToggleLink">${CIVI_I18N.ver_original}</a>
+      </div>`;
+  },
+
+  _mostrandoOriginal: false,
+  toggleOriginal(e) {
+    if (e) e.preventDefault();
+    const d = this.debate;
+    if (!d || !d.traducido) return;
+    this._mostrandoOriginal = !this._mostrandoOriginal;
+
+    const titulo = document.getElementById('debateHeaderTitulo');
+    const desc = document.getElementById('debateHeaderDesc');
+    const link = document.getElementById('traduccionToggleLink');
+    if (titulo) titulo.innerHTML = escHtml(this._mostrandoOriginal ? d.titulo_es : d.titulo);
+    if (desc) desc.innerHTML = escHtml(this._mostrandoOriginal ? d.descripcion_es : d.descripcion);
+    if (link) link.textContent = this._mostrandoOriginal ? CIVI_I18N.ver_traduccion : CIVI_I18N.ver_original;
   },
 
   async toggleCerrar() {
@@ -273,13 +293,29 @@ const DebateDetail = {
     }
 
     document.getElementById('respuestasCount').textContent = res.total;
+    this._respuestas = {};
+    const indexar = (lista) => (lista || []).forEach(r => { this._respuestas[r.id] = r; indexar(r.respuestas); });
+    indexar(res.respuestas);
     list.innerHTML = res.respuestas.map(r => this.renderRespuesta(r)).join('');
+  },
+
+  /** Alterna una respuesta entre su traducción y el original ya recibido (sin otra llamada a la API). */
+  toggleRespuestaOriginal(e, id) {
+    if (e) e.preventDefault();
+    const r = (this._respuestas || {})[id];
+    if (!r || !r.traducido) return;
+    const el = document.getElementById(`respuesta-contenido-${id}`);
+    if (!el) return;
+    const mostrandoOriginal = el.dataset.mostrandoOriginal === '1';
+    el.innerHTML = escHtml(mostrandoOriginal ? r.contenido : r.contenido_es);
+    el.dataset.mostrandoOriginal = mostrandoOriginal ? '0' : '1';
+    if (e && e.target) e.target.textContent = mostrandoOriginal ? CIVI_I18N.ver_original : CIVI_I18N.ver_traduccion;
   },
 
   renderRespuesta(r, nivel = 0) {
     const citaHtml = r.cita ? `
       <div class="respuesta-cita">
-        <i class="fas fa-quote-left"></i> <strong>${esc(r.cita.autor)}:</strong> ${esc(r.cita.contenido)}
+        <i class="fas fa-quote-left"></i> <strong>${escHtml(r.cita.autor)}:</strong> ${escHtml(r.cita.contenido)}
       </div>` : '';
 
     const hijosHtml = (r.respuestas || []).map(h => this.renderRespuesta(h, nivel + 1)).join('');
@@ -288,23 +324,24 @@ const DebateDetail = {
       <div class="respuesta-item ${r.destacada ? 'destacada' : ''}" style="margin-left:${Math.min(nivel, 3) * 28}px" data-id="${r.id}">
         ${r.destacada ? '<div class="respuesta-destacada-tag"><i class="fas fa-star"></i> Destacada por moderación</div>' : ''}
         <div style="display:flex;gap:.85rem">
-          <div class="comment-avatar" style="flex-shrink:0">${r.avatar ? `<img src="${esc(r.avatar)}">` : esc((r.autor || 'A').charAt(0))}</div>
+          <div class="comment-avatar" style="flex-shrink:0">${r.avatar ? `<img src="${escHtml(r.avatar)}">` : escHtml((r.autor || 'A').charAt(0))}</div>
           <div style="flex:1;min-width:0">
             <div class="respuesta-autor-row">
-              <span class="respuesta-autor">${esc(r.autor)}</span>
-              ${r.autor_titulo ? `<span class="respuesta-titulo" style="color:${r.autor_titulo.color}">${esc(r.autor_titulo.nombre)}</span>` : ''}
+              <span class="respuesta-autor">${escHtml(r.autor)}</span>
+              ${r.autor_titulo ? `<span class="respuesta-titulo" style="color:${r.autor_titulo.color}">${escHtml(r.autor_titulo.nombre)}</span>` : ''}
               <span class="respuesta-fecha">${timeAgoDebate(r.fecha_creacion)}</span>
             </div>
             ${citaHtml}
-            <p class="respuesta-contenido">${esc(r.contenido)}</p>
+            <p class="respuesta-contenido" id="respuesta-contenido-${r.id}">${escHtml(r.contenido)}</p>
+            ${r.traducido ? `<div class="comment-traduccion"><i class="fas fa-language"></i> ${CIVI_I18N.traducido_corto} · <a href="#" onclick="DebateDetail.toggleRespuestaOriginal(event, ${r.id})">${CIVI_I18N.ver_original}</a></div>` : ''}
             <div class="respuesta-acciones">
               <button class="resp-action ${r.votada ? 'active' : ''}" onclick="DebateDetail.votar(${r.id}, this)">
                 <i class="fas fa-arrow-up"></i> <span class="resp-votos">${r.votos}</span>
               </button>
-              <button class="resp-action" onclick="DebateDetail.responderA(${r.id}, null, '${esc(r.autor).replace(/'/g, "\\'")}')">
+              <button class="resp-action" onclick="DebateDetail.responderA(${r.id}, null, '${escHtml(r.autor).replace(/'/g, "\\'")}')">
                 <i class="fas fa-reply"></i> Responder
               </button>
-              <button class="resp-action" onclick="DebateDetail.citar(${r.id}, '${esc(r.autor).replace(/'/g, "\\'")}')">
+              <button class="resp-action" onclick="DebateDetail.citar(${r.id}, '${escHtml(r.autor).replace(/'/g, "\\'")}')">
                 <i class="fas fa-quote-right"></i> Citar
               </button>
               ${this.esAdmin ? `
@@ -320,7 +357,7 @@ const DebateDetail = {
 
   responderA(id, citaId, autor) {
     this.replyTo = { parentId: id, citaId: null, autor };
-    document.getElementById('replyingToLabel').innerHTML = `Respondiendo a <strong>${esc(autor)}</strong> <a href="#" onclick="DebateDetail.cancelarReply();return false;">(cancelar)</a>`;
+    document.getElementById('replyingToLabel').innerHTML = `Respondiendo a <strong>${escHtml(autor)}</strong> <a href="#" onclick="DebateDetail.cancelarReply();return false;">(cancelar)</a>`;
     document.getElementById('citaPreview').style.display = 'none';
     document.getElementById('respuestaText').focus();
   },
@@ -331,7 +368,7 @@ const DebateDetail = {
     this.replyTo = { parentId: null, citaId: id, autor };
     const preview = document.getElementById('citaPreview');
     preview.style.display = 'block';
-    preview.innerHTML = `<i class="fas fa-quote-left"></i> Citando a <strong>${esc(autor)}</strong>: “${esc(texto.slice(0, 140))}” <a href="#" onclick="DebateDetail.cancelarReply();return false;">✕</a>`;
+    preview.innerHTML = `<i class="fas fa-quote-left"></i> Citando a <strong>${escHtml(autor)}</strong>: “${escHtml(texto.slice(0, 140))}” <a href="#" onclick="DebateDetail.cancelarReply();return false;">✕</a>`;
     document.getElementById('replyingToLabel').textContent = '';
     document.getElementById('respuestaText').focus();
   },
@@ -379,3 +416,13 @@ const DebateDetail = {
     else Toast.show(res.message, 'error');
   }
 };
+
+if (document.body.dataset.debateId !== undefined) {
+  DebateDetail.init(
+    Number(document.body.dataset.debateId),
+    document.body.dataset.usuarioId ? Number(document.body.dataset.usuarioId) : null,
+    document.body.dataset.esMod === 'true'
+  );
+} else {
+  Debates.init();
+}

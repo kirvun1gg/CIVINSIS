@@ -82,7 +82,7 @@ class TendenciasController extends Controller
             return [
                 'id'              => $p->id,
                 'titulo'          => $p->titulo,
-                'autor'           => $p->autor ? trim($p->autor->nombre . ' ' . $p->autor->apellido) : 'Anónimo',
+                'autor'           => $p->autor ? trim($p->autor->nombre . ' ' . $p->autor->apellido) : __('civinsis.js.anonimo'),
                 'categoria'       => $p->categoria->nombre ?? '',
                 'categoria_icono' => $p->categoria->icono ?? 'fas fa-tag',
                 'categoria_color' => $p->categoria->color ?? '#36c0a1',
@@ -136,7 +136,7 @@ class TendenciasController extends Controller
         return $rows->map(function ($r) {
             $u = $r->usuario;
             return [
-                'autor'     => $u ? trim($u->nombre . ' ' . $u->apellido) : 'Anónimo',
+                'autor'     => $u ? trim($u->nombre . ' ' . $u->apellido) : __('civinsis.js.anonimo'),
                 'avatar'    => $u->avatar ?? null,
                 'texto'     => mb_strimwidth($r->contenido, 0, 120, '…'),
                 'votos'     => (int) $r->votos,

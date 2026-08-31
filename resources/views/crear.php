@@ -1,17 +1,24 @@
 <?php
-$iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
+// $usuarioNombre y $categorias los inyecta el View Composer global en TODAS
+// las vistas (app/Providers/AppServiceProvider.php::boot()). El valor por
+// defecto de abajo nunca se usa en producción - solo evita que el IDE marque
+// la variable como indefinida y sirve de red de seguridad.
+$usuarioNombre = $usuarioNombre ?? '';
+$categorias    = $categorias ?? collect();
+$iniciales = civinsis_iniciales($usuarioNombre);
 ?>
 <!DOCTYPE html>
 <html lang="es" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crear propuesta – CIVINSIS</title>
+  <title><?= __('civinsis.crear.titulo_pagina') ?> – CIVINSIS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/desafios.css">
+  <link rel="stylesheet" href="css/crear.css">
 </head>
 <body>
 
@@ -23,12 +30,12 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
 
     <div style="margin-bottom:2.5rem" class="animate-fade-up">
       <a href="dashboard.php" style="color:var(--text-muted);font-size:.85rem;display:inline-flex;align-items:center;gap:.4rem;margin-bottom:1rem">
-        <i class="fas fa-arrow-left"></i> Volver
+        <i class="fas fa-arrow-left"></i> <?= __('civinsis.crear.volver') ?>
       </a>
-      <span class="section-label">Nueva propuesta</span>
-      <h1 class="section-title">Comparte tu <span>idea</span></h1>
+      <span class="section-label"><?= __('civinsis.crear.section_label') ?></span>
+      <h1 class="section-title"><?= __('civinsis.crear.titulo') ?></h1>
       <p style="color:var(--text-muted);font-size:.95rem">
-        Completa el formulario y publica tu propuesta para que la comunidad la descubra y apoye.
+        <?= __('civinsis.crear.subtitulo') ?>
       </p>
     </div>
 
@@ -42,26 +49,26 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
           <!-- ── CIVI · Entrenador cívico integrado ─────────────── -->
           <div class="civi-crear" id="civiCrear">
             <div class="civi-crear-head">
-              <span class="civi-crear-title"><i class="fas fa-wand-magic-sparkles"></i> CIVI te ayuda a crear</span>
-              <span class="civi-crear-sub">Redacta, corrige y mejora tu propuesta con inteligencia artificial</span>
+              <span class="civi-crear-title"><i class="fas fa-wand-magic-sparkles"></i> <?= __('civinsis.crear.civi_titulo') ?></span>
+              <span class="civi-crear-sub"><?= __('civinsis.crear.civi_sub') ?></span>
             </div>
 
             <!-- Redactar desde una idea suelta -->
             <div class="civi-idea-row">
               <input type="text" id="civiIdea" class="form-control"
-                placeholder="¿No sabes por dónde empezar? Escribe tu idea en una frase…">
+                placeholder="<?= __('civinsis.crear.civi_idea_placeholder') ?>">
               <button type="button" class="btn btn-primary btn-sm" id="civiRedactar">
-                <i class="fas fa-wand-magic-sparkles"></i> Redactar borrador
+                <i class="fas fa-wand-magic-sparkles"></i> <?= __('civinsis.crear.civi_redactar') ?>
               </button>
             </div>
 
             <!-- Herramientas -->
             <div class="civi-tools">
-              <button type="button" class="btn btn-outline btn-sm" data-civi="titulos"><i class="fas fa-heading"></i> Sugerir títulos</button>
-              <button type="button" class="btn btn-outline btn-sm" data-civi="categoria"><i class="fas fa-tag"></i> Detectar categoría</button>
-              <button type="button" class="btn btn-outline btn-sm" data-civi="ortografia"><i class="fas fa-spell-check"></i> Corregir ortografía</button>
-              <button type="button" class="btn btn-outline btn-sm" data-civi="argumentos"><i class="fas fa-scale-balanced"></i> Reforzar argumentos</button>
-              <button type="button" class="btn btn-outline btn-sm" data-civi="similares"><i class="fas fa-clone"></i> Ver similares</button>
+              <button type="button" class="btn btn-outline btn-sm" data-civi="titulos"><i class="fas fa-heading"></i> <?= __('civinsis.crear.civi_sugerir_titulos') ?></button>
+              <button type="button" class="btn btn-outline btn-sm" data-civi="categoria"><i class="fas fa-tag"></i> <?= __('civinsis.crear.civi_detectar_categoria') ?></button>
+              <button type="button" class="btn btn-outline btn-sm" data-civi="ortografia"><i class="fas fa-spell-check"></i> <?= __('civinsis.crear.civi_corregir_ortografia') ?></button>
+              <button type="button" class="btn btn-outline btn-sm" data-civi="argumentos"><i class="fas fa-scale-balanced"></i> <?= __('civinsis.crear.civi_reforzar_argumentos') ?></button>
+              <button type="button" class="btn btn-outline btn-sm" data-civi="similares"><i class="fas fa-clone"></i> <?= __('civinsis.crear.civi_ver_similares') ?></button>
             </div>
 
             <!-- Resultados dinámicos de CIVI -->
@@ -71,21 +78,21 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
           <!-- Título -->
           <div class="form-group">
             <label class="form-label" for="titulo">
-              <i class="fas fa-heading" style="color:var(--verde)"></i> Título de la propuesta *
+              <i class="fas fa-heading" style="color:var(--verde)"></i> <?= __('civinsis.crear.campo_titulo') ?>
             </label>
             <input type="text" id="titulo" name="titulo" class="form-control"
-              placeholder="Ej: Programa de reciclaje en parques públicos"
+              placeholder="<?= __('civinsis.crear.campo_titulo_placeholder') ?>"
               maxlength="200" required oninput="updatePreview()">
-            <div class="form-hint">Sé claro y conciso. Máximo 200 caracteres.</div>
+            <div class="form-hint"><?= __('civinsis.crear.campo_titulo_hint') ?></div>
           </div>
 
           <!-- Categoría -->
           <div class="form-group">
             <label class="form-label" for="categoria_id">
-              <i class="fas fa-tag" style="color:var(--naranja)"></i> Categoría *
+              <i class="fas fa-tag" style="color:var(--naranja)"></i> <?= __('civinsis.crear.campo_categoria') ?>
             </label>
             <select id="categoria_id" name="categoria_id" class="form-control" required>
-              <option value="">Selecciona una categoría...</option>
+              <option value=""><?= __('civinsis.crear.campo_categoria_placeholder') ?></option>
               <?php foreach ($categorias as $cat): ?>
                 <option value="<?= $cat['id'] ?>" data-icon="<?= $cat['icono'] ?>" data-color="<?= $cat['color'] ?>">
                   <?= htmlspecialchars($cat['nombre']) ?>
@@ -97,18 +104,18 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
           <!-- Descripción corta -->
           <div class="form-group">
             <label class="form-label" for="descripcion">
-              <i class="fas fa-align-left" style="color:var(--verde)"></i> Descripción breve *
+              <i class="fas fa-align-left" style="color:var(--verde)"></i> <?= __('civinsis.crear.campo_descripcion') ?>
             </label>
             <textarea id="descripcion" name="descripcion" class="form-control" rows="3"
-              placeholder="Resume tu propuesta en 2-3 oraciones. Esta aparece en las tarjetas del listado."
+              placeholder="<?= __('civinsis.crear.campo_descripcion_placeholder') ?>"
               maxlength="500" required oninput="updatePreview()"></textarea>
-            <div class="form-hint"><span id="descCount">0</span>/500 caracteres</div>
+            <div class="form-hint"><span id="descCount">0</span>/500 <?= __('civinsis.crear.campo_descripcion_hint') ?></div>
           </div>
 
           <!-- Contenido enriquecido -->
           <div class="form-group">
             <label class="form-label">
-              <i class="fas fa-file-alt" style="color:var(--naranja)"></i> Contenido completo *
+              <i class="fas fa-file-alt" style="color:var(--naranja)"></i> <?= __('civinsis.crear.campo_contenido') ?>
             </label>
 
             <!-- Toolbar mejorado -->
@@ -145,24 +152,24 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
 
             <!-- Área editable -->
             <div class="rich-editor-content" id="richEditor" contenteditable="true"
-              data-placeholder="Explica en detalle:&#10;• ¿Cuál es el problema que buscas resolver?&#10;• ¿Cuál es tu solución concreta?&#10;• ¿Cuál sería el impacto esperado?&#10;• ¿Qué recursos serían necesarios?">
+              data-placeholder="<?= str_replace("\n", '&#10;', htmlspecialchars(__('civinsis.crear.editor_placeholder'))) ?>">
             </div>
             <input type="hidden" id="contenido" name="contenido">
-            <div class="form-hint">Cuanto más detallada sea tu propuesta, más credibilidad tendrá.</div>
+            <div class="form-hint"><?= __('civinsis.crear.campo_contenido_hint') ?></div>
           </div>
 
           <!-- Imagen -->
           <div class="form-group">
             <label class="form-label">
-              <i class="fas fa-image" style="color:var(--verde)"></i> Imagen de portada <span style="color:var(--text-muted);font-weight:400">(opcional)</span>
+              <i class="fas fa-image" style="color:var(--verde)"></i> <?= __('civinsis.crear.campo_imagen') ?> <span style="color:var(--text-muted);font-weight:400"><?= __('civinsis.crear.campo_imagen_opcional') ?></span>
             </label>
             <div class="image-upload-area" id="imageUploadArea">
               <input type="file" id="imagenFile" name="imagen" accept="image/jpeg,image/png,image/webp,image/gif" onchange="previewImage(this)">
               <div id="imageUploadContent">
                 <div class="image-upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
                 <div class="image-upload-text">
-                  <strong>Haz clic o arrastra una imagen aquí</strong>
-                  JPG, PNG, WebP o GIF • Máx. 5MB
+                  <strong><?= __('civinsis.crear.imagen_upload_titulo') ?></strong>
+                  <?= __('civinsis.crear.imagen_upload_desc') ?>
                 </div>
               </div>
             </div>
@@ -189,7 +196,7 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
                     <div style="height:4px;background:var(--surface);border-radius:3px;width:60%"></div>
                   </div>
                 </div>
-                <span class="design-label">Clásico</span>
+                <span class="design-label"><?= __('civinsis.crear.diseno_clasico') ?></span>
               </label>
               <label class="design-option" data-design="dark">
                 <input type="radio" name="diseno" value="dark" style="display:none">
@@ -200,7 +207,7 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
                     <div style="height:4px;background:#1a2922;border-radius:3px;width:60%"></div>
                   </div>
                 </div>
-                <span class="design-label">Oscuro</span>
+                <span class="design-label"><?= __('civinsis.crear.diseno_oscuro') ?></span>
               </label>
               <label class="design-option" data-design="gradient">
                 <input type="radio" name="diseno" value="gradient" style="display:none">
@@ -211,7 +218,7 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
                     <div style="height:4px;background:rgba(239,126,34,.2);border-radius:3px;width:60%"></div>
                   </div>
                 </div>
-                <span class="design-label">Gradiente</span>
+                <span class="design-label"><?= __('civinsis.crear.diseno_gradiente') ?></span>
               </label>
               <label class="design-option" data-design="minimal">
                 <input type="radio" name="diseno" value="minimal" style="display:none">
@@ -222,7 +229,7 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
                     <div style="height:4px;background:#eee;border-radius:3px;width:60%"></div>
                   </div>
                 </div>
-                <span class="design-label">Minimalista</span>
+                <span class="design-label"><?= __('civinsis.crear.diseno_minimalista') ?></span>
               </label>
               <label class="design-option" data-design="neon">
                 <input type="radio" name="diseno" value="neon" style="display:none">
@@ -233,7 +240,7 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
                     <div style="height:4px;background:rgba(54,192,161,.15);border-radius:3px;width:60%"></div>
                   </div>
                 </div>
-                <span class="design-label">Neón</span>
+                <span class="design-label"><?= __('civinsis.crear.diseno_neon') ?></span>
               </label>
               <label class="design-option" data-design="glass">
                 <input type="radio" name="diseno" value="glass" style="display:none">
@@ -244,7 +251,7 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
                     <div style="height:4px;background:rgba(255,255,255,.2);border-radius:3px;width:60%"></div>
                   </div>
                 </div>
-                <span class="design-label">Glass</span>
+                <span class="design-label"><?= __('civinsis.crear.diseno_glass') ?></span>
               </label>
               <label class="design-option" data-design="sunset">
                 <input type="radio" name="diseno" value="sunset" style="display:none">
@@ -255,7 +262,7 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
                     <div style="height:4px;background:rgba(231,76,60,.2);border-radius:3px;width:60%"></div>
                   </div>
                 </div>
-                <span class="design-label">Sunset</span>
+                <span class="design-label"><?= __('civinsis.crear.diseno_sunset') ?></span>
               </label>
               <label class="design-option" data-design="ocean">
                 <input type="radio" name="diseno" value="ocean" style="display:none">
@@ -266,7 +273,7 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
                     <div style="height:4px;background:rgba(6,182,212,.2);border-radius:3px;width:60%"></div>
                   </div>
                 </div>
-                <span class="design-label">Ocean</span>
+                <span class="design-label"><?= __('civinsis.crear.diseno_ocean') ?></span>
               </label>
               <label class="design-option" data-design="retro">
                 <input type="radio" name="diseno" value="retro" style="display:none">
@@ -277,7 +284,7 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
                     <div style="height:4px;background:#d4c9a8;border-radius:2px;width:60%"></div>
                   </div>
                 </div>
-                <span class="design-label">Retro</span>
+                <span class="design-label"><?= __('civinsis.crear.diseno_retro') ?></span>
               </label>
               <label class="design-option" data-design="aurora">
                 <input type="radio" name="diseno" value="aurora" style="display:none">
@@ -288,7 +295,7 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
                     <div style="height:4px;background:rgba(255,255,255,.3);border-radius:3px;width:60%"></div>
                   </div>
                 </div>
-                <span class="design-label">Aurora</span>
+                <span class="design-label"><?= __('civinsis.crear.diseno_aurora') ?></span>
               </label>
               <label class="design-option" data-design="cyber">
                 <input type="radio" name="diseno" value="cyber" style="display:none">
@@ -299,7 +306,7 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
                     <div style="height:4px;background:rgba(0,240,255,.2);border-radius:3px;width:60%"></div>
                   </div>
                 </div>
-                <span class="design-label">Cyber</span>
+                <span class="design-label"><?= __('civinsis.crear.diseno_cyber') ?></span>
               </label>
               <label class="design-option" data-design="pastel">
                 <input type="radio" name="diseno" value="pastel" style="display:none">
@@ -310,30 +317,30 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
                     <div style="height:4px;background:rgba(0,0,0,.08);border-radius:3px;width:60%"></div>
                   </div>
                 </div>
-                <span class="design-label">Pastel</span>
+                <span class="design-label"><?= __('civinsis.crear.diseno_pastel') ?></span>
               </label>
             </div>
           </div>
 
           <!-- Opciones extra de tarjeta (#2 #5) -->
           <div class="form-group" style="margin-top:1.25rem">
-            <label class="form-label">Opciones de la tarjeta</label>
+            <label class="form-label"><?= __('civinsis.crear.opciones_tarjeta') ?></label>
             <div style="display:flex;flex-direction:column;gap:.7rem">
               <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer">
                 <input type="checkbox" id="efectoCategoria" checked>
                 <span><i class="fas fa-wand-magic-sparkles" style="color:var(--verde)"></i>
-                  Efecto temático al pasar el cursor (según la categoría)</span>
+                  <?= __('civinsis.crear.efecto_categoria') ?></span>
               </label>
               <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer">
                 <input type="checkbox" id="propDestacada">
                 <span><i class="fas fa-star" style="color:var(--naranja)"></i>
-                  Marcar como destacada (borde brillante)</span>
+                  <?= __('civinsis.crear.marcar_destacada') ?></span>
               </label>
               <div style="display:flex;align-items:center;gap:.6rem">
                 <i class="fas fa-palette" style="color:var(--text-muted)"></i>
-                <span style="font-size:.85rem">Color de acento personalizado:</span>
+                <span style="font-size:.85rem"><?= __('civinsis.crear.color_acento') ?></span>
                 <input type="color" id="colorAcento" value="#36c0a1" style="width:46px;height:34px;padding:.15rem;border:1px solid var(--border);border-radius:8px;cursor:pointer">
-                <button type="button" id="limpiarAcento" class="btn btn-ghost btn-sm" style="font-size:.72rem">Sin acento</button>
+                <button type="button" id="limpiarAcento" class="btn btn-ghost btn-sm" style="font-size:.72rem"><?= __('civinsis.crear.sin_acento') ?></button>
               </div>
             </div>
           </div>
@@ -341,10 +348,10 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
           <!-- Botones -->
           <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:2rem">
             <button type="submit" class="btn btn-primary btn-lg">
-              <i class="fas fa-rocket"></i> Publicar propuesta
+              <i class="fas fa-rocket"></i> <?= __('civinsis.crear.publicar_propuesta') ?>
             </button>
             <a href="dashboard.php" class="btn btn-ghost btn-lg">
-              <i class="fas fa-times"></i> Cancelar
+              <i class="fas fa-times"></i> <?= __('civinsis.comun.cancelar') ?>
             </a>
           </div>
         </form>
@@ -355,9 +362,9 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
         <!-- Preview -->
         <div class="proposal-card" id="previewCard" style="pointer-events:none;opacity:.85">
           <div class="card-header">
-            <div class="card-cat" id="previewCat"><i class="fas fa-tag"></i> Categoría</div>
-            <h3 class="card-title" id="previewTitle" style="color:var(--text-muted);font-style:italic;font-weight:400">Tu título aparecerá aquí...</h3>
-            <p class="card-desc" id="previewDesc" style="color:var(--text-muted);font-style:italic">Tu descripción aparecerá aquí...</p>
+            <div class="card-cat" id="previewCat"><i class="fas fa-tag"></i> <?= __('civinsis.crear.preview_categoria') ?></div>
+            <h3 class="card-title" id="previewTitle" style="color:var(--text-muted);font-style:italic;font-weight:400"><?= __('civinsis.crear.preview_titulo') ?></h3>
+            <p class="card-desc" id="previewDesc" style="color:var(--text-muted);font-style:italic"><?= __('civinsis.crear.preview_desc') ?></p>
           </div>
           <div class="card-footer">
             <div class="card-meta">
@@ -373,10 +380,10 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
         <!-- Tips -->
         <div style="background:var(--naranja-alpha);border:1px solid var(--naranja-200);border-radius:var(--radius-lg);padding:1.25rem">
           <h4 style="font-family:var(--font-display);font-weight:700;font-size:.9rem;color:var(--naranja-700);margin-bottom:.75rem">
-            <i class="fas fa-lightbulb"></i> Tips para una buena propuesta
+            <i class="fas fa-lightbulb"></i> <?= __('civinsis.crear.tips_titulo') ?>
           </h4>
           <ul style="display:flex;flex-direction:column;gap:.5rem">
-            <?php foreach(['Define claramente el problema','Propón soluciones concretas','Incluye el impacto esperado','Usa lenguaje claro y accesible','Elige la categoría correcta'] as $tip): ?>
+            <?php foreach([__('civinsis.crear.tip1'),__('civinsis.crear.tip2'),__('civinsis.crear.tip3'),__('civinsis.crear.tip4'),__('civinsis.crear.tip5')] as $tip): ?>
             <li style="font-size:.8rem;color:var(--text-muted);display:flex;gap:.5rem;align-items:flex-start">
               <i class="fas fa-check-circle" style="color:var(--verde);margin-top:2px;flex-shrink:0"></i>
               <?= $tip ?>
@@ -388,11 +395,11 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
         <!-- AURIS -->
         <div style="background:var(--verde-alpha);border:1px solid var(--verde-200);border-radius:var(--radius-lg);padding:1.25rem">
           <h4 style="font-family:var(--font-display);font-weight:700;font-size:.9rem;color:var(--verde-700);margin-bottom:.5rem">
-            <i class="fas fa-robot"></i> ¿Necesitas ayuda?
+            <i class="fas fa-robot"></i> <?= __('civinsis.crear.auris_titulo') ?>
           </h4>
-          <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem">AURIS puede ayudarte a estructurar y mejorar tu propuesta.</p>
+          <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem"><?= __('civinsis.crear.auris_desc') ?></p>
           <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center" onclick="Auris.togglePanel()">
-            <i class="fas fa-comments"></i> Hablar con AURIS
+            <i class="fas fa-comments"></i> <?= __('civinsis.crear.auris_hablar') ?>
           </button>
         </div>
       </div>
@@ -407,187 +414,6 @@ $iniciales  = strtoupper(substr($usuarioNombre, 0, 1));
 <script src="js/app.js"></script>
 <script src="js/desafios.js"></script>
 <script src="js/crear-ia.js"></script>
-<style>
-@media(max-width:640px){.create-layout{grid-template-columns:1fr!important}}
-
-/* Diseño selector */
-.design-option { cursor:pointer; text-align:center; }
-.design-preview {
-  border:2px solid var(--border); border-radius:8px; overflow:hidden;
-  margin-bottom:.4rem; transition:var(--trans); height:54px;
-}
-.design-option input:checked + .design-preview { border-color:var(--verde); box-shadow:0 0 0 2px var(--verde-alpha2); }
-.design-label { font-size:.72rem; color:var(--text-muted); font-weight:600; }
-
-/* ── Panel CIVI en crear ─────────────────────────────────── */
-.civi-crear{
-  background:linear-gradient(135deg,var(--verde-alpha),var(--naranja-alpha));
-  border:1px solid var(--verde-200); border-radius:var(--radius-lg);
-  padding:1.1rem 1.15rem; margin-bottom:1.75rem;
-}
-.civi-crear-head{display:flex;flex-direction:column;gap:.15rem;margin-bottom:.85rem}
-.civi-crear-title{font-family:var(--font-display);font-weight:800;font-size:.95rem;color:var(--verde-700);display:flex;align-items:center;gap:.5rem}
-.civi-crear-sub{font-size:.78rem;color:var(--text-muted)}
-.civi-idea-row{display:flex;gap:.6rem;margin-bottom:.75rem}
-.civi-idea-row .form-control{flex:1;min-width:0}
-.civi-idea-row .btn{flex-shrink:0;white-space:nowrap}
-.civi-tools{display:flex;flex-wrap:wrap;gap:.5rem}
-.civi-tools .btn{font-size:.74rem}
-.civi-tools .btn i{margin-right:.3rem}
-.civi-result{margin-top:.9rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;font-size:.84rem;line-height:1.55;animation:fadeUp .3s ease}
-.civi-result-head{display:flex;align-items:center;gap:.5rem;font-weight:700;color:var(--verde-700);font-size:.82rem;margin-bottom:.55rem}
-.civi-result .btn{margin-top:.7rem}
-.civi-titulo-opt{display:block;width:100%;text-align:left;background:var(--verde-alpha);border:1px solid var(--verde-200);border-radius:8px;padding:.5rem .7rem;margin-bottom:.4rem;cursor:pointer;font-size:.82rem;color:var(--text);transition:var(--trans)}
-.civi-titulo-opt:hover{background:var(--verde-alpha2);border-color:var(--verde)}
-.civi-sim-item{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.5rem .65rem;border:1px solid var(--border);border-radius:8px;margin-bottom:.4rem}
-.civi-sim-badge{flex-shrink:0;font-size:.72rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;background:var(--naranja-alpha);color:var(--naranja-700)}
-.civi-busy{opacity:.6;pointer-events:none}
-
-/* Placeholder en contenteditable */
-.rich-editor-content:empty::before {
-  content: attr(data-placeholder);
-  color: var(--text-muted);
-  pointer-events: none;
-  white-space: pre-line;
-}
-</style>
-<script>
-// Preview en tiempo real
-function updatePreview() {
-  const titulo = document.getElementById('titulo').value;
-  const desc   = document.getElementById('descripcion').value;
-  document.getElementById('previewTitle').textContent = titulo || 'Tu título aparecerá aquí...';
-  document.getElementById('previewTitle').style.fontStyle = titulo ? 'normal' : 'italic';
-  document.getElementById('previewTitle').style.color = titulo ? 'var(--text)' : 'var(--text-muted)';
-  document.getElementById('previewDesc').textContent = desc || 'Tu descripción aparecerá aquí...';
-  document.getElementById('previewDesc').style.fontStyle = desc ? 'normal' : 'italic';
-  document.getElementById('descCount').textContent = desc.length;
-}
-
-// Categoría preview
-document.getElementById('categoria_id')?.addEventListener('change', function() {
-  const opt   = this.options[this.selectedIndex];
-  const icon  = opt.dataset.icon || 'fas fa-tag';
-  const color = opt.dataset.color || 'var(--verde)';
-  document.getElementById('previewCat').innerHTML = `<i class="${icon}" style="color:${color}"></i> ${opt.text}`;
-});
-
-// Editor enriquecido
-const toolbar = document.getElementById('editorToolbar');
-const editor  = document.getElementById('richEditor');
-
-toolbar.addEventListener('click', e => {
-  const btn = e.target.closest('[data-cmd]');
-  if (!btn) return;
-  e.preventDefault();
-  const cmd = btn.dataset.cmd;
-  editor.focus();
-  if (cmd === 'h1') {
-    document.execCommand('formatBlock', false, '<h1>');
-  } else if (cmd === 'h2') {
-    document.execCommand('formatBlock', false, '<h2>');
-  } else if (cmd === 'h3') {
-    document.execCommand('formatBlock', false, '<h3>');
-  } else if (cmd === 'blockquote') {
-    document.execCommand('formatBlock', false, '<blockquote>');
-  } else if (cmd === 'codeBlock') {
-    const sel = window.getSelection(); const text = sel.toString() || 'código';
-    document.execCommand('insertHTML', false, `<pre><code>${text}</code></pre><p><br></p>`);
-  } else if (cmd === 'infoBox') {
-    document.execCommand('insertHTML', false, '<div class="info-box"><strong>ℹ️ Info:</strong> Escribe aquí.</div><p><br></p>');
-  } else if (cmd === 'warningBox') {
-    document.execCommand('insertHTML', false, '<div class="warning-box"><strong>⚠️ Importante:</strong> Escribe aquí.</div><p><br></p>');
-  } else if (cmd === 'insertImage') {
-    const url = prompt('URL de la imagen:');
-    if (url) document.execCommand('insertHTML', false, `<img src="${url}" class="img-center" alt=""><p><br></p>`);
-  } else if (cmd === 'insertTable') {
-    const r = parseInt(prompt('Filas:','3'))||3, cl = parseInt(prompt('Columnas:','3'))||3;
-    let t = '<table><thead><tr>' + Array(cl).fill(0).map((_,i)=>`<th>Col ${i+1}</th>`).join('') + '</tr></thead><tbody>';
-    for(let i=0;i<r;i++){ t+='<tr>'+Array(cl).fill('<td>Dato</td>').join('')+'</tr>'; }
-    document.execCommand('insertHTML', false, t+'</tbody></table><p><br></p>');
-  } else if (cmd === 'insertHR') {
-    document.execCommand('insertHTML', false, '<hr><p><br></p>');
-  } else if (cmd === 'createLink') {
-    const url = prompt('Ingresa la URL:');
-    if (url) document.execCommand('createLink', false, url);
-  } else if (cmd === 'foreColor') {
-    const colors = ['#36c0a1','#ef7e22','#e74c3c','#3498db','#9b59b6','#f39c12','#27ae60','#000'];
-    const pick = document.createElement('div');
-    pick.style.cssText = 'position:fixed;z-index:9999;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:.75rem;display:flex;gap:.4rem;box-shadow:var(--shadow-lg)';
-    const rect = btn.getBoundingClientRect();
-    pick.style.left = rect.left+'px'; pick.style.top = (rect.bottom+8)+'px';
-    pick.innerHTML = colors.map(c=>`<button onclick="document.execCommand('foreColor',false,'${c}');this.parentElement.remove()" style="width:26px;height:26px;border-radius:50%;background:${c};border:2px solid rgba(255,255,255,.2);cursor:pointer"></button>`).join('');
-    document.body.appendChild(pick);
-    setTimeout(()=>document.addEventListener('click',()=>pick.remove(),{once:true}),100);
-    return;
-  } else {
-    document.execCommand(cmd, false, null);
-  }
-  // Toggle active state
-  document.querySelectorAll('#editorToolbar [data-cmd]').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-});
-
-// Imagen
-function previewImage(input) {
-  if (!input.files || !input.files[0]) return;
-  const file = input.files[0];
-  if (file.size > 5 * 1024 * 1024) { alert('La imagen no puede superar 5MB'); return; }
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('imagePreview').src = e.target.result;
-    document.getElementById('imagePreviewWrap').style.display = 'block';
-    document.getElementById('imageUploadContent').style.display = 'none';
-    document.getElementById('imageUploadArea').classList.add('has-image');
-  };
-  reader.readAsDataURL(file);
-}
-function removeImage() {
-  document.getElementById('imagenFile').value = '';
-  document.getElementById('imagePreviewWrap').style.display = 'none';
-  document.getElementById('imageUploadContent').style.display = 'block';
-  document.getElementById('imageUploadArea').classList.remove('has-image');
-}
-
-// Drag and drop en upload area
-const uploadArea = document.getElementById('imageUploadArea');
-uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor = 'var(--verde)'; });
-uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = ''; });
-uploadArea.addEventListener('drop', e => {
-  e.preventDefault();
-  uploadArea.style.borderColor = '';
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) {
-    document.getElementById('imagenFile').files = e.dataTransfer.files;
-    previewImage(document.getElementById('imagenFile'));
-  }
-});
-
-// Submit: sincronizar contenido del editor
-document.getElementById('createForm').addEventListener('submit', function(e) {
-  document.getElementById('contenido').value = editor.innerHTML;
-  if (!editor.textContent.trim()) {
-    e.preventDefault();
-    editor.style.borderColor = '#e74c3c';
-    editor.focus();
-    return;
-  }
-});
-
-// Color de acento opcional para la tarjeta (#2)
-(function(){
-  var acento = document.getElementById('colorAcento');
-  var limpiar = document.getElementById('limpiarAcento');
-  if (acento) {
-    acento.dataset.activo = '0';
-    acento.addEventListener('input', function(){ acento.dataset.activo = '1'; acento.style.outline = '2px solid var(--verde)'; });
-  }
-  if (limpiar) {
-    limpiar.addEventListener('click', function(){
-      if (acento) { acento.dataset.activo = '0'; acento.style.outline = 'none'; }
-    });
-  }
-})();
-</script>
+<script src="js/crear.js"></script>
 </body>
 </html>

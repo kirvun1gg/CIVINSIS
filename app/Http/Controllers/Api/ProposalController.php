@@ -13,46 +13,68 @@ use App\Models\UsuarioDesafio;
 use App\Models\Voto;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use App\Services\GamificacionService;
+use App\Services\TranslationService;
 use Illuminate\Support\Facades\Log;
 
 class ProposalController extends Controller
 {
     use ApiResponse;
 
-    /** Metadata visual de cada fase del ciclo de vida de una propuesta. */
+    /**
+     * Metadata visual (color/icono) de cada fase del ciclo de vida de una
+     * propuesta. El label/descripción NO se guardan aquí porque deben
+     * traducirse según el idioma actual — ver progresoLabel()/progresoDescripcion().
+     */
     const PROGRESO_STAGES = [
-        'idea'      => ['label' => 'Idea',      'color' => '#8892a4', 'icono' => 'fas fa-lightbulb',
-            'descripcion' => 'La propuesta fue publicada y espera ser descubierta por la comunidad.'],
-        'discusion' => ['label' => 'Discusión',  'color' => '#4a9eff', 'icono' => 'fas fa-comments',
-            'descripcion' => 'La comunidad está comentando y debatiendo sobre la propuesta.'],
-        'mejoras'   => ['label' => 'Mejoras',    'color' => '#ef7e22', 'icono' => 'fas fa-pen-ruler',
-            'descripcion' => 'Se están incorporando sugerencias para fortalecer la propuesta.'],
-        'votacion'  => ['label' => 'Votación',   'color' => '#36c0a1', 'icono' => 'fas fa-square-poll-vertical',
-            'descripcion' => 'La propuesta está abierta a votación ciudadana.'],
-        'destacada' => ['label' => 'Destacada',  'color' => '#ffe066', 'icono' => 'fas fa-star',
-            'descripcion' => 'Un moderador destacó esta propuesta por su calidad e impacto.'],
+        'idea'      => ['color' => '#8892a4', 'icono' => 'fas fa-lightbulb'],
+        'discusion' => ['color' => '#4a9eff', 'icono' => 'fas fa-comments'],
+        'mejoras'   => ['color' => '#ef7e22', 'icono' => 'fas fa-pen-ruler'],
+        'votacion'  => ['color' => '#36c0a1', 'icono' => 'fas fa-square-poll-vertical'],
+        'destacada' => ['color' => '#ffe066', 'icono' => 'fas fa-star'],
     ];
 
     /** Cantidad de comentarios de la comunidad (sin contar al autor) para sugerirle mejorar o pasar a votación. */
     const UMBRAL_SUGERENCIA_MEJORA = 5;
 
-    /** Aspectos de la votación inteligente. Cada usuario elige UNO solo (positivo o negativo). */
+    /**
+     * Aspectos de la votación inteligente. Cada usuario elige UNO solo
+     * (positivo o negativo). El label es traducible — ver aspectoLabel().
+     */
     const ASPECTOS = [
         // Positivos (+1 reputación)
-        'creativa'    => ['label' => 'Creativa',                 'icono' => '💡', 'signo' => 1],
-        'argumentada' => ['label' => 'Bien argumentada',         'icono' => '📖', 'signo' => 1],
-        'comunidad'   => ['label' => 'Beneficia a la comunidad', 'icono' => '🌍', 'signo' => 1],
-        'factible'    => ['label' => 'Factible',                 'icono' => '✔️', 'signo' => 1],
-        'innovadora'  => ['label' => 'Innovadora',               'icono' => '🚀', 'signo' => 1],
+        'creativa'    => ['icono' => '💡', 'signo' => 1],
+        'argumentada' => ['icono' => '📖', 'signo' => 1],
+        'comunidad'   => ['icono' => '🌍', 'signo' => 1],
+        'factible'    => ['icono' => '✔️', 'signo' => 1],
+        'innovadora'  => ['icono' => '🚀', 'signo' => 1],
         // Negativos (-1 reputación)
-        'poco_clara'  => ['label' => 'Poco clara',               'icono' => '😕', 'signo' => -1],
-        'inviable'    => ['label' => 'Inviable',                 'icono' => '🚧', 'signo' => -1],
-        'poco_util'   => ['label' => 'Poco útil',                'icono' => '🤷', 'signo' => -1],
+        'poco_clara'  => ['icono' => '😕', 'signo' => -1],
+        'inviable'    => ['icono' => '🚧', 'signo' => -1],
+        'poco_util'   => ['icono' => '🤷', 'signo' => -1],
     ];
+
+    /** Nombre traducido de una fase del ciclo de vida ('idea'|'discusion'|...). */
+    private function progresoLabel(string $clave): string
+    {
+        return __('civinsis.progreso.' . $clave . '_label');
+    }
+
+    /** Descripción traducida de una fase del ciclo de vida. */
+    private function progresoDescripcion(string $clave): string
+    {
+        return __('civinsis.progreso.' . $clave . '_desc');
+    }
+
+    /** Nombre traducido de un aspecto de valoración ('creativa'|'argumentada'|...). */
+    private function aspectoLabel(string $clave): string
+    {
+        return __('civinsis.aspectos.' . $clave);
+    }
 
     public function handle(Request $request)
     {
@@ -79,16 +101,50 @@ class ProposalController extends Controller
         };
     }
 
+    /** ¿Hay que traducir? (idioma actual ≠ idioma original del contenido) */
+    private function traducirA($item): ?string
+    {
+        $locale = App::getLocale();
+        return $locale !== ($item->idioma_original ?? 'es') ? $locale : null;
+    }
+
+    /**
+     * Pre-carga (1 sola llamada agrupada a DeepL) las traducciones que falten
+     * para toda una colección, evitando una petición HTTP por elemento en
+     * listados (N+1). formato()/formatoComentario() simplemente leen de
+     * caché después de esto.
+     */
+    private function precargar($items, array $campos): void
+    {
+        $locale = App::getLocale();
+        if ($locale === 'es' || $items->isEmpty()) return;
+        app(TranslationService::class)->warmMany($items, $campos, $locale);
+    }
+
     /** Da formato a una propuesta para el frontend, incluyendo datos de autor + tarjeta. */
     private function formato(Proposal $p): array
     {
         $cat = $p->categoria;
         $autor = $p->autor;
+        $locale = $this->traducirA($p);
+
+        $titulo      = $locale ? $p->translated('titulo', $locale) : $p->titulo;
+        $descripcion = $locale ? $p->translated('descripcion', $locale) : $p->descripcion;
+        $contenido   = $locale ? $p->translated('contenido', $locale) : $p->contenido;
+        // Solo se marca "traducido" si el contenido devuelto realmente cambió.
+        // Si DeepL no está disponible (sin key, error), translated() cae al
+        // original y aquí NO debe mostrarse el aviso de traducción vacío.
+        $traducido = $locale && ($titulo !== $p->titulo || $descripcion !== $p->descripcion || $contenido !== $p->contenido);
+
         return [
             'id'               => $p->id,
-            'titulo'           => $p->titulo,
-            'descripcion'      => $p->descripcion,
-            'contenido'        => $p->contenido,
+            'titulo'           => $titulo,
+            'descripcion'      => $descripcion,
+            'contenido'        => $contenido,
+            'traducido'        => $traducido,
+            'titulo_es'        => $traducido ? $p->titulo : null,
+            'descripcion_es'   => $traducido ? $p->descripcion : null,
+            'contenido_es'     => $traducido ? $p->contenido : null,
             'votos'            => (int) $p->votos,
             'vistas'           => (int) $p->vistas,
             'estado'           => $p->estado,
@@ -98,14 +154,14 @@ class ProposalController extends Controller
             'efecto_categoria' => (bool) $p->efecto_categoria,
             'destacada'        => (bool) $p->destacada,
             'progreso'         => $p->progreso ?: 'idea',
-            'progreso_label'   => self::PROGRESO_STAGES[$p->progreso ?? 'idea']['label'] ?? 'Idea',
+            'progreso_label'   => $this->progresoLabel($p->progreso ?: 'idea'),
             'imagen'           => $p->imagen,
             'categoria_id'     => $p->categoria_id,
             'categoria'        => $cat->nombre ?? '',
             'categoria_icono'  => $cat->icono ?? 'fas fa-tag',
             'categoria_color'  => $cat->color ?? '#36c0a1',
             'categoria_efecto' => $cat->efecto ?? 'default',
-            'autor'            => $autor ? trim($autor->nombre . ' ' . $autor->apellido) : 'Anónimo',
+            'autor'            => $autor ? trim($autor->nombre . ' ' . $autor->apellido) : __('civinsis.js.anonimo'),
             'autor_id'         => $p->usuario_id,
             'autor_avatar'     => $autor->avatar ?? null,
             'autor_bio'        => $autor->bio ?? null,
@@ -163,12 +219,13 @@ class ProposalController extends Controller
             }
         }
 
+        $this->precargar($items, ['titulo', 'descripcion', 'contenido']);
         $propuestas = $items->map(function ($p) use ($votadas, $topAspectos) {
             $row = $this->formato($p);
             $row['ya_vote'] = in_array($p->id, $votadas);
             $top = $topAspectos[$p->id] ?? null;
             $row['aspecto_top'] = ($top && isset(self::ASPECTOS[$top['aspecto']]))
-                ? ['clave' => $top['aspecto'], 'label' => self::ASPECTOS[$top['aspecto']]['label'], 'icono' => self::ASPECTOS[$top['aspecto']]['icono'], 'total' => $top['total']]
+                ? ['clave' => $top['aspecto'], 'label' => $this->aspectoLabel($top['aspecto']), 'icono' => self::ASPECTOS[$top['aspecto']]['icono'], 'total' => $top['total']]
                 : null;
             return $row;
         });
@@ -226,10 +283,10 @@ class ProposalController extends Controller
             $entrada = $historial->get($clave);
             $timeline[] = [
                 'clave'       => $clave,
-                'label'       => $meta['label'],
+                'label'       => $this->progresoLabel($clave),
                 'color'       => $meta['color'],
                 'icono'       => $meta['icono'],
-                'descripcion' => $meta['descripcion'],
+                'descripcion' => $this->progresoDescripcion($clave),
                 'alcanzada'   => $i <= $actualIdx,
                 'actual'      => $i === $actualIdx,
                 'fecha'       => $entrada ? optional($entrada->fecha)->format('d/m/Y') : null,
@@ -280,8 +337,8 @@ class ProposalController extends Controller
         // Gamificación: XP + reputación por crear propuesta
         try {
             $gam = app(GamificacionService::class);
-            $gam->otorgarXP(Auth::user(), 'crear_propuesta', $p->id);
-            $gam->otorgarReputacion(Auth::user(), 'Creaste una propuesta', 5, null, $p->id);
+            $gam->otorgarXP(auth_user(), 'crear_propuesta', $p->id);
+            $gam->otorgarReputacion(auth_user(), 'Creaste una propuesta', 5, null, $p->id);
         } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::error('Gam error: '.$e->getMessage()); }
 
         // Completar desafío vinculado (si esta propuesta nació de uno)
@@ -309,9 +366,9 @@ class ProposalController extends Controller
 
         try {
             $gam = app(GamificacionService::class);
-            $gam->otorgarXP(Auth::user(), 'completar_desafio', $desafioId, $desafio->xp_recompensa);
+            $gam->otorgarXP(auth_user(), 'completar_desafio', $desafioId, $desafio->xp_recompensa);
             if ($desafio->reputacion_recompensa > 0) {
-                $gam->otorgarReputacion(Auth::user(), 'Completaste un desafío', $desafio->reputacion_recompensa, null, $desafioId);
+                $gam->otorgarReputacion(auth_user(), 'Completaste un desafío', $desafio->reputacion_recompensa, null, $desafioId);
             }
             if ($desafio->insignia_id) {
                 \Illuminate\Support\Facades\DB::table('usuario_insignias')->insertOrIgnore([
@@ -336,7 +393,7 @@ class ProposalController extends Controller
 
         $p = Proposal::find($id);
         if (!$p) return $this->json(false, 'Propuesta no encontrada');
-        if ($p->usuario_id !== Auth::id() && Auth::user()->rol_nombre !== 'admin')
+        if ($p->usuario_id !== Auth::id() && auth_user()->rol_nombre !== 'admin')
             return $this->json(false, 'No tienes permiso para editar esta propuesta');
 
         $p->fill([
@@ -364,7 +421,7 @@ class ProposalController extends Controller
         if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
         $p = Proposal::find((int) $request->input('id'));
         if (!$p) return $this->json(false, 'Propuesta no encontrada');
-        if ($p->usuario_id !== Auth::id() && Auth::user()->rol_nombre !== 'admin')
+        if ($p->usuario_id !== Auth::id() && auth_user()->rol_nombre !== 'admin')
             return $this->json(false, 'No tienes permiso para eliminar esta propuesta');
 
         $p->delete();
@@ -469,7 +526,7 @@ class ProposalController extends Controller
         foreach (self::ASPECTOS as $clave => $meta) {
             $out[] = [
                 'clave' => $clave,
-                'label' => $meta['label'],
+                'label' => $this->aspectoLabel($clave),
                 'icono' => $meta['icono'],
                 'signo' => $meta['signo'],
                 'total' => (int) ($conteos[$clave] ?? 0),
@@ -518,7 +575,7 @@ class ProposalController extends Controller
             try {
                 Notificacion::crear(
                     $p->usuario_id, 'progreso_propuesta',
-                    "¡Tu propuesta «{$p->titulo}» recibió su primer comentario y pasó a la fase \"Discusión\"!",
+                    "¡Tu propuesta «{$p->titulo}» recibió su primer comentario y pasó a la fase \"" . $this->progresoLabel('discusion') . "\"!",
                     'propuesta.php?id=' . $p->id, $meta['icono'], $meta['color']
                 );
             } catch (\Throwable $e) {}
@@ -527,8 +584,8 @@ class ProposalController extends Controller
         // Gamificación: XP por comentar
         try {
             $gam = app(GamificacionService::class);
-            $gam->otorgarXP(Auth::user(), 'comentar', $c->id);
-            $gam->otorgarReputacion(Auth::user(), 'Comentaste en una propuesta', 2, null, $c->id);
+            $gam->otorgarXP(auth_user(), 'comentar', $c->id);
+            $gam->otorgarReputacion(auth_user(), 'Comentaste en una propuesta', 2, null, $c->id);
         } catch (\Throwable $e) {}
 
         return $this->json(true, 'Comentario publicado', ['comentario' => $this->formatoComentario($c)]);
@@ -540,19 +597,25 @@ class ProposalController extends Controller
         if (!$id) return $this->json(false, 'ID inválido');
 
         $comentarios = Comentario::with('usuario')->where('propuesta_id', $id)
-            ->orderByDesc('fecha_creacion')->get()
-            ->map(fn ($c) => $this->formatoComentario($c));
+            ->orderByDesc('fecha_creacion')->get();
+        $this->precargar($comentarios, ['contenido']);
+        $comentarios = $comentarios->map(fn ($c) => $this->formatoComentario($c));
 
         return $this->json(true, 'OK', ['comentarios' => $comentarios, 'total' => $comentarios->count()]);
     }
 
-    private function formatoComentario(Comentario $c): array
+    private function formatoComentario(Comentario $c, bool $forzarOriginal = false): array
     {
         $u = $c->usuario;
+        $locale = $forzarOriginal ? null : $this->traducirA($c);
+        $contenido = $locale ? $c->translated('contenido', $locale) : $c->contenido;
+        $traducido = $locale && $contenido !== $c->contenido;
         return [
             'id'               => $c->id,
-            'contenido'        => $c->contenido,
-            'autor'            => $u ? trim($u->nombre . ' ' . $u->apellido) : 'Anónimo',
+            'contenido'        => $contenido,
+            'contenido_es'     => $traducido ? $c->contenido : null,
+            'traducido'        => $traducido,
+            'autor'            => $u ? trim($u->nombre . ' ' . $u->apellido) : __('civinsis.js.anonimo'),
             'autor_id'         => $c->usuario_id,
             'avatar'           => $u->avatar ?? null,
             'autor_nivel'      => $u->nivel ?? 1,
@@ -579,8 +642,9 @@ class ProposalController extends Controller
         $limit = (int) $request->input('limit', 5);
         $items = Proposal::with(['categoria', 'autor'])
             ->where('estado', 'activa')->where('votos', '>', 0)
-            ->orderByDesc('votos')->limit($limit)->get()
-            ->map(fn ($p) => $this->formato($p));
+            ->orderByDesc('votos')->limit($limit)->get();
+        $this->precargar($items, ['titulo', 'descripcion', 'contenido']);
+        $items = $items->map(fn ($p) => $this->formato($p));
 
         return $this->json(true, 'OK', ['propuestas' => $items]);
     }
@@ -589,7 +653,9 @@ class ProposalController extends Controller
     {
         if (!Auth::check()) return $this->json(false, 'No autenticado');
         $items = Proposal::with('categoria')->where('usuario_id', Auth::id())
-            ->orderByDesc('fecha_creacion')->get()->map(fn ($p) => $this->formato($p));
+            ->orderByDesc('fecha_creacion')->get();
+        $this->precargar($items, ['titulo', 'descripcion', 'contenido']);
+        $items = $items->map(fn ($p) => $this->formato($p));
 
         return $this->json(true, 'OK', ['propuestas' => $items]);
     }
@@ -597,18 +663,20 @@ class ProposalController extends Controller
     // ── Admin ───────────────────────────────────────────────
     private function adminComentarios()
     {
-        if (!Auth::check() || !in_array(Auth::user()->rol_nombre, ['admin', 'moderador']))
+        if (!Auth::check() || !in_array(auth_user()->rol_nombre, ['admin', 'moderador']))
             return $this->json(false, 'Sin permisos');
 
+        // Moderación siempre trabaja sobre el contenido original, sin traducir
+        // (punto 24: la moderación no depende del idioma mostrado al público).
         $comentarios = Comentario::with('usuario')->orderByDesc('fecha_creacion')->limit(100)->get()
-            ->map(fn ($c) => array_merge($this->formatoComentario($c), ['propuesta_id' => $c->propuesta_id]));
+            ->map(fn ($c) => array_merge($this->formatoComentario($c, true), ['propuesta_id' => $c->propuesta_id]));
 
         return $this->json(true, 'OK', ['comentarios' => $comentarios]);
     }
 
     private function eliminarComentario(Request $request)
     {
-        if (!Auth::check() || !in_array(Auth::user()->rol_nombre, ['admin', 'moderador']))
+        if (!Auth::check() || !in_array(auth_user()->rol_nombre, ['admin', 'moderador']))
             return $this->json(false, 'Sin permisos');
         $id = (int) $request->input('id');
         if (!$id) return $this->json(false, 'ID inválido');
@@ -619,7 +687,7 @@ class ProposalController extends Controller
     /** Cambia la fase del ciclo de vida de una propuesta (acción de admin/moderador). */
     private function cambiarProgreso(Request $request)
     {
-        if (!Auth::check() || !in_array(Auth::user()->rol_nombre, ['admin', 'moderador']))
+        if (!Auth::check() || !in_array(auth_user()->rol_nombre, ['admin', 'moderador']))
             return $this->json(false, 'Sin permisos');
 
         $id       = (int) $request->input('id');
@@ -645,17 +713,17 @@ class ProposalController extends Controller
             'propuesta_id' => $p->id, 'progreso' => $progreso, 'usuario_id' => Auth::id(), 'fecha' => now(),
         ]);
 
-        $meta = self::PROGRESO_STAGES[$progreso];
+        $meta  = self::PROGRESO_STAGES[$progreso];
+        $label = $this->progresoLabel($progreso);
         Notificacion::crear(
             $p->usuario_id,
             'progreso_propuesta',
-            "Tu propuesta «{$p->titulo}» avanzó a la fase \"{$meta['label']}\"",
+            "Tu propuesta «{$p->titulo}» avanzó a la fase \"{$label}\"",
             'propuesta.php?id=' . $p->id,
             $meta['icono'],
             $meta['color']
         );
 
-        $label = self::PROGRESO_STAGES[$progreso]['label'];
         return $this->json(true, "Propuesta movida a la fase «{$label}»", ['progreso' => $progreso]);
     }
 
@@ -692,13 +760,13 @@ class ProposalController extends Controller
             'propuesta_id' => $p->id, 'progreso' => $destino, 'usuario_id' => Auth::id(), 'fecha' => now(),
         ]);
 
-        $label = self::PROGRESO_STAGES[$destino]['label'];
+        $label = $this->progresoLabel($destino);
         return $this->json(true, "¡Listo! Tu propuesta pasó a la fase «{$label}»", ['progreso' => $destino]);
     }
 
     private function adminEditar(Request $request)
     {
-        if (!Auth::check() || !in_array(Auth::user()->rol_nombre, ['admin', 'moderador']))
+        if (!Auth::check() || !in_array(auth_user()->rol_nombre, ['admin', 'moderador']))
             return $this->json(false, 'Sin permisos');
         $id     = (int) $request->input('id');
         $titulo = trim((string) $request->input('titulo'));

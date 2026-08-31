@@ -9,8 +9,10 @@ use App\Models\DebateVotoRespuesta;
 use App\Models\ModeracionAlerta;
 use App\Models\Titulo;
 use App\Services\GamificacionService;
+use App\Services\TranslationService;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -67,7 +69,9 @@ class DebateController extends Controller
         };
 
         $total   = (clone $q)->count();
-        $debates = $q->forPage($pagina, $porPagina)->get()->map(fn ($d) => $this->formato($d));
+        $debates = $q->forPage($pagina, $porPagina)->get();
+        $this->precargar($debates, ['titulo', 'descripcion']);
+        $debates = $debates->map(fn ($d) => $this->formato($d));
 
         return $this->json(true, 'OK', [
             'debates'     => $debates,
@@ -117,8 +121,8 @@ class DebateController extends Controller
 
         try {
             $gam = app(GamificacionService::class);
-            $gam->otorgarXP(Auth::user(), 'crear_debate', $d->id);
-            $gam->otorgarReputacion(Auth::user(), 'Iniciaste un debate', 4, null, $d->id);
+            $gam->otorgarXP(auth_user(), 'crear_debate', $d->id);
+            $gam->otorgarReputacion(auth_user(), 'Iniciaste un debate', 4, null, $d->id);
         } catch (\Throwable $e) { Log::error('Gam error (debate): ' . $e->getMessage()); }
 
         return $this->json(true, '¡Debate publicado! Ya pueden empezar a opinar.', ['id' => $d->id]);
@@ -126,7 +130,7 @@ class DebateController extends Controller
 
     private function cerrar(Request $request)
     {
-        if (!Auth::check() || !Auth::user()->esAdmin()) return $this->json(false, 'No autorizado');
+        if (!Auth::check() || !auth_user()->esAdmin()) return $this->json(false, 'No autorizado');
 
         $d = Debate::find((int) $request->input('id'));
         if (!$d) return $this->json(false, 'Debate no encontrado');
@@ -156,7 +160,9 @@ class DebateController extends Controller
             default     => $q->orderByDesc('destacada')->orderByDesc('votos')->orderByDesc('fecha_creacion'), // relevantes
         };
 
-        $respuestas = $q->get()->map(fn ($r) => $this->formatoRespuesta($r, $orden));
+        $itemsRaiz = $q->get();
+        $this->precargar($itemsRaiz, ['contenido']);
+        $respuestas = $itemsRaiz->map(fn ($r) => $this->formatoRespuesta($r, $orden));
 
         return $this->json(true, 'OK', [
             'respuestas' => $respuestas,
@@ -198,8 +204,8 @@ class DebateController extends Controller
 
         try {
             $gam = app(GamificacionService::class);
-            $gam->otorgarXP(Auth::user(), 'responder_debate', $r->id);
-            $gam->otorgarReputacion(Auth::user(), 'Participaste en un debate', 2, null, $r->id);
+            $gam->otorgarXP(auth_user(), 'responder_debate', $r->id);
+            $gam->otorgarReputacion(auth_user(), 'Participaste en un debate', 2, null, $r->id);
         } catch (\Throwable $e) { Log::error('Gam error (respuesta debate): ' . $e->getMessage()); }
 
         return $this->json(true, 'Respuesta publicada', ['respuesta' => $this->formatoRespuesta($r)]);
@@ -241,7 +247,7 @@ class DebateController extends Controller
 
     private function destacar(Request $request)
     {
-        if (!Auth::check() || !Auth::user()->esAdmin()) return $this->json(false, 'No autorizado');
+        if (!Auth::check() || !auth_user()->esAdmin()) return $this->json(false, 'No autorizado');
 
         $r = DebateRespuesta::find((int) $request->input('respuesta_id'));
         if (!$r) return $this->json(false, 'Respuesta no encontrada');
@@ -327,19 +333,45 @@ TXT;
     // ─────────────────────────────────────────────────────────
     //  Formato / helpers
     // ─────────────────────────────────────────────────────────
+    /** ¿Hay que traducir? (idioma actual ≠ idioma original del contenido) */
+    private function traducirA($item): ?string
+    {
+        $locale = App::getLocale();
+        return $locale !== ($item->idioma_original ?? 'es') ? $locale : null;
+    }
+
+    /**
+     * Pre-carga (1 sola llamada agrupada a DeepL) las traducciones que falten
+     * para toda una colección, evitando una petición HTTP por elemento en
+     * listados (N+1).
+     */
+    private function precargar($items, array $campos): void
+    {
+        $locale = App::getLocale();
+        if ($locale === 'es' || $items->isEmpty()) return;
+        app(TranslationService::class)->warmMany($items, $campos, $locale);
+    }
+
     private function formato(Debate $d): array
     {
         $cat = $d->categoria;
         $autor = $d->autor;
+        $locale = $this->traducirA($d);
+        $titulo = $locale ? $d->translated('titulo', $locale) : $d->titulo;
+        $descripcion = $locale ? $d->translated('descripcion', $locale) : $d->descripcion;
+        $traducido = $locale && ($titulo !== $d->titulo || $descripcion !== $d->descripcion);
         return [
             'id'                => $d->id,
-            'titulo'            => $d->titulo,
-            'descripcion'       => $d->descripcion,
+            'titulo'            => $titulo,
+            'descripcion'       => $descripcion,
+            'traducido'         => $traducido,
+            'titulo_es'         => $traducido ? $d->titulo : null,
+            'descripcion_es'    => $traducido ? $d->descripcion : null,
             'categoria_id'      => $d->categoria_id,
             'categoria'         => $cat->nombre ?? '',
             'categoria_icono'   => $cat->icono ?? 'fas fa-tag',
             'categoria_color'   => $cat->color ?? '#36c0a1',
-            'autor'             => $autor ? trim($autor->nombre . ' ' . $autor->apellido) : 'Anónimo',
+            'autor'             => $autor ? trim($autor->nombre . ' ' . $autor->apellido) : __('civinsis.js.anonimo'),
             'autor_id'          => $d->usuario_id,
             'autor_avatar'      => $autor->avatar ?? null,
             'autor_nivel'       => $autor->nivel ?? 1,
@@ -356,6 +388,7 @@ TXT;
     private function formatoRespuesta(DebateRespuesta $r, string $orden = 'relevantes'): array
     {
         $u = $r->usuario;
+        $locale = $this->traducirA($r);
         $votada = Auth::check() ? DebateVotoRespuesta::where('respuesta_id', $r->id)->where('usuario_id', Auth::id())->exists() : false;
 
         $cita = null;
@@ -363,19 +396,26 @@ TXT;
             $cu = $r->cita->usuario;
             $cita = [
                 'id'        => $r->cita->id,
-                'autor'     => $cu ? trim($cu->nombre . ' ' . $cu->apellido) : 'Anónimo',
+                'autor'     => $cu ? trim($cu->nombre . ' ' . $cu->apellido) : __('civinsis.js.anonimo'),
                 'contenido' => mb_strimwidth($r->cita->contenido, 0, 180, '…'),
             ];
         }
 
         // Hijos directos (respuestas dentro del hilo)
         $hijosQ = $r->hijos()->with(['usuario', 'cita.usuario'])->orderBy('fecha_creacion');
-        $hijos  = $hijosQ->get()->map(fn ($h) => $this->formatoRespuesta($h, 'recientes'));
+        $hijos  = $hijosQ->get();
+        $this->precargar($hijos, ['contenido']);
+        $hijos  = $hijos->map(fn ($h) => $this->formatoRespuesta($h, 'recientes'));
+
+        $contenido = $locale ? $r->translated('contenido', $locale) : $r->contenido;
+        $traducido = $locale && $contenido !== $r->contenido;
 
         return [
             'id'               => $r->id,
-            'contenido'        => $r->contenido,
-            'autor'            => $u ? trim($u->nombre . ' ' . $u->apellido) : 'Anónimo',
+            'contenido'        => $contenido,
+            'contenido_es'     => $traducido ? $r->contenido : null,
+            'traducido'        => $traducido,
+            'autor'            => $u ? trim($u->nombre . ' ' . $u->apellido) : __('civinsis.js.anonimo'),
             'autor_id'         => $r->usuario_id,
             'avatar'           => $u->avatar ?? null,
             'autor_nivel'      => $u->nivel ?? 1,

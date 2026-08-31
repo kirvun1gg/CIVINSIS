@@ -3,16 +3,22 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Translatable;
 
 class DebateRespuesta extends Model
 {
+    use Translatable;
+
     protected $table = 'debate_respuestas';
 
     protected $fillable = [
         'debate_id', 'usuario_id', 'parent_id', 'cita_id',
         'contenido', 'contenido_original', 'censurado', 'razon_censura',
-        'votos', 'destacada', 'fecha_creacion',
+        'votos', 'destacada', 'fecha_creacion', 'idioma_original',
     ];
+
+    /** Campos traducibles vía TranslationService (App\Traits\Translatable). */
+    protected $translatableFields = ['contenido'];
 
     protected $casts = [
         'censurado'      => 'boolean',

@@ -15,3 +15,4 @@ yarn-error.log
 /.claude/
 /graphify-out/
 /CLAUDE.md
+.env

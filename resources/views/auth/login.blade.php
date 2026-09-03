@@ -41,15 +41,26 @@
             </div>
 
             <div class="flex items-center justify-end mt-4">
-                @if (Route::has('password.request'))
-                    <a class="underline text-sm text-gray-600 hover:text-gray-900" href="{{ route('password.request') }}">
-                        {{ __('Forgot your password?') }}
-                    </a>
-                @endif
+                <a class="underline text-sm text-gray-600 hover:text-gray-900" href="{{ route('custom.password.request') }}">
+                    {{ __('Forgot your password?') }}
+                </a>
 
                 <x-button class="ml-3">
                     {{ __('Log in') }}
                 </x-button>
+            </div>
+
+            <div class="mt-4 flex items-center justify-between">
+                <span class="border-b w-1/5 lg:w-1/4"></span>
+                <a href="#" class="text-xs text-center text-gray-500 uppercase">O iniciar sesión con</a>
+                <span class="border-b w-1/5 lg:w-1/4"></span>
+            </div>
+
+            <div class="mt-4">
+                <a href="{{ route('google.login') }}" class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <img class="h-5 w-5 mr-2" src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+                    {{ __('Iniciar sesión con Google') }}
+                </a>
             </div>
         </form>
     </x-auth-card>

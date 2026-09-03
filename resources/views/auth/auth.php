@@ -93,11 +93,18 @@ $activeTab = $_GET['tab'] ?? 'login';
             </div>
             <div class="form-extras">
               <label class="remember"><input type="checkbox" name="remember"> <span><?= __('civinsis.auth.recuerdame') ?></span></label>
-              <a href="#" class="forgot-link"><?= __('civinsis.auth.olvidaste_contrasena') ?></a>
+              <a href="<?= route('custom.password.request') ?>" class="forgot-link"><?= __('civinsis.auth.olvidaste_contrasena') ?></a>
             </div>
             <button type="submit" class="submit-btn">
               <span><?= __('civinsis.auth.boton_iniciar_sesion') ?></span> <i class="fas fa-arrow-right arrow"></i>
             </button>
+            
+            <div style="text-align: center; margin: 20px 0; color: #aaa; font-size: 14px;">O</div>
+            
+            <a href="/auth/google" class="submit-btn" style="background-color: #fff; color: #444; border: 1px solid #ccc; text-align: center; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+              <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style="width: 20px; height: 20px; margin-right: 10px;">
+              <span>Iniciar sesión con Google</span>
+            </a>
           </form>
           <p class="form-switch"><?= __('civinsis.auth.no_tienes_cuenta') ?> <button type="button" class="switch-btn" data-to="register"><?= __('civinsis.auth.registrate_aqui') ?></button></p>
         </div>
@@ -162,6 +169,13 @@ $activeTab = $_GET['tab'] ?? 'login';
             <button type="submit" class="submit-btn">
               <span><?= __('civinsis.auth.boton_crear_cuenta') ?></span> <i class="fas fa-arrow-right arrow"></i>
             </button>
+            
+            <div style="text-align: center; margin: 20px 0; color: #aaa; font-size: 14px;">O</div>
+            
+            <a href="/auth/google" class="submit-btn" style="background-color: #fff; color: #444; border: 1px solid #ccc; text-align: center; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+              <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style="width: 20px; height: 20px; margin-right: 10px;">
+              <span>Registrarse con Google</span>
+            </a>
           </form>
           <p class="form-switch"><?= __('civinsis.auth.ya_tienes_cuenta') ?> <button type="button" class="switch-btn" data-to="login"><?= __('civinsis.auth.inicia_sesion_aqui') ?></button></p>
         </div>

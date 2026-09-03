@@ -16,7 +16,7 @@ class User extends Authenticatable
         'avatar', 'bio', 'color_perfil', 'color_banner', 'banner_imagen',
         'tema_perfil', 'marco_avatar', 'insignia', 'frase', 'ubicacion',
         'sitio_web', 'social_twitter', 'social_instagram', 'social_github',
-        'perfil_publico', 'ultimo_acceso', 'idioma',
+        'perfil_publico', 'ultimo_acceso', 'idioma', 'google_id', 'verification_code'
     ];
 
     protected $hidden = ['password', 'remember_token'];

@@ -21,17 +21,24 @@ Route::middleware('guest')->group(function () {
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
-    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
-                ->name('password.request');
+    // Custom Password Reset (PHPMailer)
+    Route::get('custom-forgot-password', [\App\Http\Controllers\Auth\CustomPasswordResetController::class, 'showLinkRequestForm'])
+                ->name('custom.password.request');
 
-    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
-                ->name('password.email');
+    Route::post('custom-forgot-password', [\App\Http\Controllers\Auth\CustomPasswordResetController::class, 'sendResetLinkEmail'])
+                ->name('custom.password.email');
 
-    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
-                ->name('password.reset');
+    Route::get('custom-reset-password/{token}', [\App\Http\Controllers\Auth\CustomPasswordResetController::class, 'showResetForm'])
+                ->name('custom.password.reset');
 
-    Route::post('reset-password', [NewPasswordController::class, 'store'])
-                ->name('password.update');
+    Route::post('custom-reset-password', [\App\Http\Controllers\Auth\CustomPasswordResetController::class, 'reset'])
+                ->name('custom.password.update');
+
+    // Google Auth
+    Route::get('auth/google', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'redirect'])->name('google.login');
+    Route::get('auth/google/callback', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'callback']);
+    Route::get('auth/google/verify', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'showVerifyView'])->name('google.verify.view');
+    Route::post('auth/google/verify', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'verify'])->name('google.verify');
 });
 
 Route::middleware('auth')->group(function () {

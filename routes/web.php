@@ -62,3 +62,5 @@ Route::match(['get', 'post'], '/php/ranking.php',      [RankingController::class
 Route::match(['get', 'post'], '/php/actividad.php',    [ActividadController::class, 'handle']);
 Route::match(['get', 'post'], '/php/ia.php',               [IaController::class, 'handle']);
 Route::match(['get', 'post'], '/php/admin.php',        [AdminController::class, 'handle']);
+
+require __DIR__.'/auth.php';

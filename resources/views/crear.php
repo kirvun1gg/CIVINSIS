@@ -69,6 +69,7 @@ $iniciales = civinsis_iniciales($usuarioNombre);
               <button type="button" class="btn btn-outline btn-sm" data-civi="ortografia"><i class="fas fa-spell-check"></i> <?= __('civinsis.crear.civi_corregir_ortografia') ?></button>
               <button type="button" class="btn btn-outline btn-sm" data-civi="argumentos"><i class="fas fa-scale-balanced"></i> <?= __('civinsis.crear.civi_reforzar_argumentos') ?></button>
               <button type="button" class="btn btn-outline btn-sm" data-civi="similares"><i class="fas fa-clone"></i> <?= __('civinsis.crear.civi_ver_similares') ?></button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('civiFab')?.click()"><i class="fas fa-comments"></i> <?= __('civinsis.crear.civi_preguntar') ?></button>
             </div>
 
             <!-- Resultados dinámicos de CIVI -->
@@ -95,7 +96,7 @@ $iniciales = civinsis_iniciales($usuarioNombre);
               <option value=""><?= __('civinsis.crear.campo_categoria_placeholder') ?></option>
               <?php foreach ($categorias as $cat): ?>
                 <option value="<?= $cat['id'] ?>" data-icon="<?= $cat['icono'] ?>" data-color="<?= $cat['color'] ?>">
-                  <?= htmlspecialchars($cat['nombre']) ?>
+                  <?= htmlspecialchars($cat->translated('nombre')) ?>
                 </option>
               <?php endforeach; ?>
             </select>

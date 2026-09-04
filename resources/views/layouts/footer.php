@@ -82,6 +82,10 @@ $categorias_footer = is_array($categorias) ? $categorias : $categorias->all();
 // — nunca se traducen vía DeepL porque son iguales en TODAS las propuestas/debates.
 $civiI18n = __('civinsis.js');
 $civiI18n['aspectos'] = __('civinsis.aspectos');
+$civiI18n['roles']    = __('civinsis.roles');
+$civiI18n['nav']      = __('civinsis.nav');
+$civiI18n['ranking']  = __('civinsis.ranking');
+$civiI18n['desafios'] = __('civinsis.desafios');
 ?>
 <script>
 window.CIVI_I18N = <?= str_replace('</', '<\/', json_encode($civiI18n, JSON_UNESCAPED_UNICODE)) ?>;

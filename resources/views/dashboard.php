@@ -30,11 +30,20 @@ $esAdmin    = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-user">
-      <div class="sidebar-avatar"><?= $iniciales ?></div>
-      <div class="sidebar-user-name"><?= htmlspecialchars($usuarioNombre) ?></div>
+      <div class="sidebar-avatar-wrap">
+        <div class="sidebar-avatar"><?php if (!empty($usuarioAvatar)): ?><img src="<?= htmlspecialchars($usuarioAvatar) ?>" alt="Avatar"><?php else: ?><?= $iniciales ?><?php endif; ?></div>
+        <div class="sidebar-nivel-badge"><?= __('civinsis.ranking.nivel_abrev') ?> <?= (int) ($usuarioNivel ?? 1) ?></div>
+      </div>
+      <div class="sidebar-user-name">
+        <?= htmlspecialchars($usuarioNombre) ?>
+        <?php if (!empty($usuarioInsigniaEmoji)): ?><span class="sidebar-insignia"><?= $usuarioInsigniaEmoji ?></span><?php endif; ?>
+      </div>
+      <?php if (!empty($usuarioTitulo)): ?>
+        <span class="titulo-chip sidebar-titulo-chip <?= $usuarioTitulo->rareza ?>" style="color:<?= $usuarioTitulo->color ?>;border-color:<?= $usuarioTitulo->color ?>"><?= htmlspecialchars($usuarioTitulo->nombre) ?></span>
+      <?php endif; ?>
       <div class="sidebar-user-role">
         <i class="fas fa-circle" style="font-size:.45rem;color:var(--verde-400)"></i>
-        <?= ucfirst($usuarioRol) ?>
+        <?= __('civinsis.roles.' . $usuarioRol) ?>
       </div>
     </div>
 
@@ -61,7 +70,7 @@ $esAdmin    = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
       <?php foreach ($categorias as $cat): ?>
       <button class="sidebar-link" onclick="Proposals.filterCat(<?= $cat['id'] ?>, this)" data-cat="<?= $cat['id'] ?>">
         <i class="<?= $cat['icono'] ?>" style="color:<?= $cat['color'] ?>"></i>
-        <?= htmlspecialchars($cat['nombre']) ?>
+        <?= htmlspecialchars($cat->translated('nombre')) ?>
       </button>
       <?php endforeach; ?>
     </div>
@@ -76,18 +85,10 @@ $esAdmin    = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
 
   <!-- Main -->
   <main class="dash-main">
-    <div class="cv-anim cv-anim-banner" id="anim-propuestas" style="margin-bottom:1.5rem"></div>
-
     <div class="dash-kpi-grid" id="kpiGrid">
       <div class="kpi-card"><div class="kpi-num" id="kpiTotal">–</div><div class="kpi-label"><i class="fas fa-file-alt"></i> <?= __('civinsis.dashboard.propuestas_totales') ?></div></div>
       <div class="kpi-card"><div class="kpi-num" id="kpiVotos">–</div><div class="kpi-label"><i class="fas fa-arrow-up"></i> <?= __('civinsis.dashboard.votos_totales') ?></div></div>
       <div class="kpi-card"><div class="kpi-num" id="kpiVistas">–</div><div class="kpi-label"><i class="fas fa-eye"></i> <?= __('civinsis.dashboard.vistas_totales') ?></div></div>
-      <div class="kpi-card">
-        <a href="crear.php" style="display:block;text-decoration:none">
-          <div class="kpi-num" style="font-size:1.5rem"><i class="fas fa-plus"></i></div>
-          <div class="kpi-label" style="color:var(--verde-500);font-weight:600"><?= __('civinsis.dashboard.crear_propuesta') ?></div>
-        </a>
-      </div>
     </div>
 
     <div class="dash-topbar">
@@ -115,7 +116,7 @@ $esAdmin    = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
         <?php foreach ($categorias as $cat): ?>
         <button class="btn btn-sm btn-ghost" data-cat="<?= $cat['id'] ?>" onclick="Proposals.filterCat(<?= $cat['id'] ?>, this)" style="gap:.35rem">
           <i class="<?= $cat['icono'] ?>" style="color:<?= $cat['color'] ?>"></i>
-          <?= htmlspecialchars($cat['nombre']) ?>
+          <?= htmlspecialchars($cat->translated('nombre')) ?>
         </button>
         <?php endforeach; ?>
       </div>

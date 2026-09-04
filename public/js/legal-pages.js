@@ -1,12 +1,12 @@
 // Dark mode
-const saved = localStorage.getItem('civitas-theme');
+const saved = localStorage.getItem('civitas_theme');
 if (saved) document.documentElement.setAttribute('data-theme', saved);
 document.querySelectorAll('[data-dark-toggle]').forEach(btn => {
   btn.addEventListener('click', () => {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const next = isDark ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('civitas-theme', next);
+    localStorage.setItem('civitas_theme', next);
   });
 });
 

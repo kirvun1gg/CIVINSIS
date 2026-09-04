@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Translatable;
 use Illuminate\Database\Eloquent\Model;
 
 class Desafio extends Model
 {
+    use Translatable;
+
     protected $table = 'desafios';
 
     protected $fillable = [
@@ -13,6 +16,8 @@ class Desafio extends Model
         'xp_recompensa', 'reputacion_recompensa', 'insignia_id',
         'activo', 'orden',
     ];
+
+    protected $translatableFields = ['titulo', 'descripcion'];
 
     protected $casts = ['activo' => 'boolean'];
 

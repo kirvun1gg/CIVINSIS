@@ -5,6 +5,7 @@
 // marque la variable como indefinida y sirve de red de seguridad.
 $usuarioLogueado = $usuarioLogueado ?? false;
 $usuarioNombre   = $usuarioNombre ?? '';
+$usuarioEmail    = $usuarioEmail ?? '';
 $activeNav = 'contacto';
 $asunto_prefill = htmlspecialchars($_GET['asunto'] ?? '');
 ?>
@@ -56,7 +57,9 @@ $asunto_prefill = htmlspecialchars($_GET['asunto'] ?? '');
               </div>
               <div class="form-group">
                 <label class="form-label"><i class="fas fa-envelope" style="color:var(--naranja)"></i> <?= __('civinsis.contacto.correo') ?></label>
-                <input type="email" id="cEmail" class="form-control" placeholder="tu@correo.com" required>
+                <input type="email" id="cEmail" class="form-control" placeholder="tu@correo.com" required
+                  value="<?= $usuarioLogueado ? htmlspecialchars($usuarioEmail) : '' ?>"
+                  <?= $usuarioLogueado ? 'readonly title="' . __('civinsis.contacto.correo_bloqueado') . '"' : '' ?>>
               </div>
             </div>
 
@@ -108,6 +111,9 @@ $asunto_prefill = htmlspecialchars($_GET['asunto'] ?? '');
           <a href="faq.php" class="btn btn-ghost btn-sm" style="margin-top:.75rem;width:100%;justify-content:center">
             <i class="fas fa-book"></i> <?= __('civinsis.contacto.ver_faq') ?>
           </a>
+          <button type="button" class="btn btn-outline btn-sm" style="margin-top:.5rem;width:100%;justify-content:center" onclick="document.getElementById('civiFab')?.click()">
+            <i class="fas fa-robot"></i> <?= __('civinsis.contacto.preguntar_civi') ?>
+          </button>
         </div>
 
         <div class="contacto-info-card contacto-info-social reveal">

@@ -27,15 +27,12 @@ $categorias      = $categorias ?? collect();
 <main style="padding-top:calc(var(--nav-height) + 2rem);padding-bottom:4rem;min-height:100vh">
   <div class="container">
 
-    <div class="cv-dos-col" style="margin-bottom:1.5rem">
-      <div class="debates-hero" style="margin-bottom:0">
+    <div class="debates-hero">
       <div class="debates-hero-badge" style="background:var(--naranja-alpha);border-color:var(--naranja-alpha2);color:var(--naranja-700)">
         <i class="fas fa-flag-checkered"></i> <?= __('civinsis.desafios.badge') ?>
       </div>
       <h1><?= __('civinsis.desafios.titulo') ?></h1>
       <p><?= __('civinsis.desafios.descripcion') ?></p>
-      </div>
-      <div class="cv-anim cv-anim-ancha" id="anim-desafios"></div>
     </div>
 
     <div class="filters-bar">
@@ -50,7 +47,7 @@ $categorias      = $categorias ?? collect();
         <?php foreach ($categorias as $cat): ?>
         <button class="btn btn-sm btn-ghost" data-cat="<?= $cat['id'] ?>" onclick="Desafios.filterCat(<?= $cat['id'] ?>, this)" style="gap:.35rem">
           <i class="<?= $cat['icono'] ?>" style="color:<?= $cat['color'] ?>"></i>
-          <?= htmlspecialchars($cat['nombre']) ?>
+          <?= htmlspecialchars($cat->translated('nombre')) ?>
         </button>
         <?php endforeach; ?>
       </div>

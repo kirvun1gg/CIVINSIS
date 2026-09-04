@@ -107,12 +107,12 @@ class DesafioController extends Controller
 
         return [
             'id'                     => $d->id,
-            'titulo'                 => $d->titulo,
-            'descripcion'            => $d->descripcion,
+            'titulo'                 => $d->translated('titulo'),
+            'descripcion'            => $d->translated('descripcion'),
             'dificultad'             => $d->dificultad,
             'icono'                  => $d->icono,
             'categoria_id'           => $d->categoria_id,
-            'categoria'              => $d->categoria->nombre ?? null,
+            'categoria'              => $d->categoria ? $d->categoria->translated('nombre') : null,
             'categoria_icono'        => $d->categoria->icono ?? 'fas fa-tag',
             'categoria_color'        => $d->categoria->color ?? '#36c0a1',
             'xp_recompensa'          => $d->xp_recompensa,

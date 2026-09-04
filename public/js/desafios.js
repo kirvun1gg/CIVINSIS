@@ -13,8 +13,6 @@ if (typeof esc !== 'function') {
   };
 }
 
-const DIFICULTAD_LABEL = { facil: 'Fácil', medio: 'Medio', dificil: 'Difícil' };
-
 const Desafios = {
   logueado: false,
   currentCat: 0,
@@ -51,7 +49,7 @@ const Desafios = {
     });
 
     if (!res.success || !res.desafios.length) {
-      grid.innerHTML = `<div class="empty-state"><p>No hay desafíos disponibles con estos filtros.</p></div>`;
+      grid.innerHTML = `<div class="empty-state"><p>${CIVI_I18N.desafios.sin_resultados}</p></div>`;
       return;
     }
 
@@ -59,9 +57,14 @@ const Desafios = {
   },
 
   card(d) {
+    const dificultadLabel = {
+      facil: CIVI_I18N.desafios.dificultad_facil,
+      medio: CIVI_I18N.desafios.dificultad_medio,
+      dificil: CIVI_I18N.desafios.dificultad_dificil,
+    };
     const estados = {
-      completado:   { label: 'Completado', icon: 'fa-circle-check', cls: 'completado' },
-      en_progreso:  { label: 'En progreso', icon: 'fa-hourglass-half', cls: 'en-progreso' },
+      completado:   { label: CIVI_I18N.desafios.estado_completado, icon: 'fa-circle-check', cls: 'completado' },
+      en_progreso:  { label: CIVI_I18N.desafios.estado_en_progreso, icon: 'fa-hourglass-half', cls: 'en-progreso' },
       no_iniciado:  { label: '', icon: '', cls: '' },
     };
     const est = estados[d.estado] || estados.no_iniciado;
@@ -76,7 +79,7 @@ const Desafios = {
         ${est.label ? `<div class="desafio-estado-tag ${est.cls}"><i class="fas ${est.icon}"></i> ${est.label}</div>` : ''}
         <div class="desafio-icon-wrap"><i class="${d.icono}"></i></div>
         <div class="desafio-card-top">
-          <span class="desafio-dificultad dif-${d.dificultad}">${DIFICULTAD_LABEL[d.dificultad] || d.dificultad}</span>
+          <span class="desafio-dificultad dif-${d.dificultad}">${dificultadLabel[d.dificultad] || d.dificultad}</span>
           ${d.categoria ? `<span class="debate-cat-badge" style="--cat-color:${d.categoria_color}"><i class="${d.categoria_icono}"></i> ${esc(d.categoria)}</span>` : ''}
         </div>
         <h3 class="desafio-card-title">${esc(d.titulo)}</h3>
@@ -86,7 +89,7 @@ const Desafios = {
         </div>
         ${insigniaHtml}
         <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;margin-top:1rem" onclick="Desafios.aceptar(${d.id})">
-          <i class="fas fa-arrow-right"></i> ${d.estado === 'completado' ? 'Crear otra propuesta' : 'Aceptar desafío'}
+          <i class="fas fa-arrow-right"></i> ${d.estado === 'completado' ? CIVI_I18N.desafios.boton_crear_otra : CIVI_I18N.desafios.boton_aceptar}
         </button>
       </div>`;
   },
@@ -150,14 +153,14 @@ const DesafioWidget = {
     const box = document.getElementById('desafioSugeridoBox');
     box.innerHTML = `
       <h4 style="font-family:var(--font-display);font-weight:700;font-size:.9rem;color:var(--verde-700);margin-bottom:.5rem">
-        <i class="${d.icono}"></i> Propuesta vinculada a un desafío
+        <i class="${d.icono}"></i> ${CIVI_I18N.desafios.vinculada_titulo}
       </h4>
       <p style="font-size:.85rem;color:var(--text-2);margin-bottom:.6rem">${esc(d.titulo)}</p>
       <div class="desafio-recompensas" style="margin-bottom:.25rem">
         <span><i class="fas fa-bolt"></i> ${d.xp_recompensa} XP</span>
         <span><i class="fas fa-star"></i> ${d.reputacion_recompensa} rep.</span>
       </div>
-      <a href="crear.php" style="font-size:.75rem;color:var(--text-muted)">Quitar vínculo</a>
+      <a href="crear.php" style="font-size:.75rem;color:var(--text-muted)">${CIVI_I18N.desafios.quitar_vinculo}</a>
     `;
   },
 
@@ -169,13 +172,13 @@ const DesafioWidget = {
 
     box.innerHTML = `
       <h4 style="font-family:var(--font-display);font-weight:700;font-size:.9rem;color:var(--naranja-700);margin-bottom:.5rem">
-        <i class="fas fa-lightbulb"></i> ¿Sin ideas?
+        <i class="fas fa-lightbulb"></i> ${CIVI_I18N.desafios.sin_ideas_titulo}
       </h4>
-      <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.6rem">Prueba uno de nuestros desafíos:</p>
+      <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.6rem">${CIVI_I18N.desafios.sin_ideas_sub}</p>
       <p style="font-size:.85rem;color:var(--text-2);font-weight:600;margin-bottom:.75rem">${esc(d.titulo)}</p>
       <div style="display:flex;gap:.5rem">
-        <a href="desafios.php" class="btn btn-sm btn-outline" style="flex:1;justify-content:center">Ver todos</a>
-        <button class="btn btn-sm btn-primary" style="flex:1;justify-content:center" onclick="Desafios.aceptar(${d.id})">Aceptar</button>
+        <a href="desafios.php" class="btn btn-sm btn-outline" style="flex:1;justify-content:center">${CIVI_I18N.desafios.ver_todos}</a>
+        <button class="btn btn-sm btn-primary" style="flex:1;justify-content:center" onclick="Desafios.aceptar(${d.id})">${CIVI_I18N.desafios.aceptar}</button>
       </div>
     `;
   }

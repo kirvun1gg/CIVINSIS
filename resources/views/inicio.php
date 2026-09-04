@@ -18,8 +18,6 @@
 
 <main style="padding-top:calc(var(--nav-height) + 1.5rem);padding-bottom:4rem;min-height:100vh">
   <div class="container" style="max-width:1140px">
-    <div class="cv-anim cv-anim-banner" id="anim-inicio" style="margin-bottom:1.75rem"></div>
-
     <div id="actividadPanel">
       <div class="inicio-skeleton">
         <div class="skeleton" style="height:120px;border-radius:20px;margin-bottom:1.5rem"></div>

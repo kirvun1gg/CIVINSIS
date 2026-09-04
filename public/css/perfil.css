@@ -525,11 +525,20 @@
 
 .pf-section-panel {
   display: none;
-  animation: pfFadeIn 0.35s ease forwards;
 }
 
+/* La animación va SOLO en .active (no en la regla base): así el navegador
+   la dispara de nuevo cada vez que se agrega la clase. Antes estaba en la
+   regla base, presente todo el tiempo aunque el panel estuviera oculto —
+   en ese caso el navegador no siempre "reengancha" la animación al pasar
+   a display:block, y con animation-fill-mode:forwards el panel podía
+   quedarse congelado en el fotograma inicial (opacity:0) para siempre:
+   el contenido estaba ahí en el HTML, pero invisible. opacity:1 explícito
+   aquí garantiza que se vea aunque la animación fallara por completo. */
 .pf-section-panel.active {
   display: block;
+  opacity: 1;
+  animation: pfFadeIn 0.35s ease forwards;
 }
 
 @keyframes pfFadeIn {

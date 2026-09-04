@@ -11,12 +11,18 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Services\PHPMailerService;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class GoogleAuthController extends Controller
 {
     public function redirect()
     {
-        return Socialite::driver('google')->redirect();
+        // "prompt=select_account" obliga a Google a mostrar el selector de
+        // cuentas siempre, en vez de reconectar automáticamente con la
+        // última cuenta de Google ya autenticada en el navegador.
+        return Socialite::driver('google')
+            ->with(['prompt' => 'select_account'])
+            ->redirect();
     }
 
     public function callback(Request $request, PHPMailerService $mailer)
@@ -24,7 +30,8 @@ class GoogleAuthController extends Controller
         try {
             $googleUser = Socialite::driver('google')->user();
         } catch (\Exception $e) {
-            return redirect('/login')->withErrors(['error' => 'Error al autenticar con Google.']);
+            Log::error('Error al autenticar con Google: ' . $e->getMessage());
+            return redirect('/auth.php')->withErrors(['error' => 'Error al autenticar con Google.']);
         }
 
         $user = User::where('email', $googleUser->email)->first();
@@ -69,7 +76,7 @@ class GoogleAuthController extends Controller
     public function showVerifyView(Request $request)
     {
         if (!$request->session()->has('verify_email')) {
-            return redirect('/login');
+            return redirect('/auth.php');
         }
 
         return view('auth.verify-google', ['email' => $request->session()->get('verify_email')]);
@@ -94,7 +101,7 @@ class GoogleAuthController extends Controller
             $request->session()->forget('verify_email');
             $request->session()->regenerate();
 
-            return redirect()->intended('/dashboard');
+            return redirect()->intended('/dashboard.php');
         }
 
         return back()->withErrors(['code' => 'El código ingresado es incorrecto.']);

@@ -33,8 +33,6 @@ $usuarioLogueado = $usuarioLogueado ?? false;
   </div>
 
   <div class="hero-content">
-   <div class="hero-split">
-    <div class="hero-col-texto">
     <div class="hero-badge">
       <i class="fas fa-bolt"></i>
       <?= __('civinsis.index.hero_badge') ?>
@@ -42,14 +40,14 @@ $usuarioLogueado = $usuarioLogueado ?? false;
 
     <!-- CIVINSIS — efectos creativos por letra -->
     <div class="civinsis-word" aria-label="CIVINSIS" id="civinsisWord">
-      <span class="civ-l civ-C" data-tip="<?= __('civinsis.index.letra_c') ?>">C</span>
-      <span class="civ-l civ-I1" data-tip="<?= __('civinsis.index.letra_i1') ?>">I</span>
-      <span class="civ-l civ-V" data-tip="<?= __('civinsis.index.letra_v') ?>">V</span>
-      <span class="civ-l civ-I2" data-tip="<?= __('civinsis.index.letra_i2') ?>">I</span>
-      <span class="civ-l civ-N" data-tip="<?= __('civinsis.index.letra_n') ?>">N</span>
-      <span class="civ-l civ-S1" data-tip="<?= __('civinsis.index.letra_s1') ?>">S</span>
-      <span class="civ-l civ-I3" data-tip="<?= __('civinsis.index.letra_i3') ?>">I</span>
-      <span class="civ-l civ-S2" data-tip="<?= __('civinsis.index.letra_s2') ?>">S</span>
+      <span class="civ-l civ-C">C</span>
+      <span class="civ-l civ-I1">I</span>
+      <span class="civ-l civ-V">V</span>
+      <span class="civ-l civ-I2">I</span>
+      <span class="civ-l civ-N">N</span>
+      <span class="civ-l civ-S1">S</span>
+      <span class="civ-l civ-I3">I</span>
+      <span class="civ-l civ-S2">S</span>
     </div>
 
     <h1 class="hero-title">
@@ -83,12 +81,6 @@ $usuarioLogueado = $usuarioLogueado ?? false;
         <span class="hero-stat-label"><?= __('civinsis.index.stat_votos') ?></span>
       </div>
     </div>
-    </div>
-
-    <div class="hero-col-anim">
-      <div class="cv-anim cv-anim-cuadrada" id="anim-hero"></div>
-    </div>
-   </div>
   </div>
 
   <div class="hero-wave">
@@ -112,7 +104,7 @@ $usuarioLogueado = $usuarioLogueado ?? false;
       <p class="section-desc" style="margin:0 auto"><?= __('civinsis.index.destacadas_desc') ?></p>
     </div>
 
-    <div class="cards-grid animate-stagger" id="proposalsGrid"></div>
+    <div class="cards-grid animate-stagger" id="proposalsGrid" data-limite="5"></div>
     <div id="pagination" style="margin-top:2rem"></div>
 
     <div class="text-center" style="margin-top:2.5rem">
@@ -154,8 +146,6 @@ $usuarioLogueado = $usuarioLogueado ?? false;
       <h2 class="section-title"><?= __('civinsis.index.proceso_titulo') ?></h2>
       <p class="section-desc" style="margin:0 auto"><?= __('civinsis.index.proceso_desc') ?></p>
     </div>
-
-    <div class="cv-anim cv-anim-panoramica" id="anim-proceso" style="margin:0 auto 2.5rem"></div>
 
     <div class="features-grid animate-stagger">
       <div class="feature-card reveal">
@@ -223,8 +213,6 @@ $usuarioLogueado = $usuarioLogueado ?? false;
 <section class="section-sm" style="background:var(--grad-primary);color:#fff;position:relative;overflow:hidden">
   <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 20% 50%,rgba(255,255,255,.1) 0%,transparent 60%);pointer-events:none"></div>
   <div class="container text-center" style="position:relative;z-index:1">
-    <div class="cv-anim cv-anim-cuadrada cv-anim-sm" id="anim-cta" style="margin:0 auto 1.4rem"></div>
-
     <h2 class="reveal" style="font-family:var(--font-display);font-size:clamp(1.4rem,3vw,2.1rem);font-weight:800;margin-bottom:.6rem">
       <?= __('civinsis.index.cta_titulo') ?>
     </h2>
@@ -247,6 +235,7 @@ $usuarioLogueado = $usuarioLogueado ?? false;
 
 
 <div class="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="js/app.js"></script>
 <script src="js/index.js"></script>
 </body>

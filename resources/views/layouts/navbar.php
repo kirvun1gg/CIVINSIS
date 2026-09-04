@@ -10,19 +10,23 @@ $usuarioNombre   = $usuarioNombre ?? '';
 $usuarioRol      = $usuarioRol ?? 'invitado';
 $usuarioAvatar   = $usuarioAvatar ?? null;
 $activeNav    = $activeNav ?? '';
-$navLinks = [
-  ['href'=> !empty($usuarioLogueado) ? 'inicio.php' : 'index.php', 'icon'=>'fa-home', 'label'=>__('civinsis.nav.inicio'), 'key'=>'inicio'],
+// Propuestas, debates y desafíos comparten una misma idea (son las tres
+// secciones donde el usuario puede crear algo), así que en el navbar de
+// escritorio van agrupadas en un solo desplegable "Participar" en vez de
+// tres pastillas sueltas. En el drawer móvil se listan igual, aparte.
+$navLinkInicio = ['href'=> !empty($usuarioLogueado) ? 'inicio.php' : 'index.php', 'icon'=>'fa-home', 'label'=>__('civinsis.nav.inicio'), 'key'=>'inicio'];
+$navLinksParticipar = [
   ['href'=>'dashboard.php','icon'=>'fa-layer-group','label'=>__('civinsis.nav.propuestas'),'key'=>'propuestas'],
   ['href'=>'debates.php','icon'=>'fa-comments','label'=>__('civinsis.nav.debates'),'key'=>'debates'],
   ['href'=>'desafios.php','icon'=>'fa-flag-checkered','label'=>__('civinsis.nav.desafios'),'key'=>'desafios'],
-  ['href'=>'ranking.php','icon'=>'fa-ranking-star','label'=>__('civinsis.nav.ranking'),'key'=>'ranking'],
-  // ['href'=>'tendencias.php','icon'=>'fa-fire','label'=>'Tendencias','key'=>'tendencias'],
 ];
-if (!empty($usuarioLogueado)) {
-  $navLinks[] = ['href'=>'crear.php','icon'=>'fa-plus-circle','label'=>__('civinsis.nav.crear'),'key'=>'crear'];
-}
-$navLinks[] = ['href'=>'faq.php','icon'=>'fa-question-circle','label'=>__('civinsis.nav.faq'),'key'=>'faq'];
-$navLinks[] = ['href'=>'contacto.php','icon'=>'fa-envelope','label'=>__('civinsis.nav.contacto'),'key'=>'contacto'];
+$navLinksResto = [
+  ['href'=>'ranking.php','icon'=>'fa-ranking-star','label'=>__('civinsis.nav.ranking'),'key'=>'ranking'],
+  ['href'=>'faq.php','icon'=>'fa-question-circle','label'=>__('civinsis.nav.faq'),'key'=>'faq'],
+  ['href'=>'contacto.php','icon'=>'fa-envelope','label'=>__('civinsis.nav.contacto'),'key'=>'contacto'],
+];
+$navLinksMobile = array_merge([$navLinkInicio], $navLinksParticipar, $navLinksResto);
+$participarActivo = in_array($activeNav, ['propuestas', 'debates', 'desafios']);
 $navAvatar    = $usuarioAvatar ?? null;
 $navIniciales = !empty($usuarioLogueado) ? strtoupper(mb_substr($usuarioNombre, 0, 1)) : '';
 $esAdminNav   = in_array($usuarioRol ?? '', ['admin','moderador']);
@@ -32,11 +36,28 @@ $idiomaActual       = app()->getLocale();
 <nav class="navbar" id="navbar">
   <div class="container nav-inner">
     <a href="index.php" class="nav-logo <?= ($activeNav === 'logo') ? 'active' : '' ?>" aria-label="CIVINSIS - Inicio"<?= ($activeNav === 'logo') ? ' aria-current="page"' : '' ?>>
-      <div class="nav-logo-box"><img src="/media/logo.png" alt="CIVINSIS"></div>
+      <div class="nav-logo-box"><img src="<?= asset('media/logo.png') ?>" alt="CIVINSIS"></div>
       <span class="nav-logo-text"><span class="nav-logo-text-inner">CIVINSIS</span></span>
     </a>
     <div class="nav-links">
-      <?php foreach ($navLinks as $l): ?>
+      <a href="<?= $navLinkInicio['href'] ?>" class="nav-link <?= ($activeNav === 'inicio') ? 'active' : '' ?>"<?= ($activeNav === 'inicio') ? ' aria-current="page"' : '' ?>>
+        <i class="fas <?= $navLinkInicio['icon'] ?>"></i> <?= $navLinkInicio['label'] ?>
+      </a>
+      <div class="nav-dropdown-wrap" id="navParticiparWrap">
+        <button class="nav-link nav-dropdown-btn <?= $participarActivo ? 'active' : '' ?>" id="navParticiparBtn" type="button"
+          aria-haspopup="true" aria-expanded="false">
+          <i class="fas fa-layer-group"></i> <?= __('civinsis.nav.participar') ?>
+          <i class="fas fa-chevron-down nav-dropdown-caret"></i>
+        </button>
+        <div class="nav-dropdown-menu" id="navParticiparMenu">
+          <?php foreach ($navLinksParticipar as $l): ?>
+            <a href="<?= $l['href'] ?>" class="nav-dropdown-item <?= ($activeNav === $l['key']) ? 'active' : '' ?>"<?= ($activeNav === $l['key']) ? ' aria-current="page"' : '' ?>>
+              <i class="fas <?= $l['icon'] ?>"></i> <?= $l['label'] ?>
+            </a>
+          <?php endforeach; ?>
+        </div>
+      </div>
+      <?php foreach ($navLinksResto as $l): ?>
         <a href="<?= $l['href'] ?>" class="nav-link <?= ($activeNav === $l['key']) ? 'active' : '' ?>"<?= ($activeNav === $l['key']) ? ' aria-current="page"' : '' ?>>
           <i class="fas <?= $l['icon'] ?>"></i> <?= $l['label'] ?>
         </a>
@@ -66,22 +87,29 @@ $idiomaActual       = app()->getLocale();
       </div>
       <?php endif; ?>
       <div class="idioma-toggle-wrap" id="idiomaToggleWrap">
-        <button class="idioma-toggle" id="idiomaToggleBtn" aria-label="<?= __('civinsis.nav.idioma') ?>">
-          <?= $idiomasDisponibles[$idiomaActual]['bandera'] ?? '🌐' ?>
+        <button class="idioma-toggle" id="idiomaToggleBtn" type="button"
+          aria-label="<?= __('civinsis.nav.idioma') ?>: <?= htmlspecialchars($idiomasDisponibles[$idiomaActual]['nombre'] ?? '') ?>"
+          aria-haspopup="true" aria-expanded="false"
+          title="<?= __('civinsis.nav.idioma') ?>">
+          <span class="idioma-toggle-codigo"><?= strtoupper($idiomaActual) ?></span>
+          <i class="fas fa-chevron-down idioma-toggle-caret" aria-hidden="true"></i>
         </button>
         <div class="idioma-dropdown" id="idiomaDropdown">
+          <div class="idioma-dropdown-label"><?= __('civinsis.nav.idioma') ?></div>
           <?php foreach ($idiomasDisponibles as $codigo => $meta): ?>
-            <a href="/idioma/<?= $codigo ?>" class="idioma-opcion <?= $codigo === $idiomaActual ? 'active' : '' ?>">
+            <a href="<?= route('idioma.cambiar', $codigo) ?>" class="idioma-opcion <?= $codigo === $idiomaActual ? 'active' : '' ?>">
               <span><?= $meta['bandera'] ?></span> <?= htmlspecialchars($meta['nombre']) ?>
+              <?php if ($codigo === $idiomaActual): ?><i class="fas fa-check idioma-opcion-check"></i><?php endif; ?>
             </a>
           <?php endforeach; ?>
         </div>
       </div>
-      <div class="dark-toggle-wrap">
-        <i class="fas fa-sun"></i>
-        <button class="dark-toggle" data-dark-toggle aria-label="<?= __('civinsis.nav.cambiar_tema') ?>"></button>
-        <i class="fas fa-moon"></i>
-      </div>
+      <button class="dark-toggle-wrap" id="darkToggleBtn" type="button" data-dark-toggle
+        aria-label="<?= __('civinsis.nav.cambiar_tema') ?>" title="<?= __('civinsis.nav.cambiar_tema') ?>">
+        <i class="fas fa-sun" aria-hidden="true"></i>
+        <span class="dark-toggle"></span>
+        <i class="fas fa-moon" aria-hidden="true"></i>
+      </button>
       <?php if (!empty($usuarioLogueado)): ?>
         <a href="perfil.php" class="nav-user-pill">
           <div class="nav-user-avatar" id="navUserAvatar">
@@ -111,11 +139,11 @@ $idiomaActual       = app()->getLocale();
     <?php if (!empty($usuarioLogueado)): ?>
     <div class="mobile-drawer-user">
       <div class="mobile-drawer-avatar"><?php if ($navAvatar): ?><img src="<?= htmlspecialchars($navAvatar) ?>" alt="Avatar"><?php else: ?><?= $navIniciales ?><?php endif; ?></div>
-      <div><div class="mobile-drawer-name"><?= htmlspecialchars($usuarioNombre) ?></div><div class="mobile-drawer-role"><?= ucfirst($usuarioRol) ?></div></div>
+      <div><div class="mobile-drawer-name"><?= htmlspecialchars($usuarioNombre) ?></div><div class="mobile-drawer-role"><?= __('civinsis.roles.' . $usuarioRol) ?></div></div>
     </div>
     <?php endif; ?>
     <div class="mobile-drawer-links">
-      <?php foreach ($navLinks as $l): ?>
+      <?php foreach ($navLinksMobile as $l): ?>
         <a href="<?= $l['href'] ?>" class="mobile-drawer-link <?= ($activeNav === $l['key']) ? 'active' : '' ?>">
           <span class="mobile-drawer-link-icon"><i class="fas <?= $l['icon'] ?>"></i></span><?= $l['label'] ?>
         </a>
@@ -124,7 +152,7 @@ $idiomaActual       = app()->getLocale();
     </div>
     <div class="mobile-drawer-idiomas">
       <?php foreach ($idiomasDisponibles as $codigo => $meta): ?>
-        <a href="/idioma/<?= $codigo ?>" class="mobile-drawer-idioma <?= $codigo === $idiomaActual ? 'active' : '' ?>">
+        <a href="<?= route('idioma.cambiar', $codigo) ?>" class="mobile-drawer-idioma <?= $codigo === $idiomaActual ? 'active' : '' ?>">
           <?= $meta['bandera'] ?> <?= htmlspecialchars($meta['nombre']) ?>
         </a>
       <?php endforeach; ?>

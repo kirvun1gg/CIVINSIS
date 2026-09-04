@@ -246,6 +246,28 @@ input, textarea, select { font-family: inherit; }
 }
 .nav-link.active:hover { color: #fff; }
 
+/* Desplegable "Participar" (agrupa Propuestas/Debates/Desafíos) */
+.nav-dropdown-wrap { position: relative; }
+.nav-dropdown-btn { background: none; border: none; font: inherit; cursor: pointer; }
+.nav-dropdown-caret { font-size: .65rem; transition: transform .25s ease; opacity: .7; max-width: none !important; margin-right: 0 !important; }
+.nav-dropdown-btn[aria-expanded="true"] .nav-dropdown-caret { transform: rotate(180deg); }
+.nav-dropdown-menu {
+  position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%);
+  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow-lg); min-width: 190px; padding: .4rem;
+  display: none; flex-direction: column; gap: .15rem; z-index: 200;
+}
+.nav-dropdown-menu.open { display: flex; }
+.nav-dropdown-item {
+  display: flex; align-items: center; gap: .55rem; padding: .55rem .7rem;
+  border-radius: calc(var(--radius) - 4px); font-size: .85rem; font-weight: 600; color: var(--text);
+  transition: var(--trans);
+}
+.nav-dropdown-item i { width: 1em; text-align: center; color: var(--verde-500); }
+.nav-dropdown-item:hover { background: var(--verde-alpha); }
+.nav-dropdown-item.active { background: var(--verde-alpha2); color: var(--verde-700); }
+.nav-dropdown-item.active i { color: var(--verde-700); }
+
 /* Logo marcado como sección actual (en la portada).
    El nombre, que normalmente solo aparece al pasar el cursor, se
    queda desplegado: es la señal más clara de "estás aquí". */
@@ -274,28 +296,43 @@ input, textarea, select { font-family: inherit; }
 }
 [data-theme="dark"] .dark-toggle { background: var(--verde-alpha2); }
 [data-theme="dark"] .dark-toggle::after { transform: translateX(20px); }
+/* .dark-toggle-wrap ahora es el <button> completo (icono sol + pastilla +
+   icono luna): toda esa zona es clickeable, no solo la pastilla del medio
+   — antes los iconos de sol/luna eran decorativos y "parecían botón" sin
+   serlo, lo cual confundía a los usuarios. */
 .dark-toggle-wrap {
   display: flex; align-items: center; gap: .4rem;
   font-size: .8rem; color: var(--text-muted);
+  background: none; border: 1px solid transparent; padding: .3rem .5rem;
+  border-radius: 999px; cursor: pointer; transition: var(--trans); font-family: inherit;
 }
+.dark-toggle-wrap:hover { background: var(--verde-alpha); border-color: var(--verde-300); }
+.dark-toggle-wrap:focus-visible { outline: 2px solid var(--verde-400); outline-offset: 2px; }
 .dark-toggle-wrap i { font-size: .8rem; }
 
 /* Selector de idioma */
 .idioma-toggle-wrap { position: relative; }
 .idioma-toggle {
-  width: 36px; height: 36px; border-radius: 50%;
+  height: 36px; padding: 0 .65rem 0 .55rem; border-radius: 999px;
   background: var(--surface); border: 1px solid var(--border);
-  font-size: 1rem; cursor: pointer; transition: var(--trans);
-  display: flex; align-items: center; justify-content: center;
+  font-size: .95rem; cursor: pointer; transition: var(--trans);
+  display: flex; align-items: center; gap: .35rem; color: var(--text); font-family: inherit;
 }
-.idioma-toggle:hover { background: var(--verde-alpha); }
+.idioma-toggle:hover { background: var(--verde-alpha); border-color: var(--verde-300); }
+.idioma-toggle-codigo { font-size: .72rem; font-weight: 700; letter-spacing: .03em; color: var(--text-2); }
+.idioma-toggle-caret { font-size: .65rem; color: var(--text-muted); transition: transform .3s ease; }
+.idioma-toggle[aria-expanded="true"] .idioma-toggle-caret { transform: rotate(180deg); }
 .idioma-dropdown {
   position: absolute; top: calc(100% + 8px); right: 0;
   background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
-  box-shadow: var(--shadow-lg); min-width: 160px; padding: .4rem;
+  box-shadow: var(--shadow-lg); min-width: 170px; padding: .4rem;
   display: none; flex-direction: column; gap: .15rem; z-index: 200;
 }
 .idioma-dropdown.open { display: flex; }
+.idioma-dropdown-label {
+  font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--text-muted); padding: .35rem .6rem .3rem;
+}
 .idioma-opcion {
   display: flex; align-items: center; gap: .5rem; padding: .5rem .6rem;
   border-radius: calc(var(--radius) - 4px); font-size: .85rem; color: var(--text);
@@ -303,6 +340,7 @@ input, textarea, select { font-family: inherit; }
 }
 .idioma-opcion:hover { background: var(--verde-alpha); }
 .idioma-opcion.active { background: var(--verde-alpha2); color: var(--verde-700); font-weight: 600; }
+.idioma-opcion-check { margin-left: auto; color: var(--verde-500); font-size: .75rem; }
 .mobile-drawer-idiomas {
   display: flex; gap: .5rem; padding: .75rem 0; flex-wrap: wrap;
   border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin: .5rem 0;
@@ -764,6 +802,7 @@ input, textarea, select { font-family: inherit; }
 }
 .form-control:focus { border-color: var(--verde-400); box-shadow: 0 0 0 3px var(--verde-alpha); }
 .form-control.error { border-color: #e74c3c; box-shadow: 0 0 0 3px rgba(231,76,60,.12); }
+.form-control[readonly] { background: var(--surface); color: var(--text-muted); cursor: not-allowed; }
 textarea.form-control { resize: vertical; min-height: 100px; overflow-wrap: anywhere; word-break: break-word; }
 .form-hint { font-size: .78rem; color: var(--text-muted); margin-top: .35rem; }
 .form-error { font-size: .78rem; color: #e74c3c; margin-top: .35rem; display: none; }
@@ -881,13 +920,23 @@ textarea.form-control { resize: vertical; min-height: 100px; overflow-wrap: anyw
   background: var(--grad-soft); border: 1px solid var(--verde-alpha);
   border-radius: var(--radius); padding: 1rem; margin-bottom: 1.5rem;
 }
-.sidebar-user-name { font-family: var(--font-display); font-weight: 700; font-size: .95rem; color: var(--text); }
+.sidebar-user-name { font-family: var(--font-display); font-weight: 700; font-size: .95rem; color: var(--text); display: flex; align-items: center; gap: .35rem; }
+.sidebar-insignia { font-size: 1rem; line-height: 1; }
 .sidebar-user-role { font-size: .75rem; color: var(--text-muted); margin-top: .15rem; }
+.sidebar-avatar-wrap { position: relative; width: 42px; margin-bottom: .75rem; }
 .sidebar-avatar {
   width: 42px; height: 42px; border-radius: 50%;
   background: var(--grad-primary); display: flex; align-items: center; justify-content: center;
-  color: #fff; font-weight: 700; font-size: 1rem; margin-bottom: .75rem;
+  color: #fff; font-weight: 700; font-size: 1rem; overflow: hidden;
 }
+.sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sidebar-nivel-badge {
+  position: absolute; bottom: -4px; right: -6px;
+  background: var(--bg-card); border: 1.5px solid var(--verde-400); border-radius: 999px;
+  font-size: .6rem; font-weight: 800; color: var(--verde-700); padding: .05rem .35rem;
+  line-height: 1.3; white-space: nowrap;
+}
+.sidebar-titulo-chip { margin-top: .4rem; display: inline-flex; }
 .dash-main { padding: 2rem 2rem 4rem; overflow-x: hidden; }
 .dash-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
 .dash-title { font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; color: var(--text); }
@@ -1014,6 +1063,30 @@ textarea.form-control { resize: vertical; min-height: 100px; overflow-wrap: anyw
 }
 .admin-table tr:hover td { background: var(--verde-alpha); }
 .admin-table tr:last-child td { border-bottom: none; }
+
+/* En pantallas angostas la tabla se convierte en una lista de tarjetas
+   (una por fila) en vez de exigir scroll horizontal para verla completa.
+   Cada <td> trae un data-label (agregado en admin.js) que se muestra
+   como etiqueta a la izquierda del valor. */
+@media (max-width: 700px) {
+  .admin-table thead { display: none; }
+  .admin-table, .admin-table tbody, .admin-table tr, .admin-table td { display: block; width: 100%; }
+  .admin-table tr {
+    margin-bottom: .85rem; border: 1px solid var(--border); border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .admin-table tr:hover td { background: none; }
+  .admin-table td {
+    display: flex; align-items: center; justify-content: flex-end; gap: .75rem;
+    text-align: right; border-bottom: 1px dashed var(--border);
+  }
+  .admin-table tr td:last-child { border-bottom: none; }
+  .admin-table td::before {
+    content: attr(data-label); font-size: .72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .04em; color: var(--text-muted); text-align: left; margin-right: auto;
+  }
+  .admin-actions { justify-content: flex-end; }
+}
 
 .admin-actions { display: flex; gap: .5rem; align-items: center; }
 .admin-action-btn {
@@ -1200,6 +1273,13 @@ textarea.form-control { resize: vertical; min-height: 100px; overflow-wrap: anyw
   .nav-links { display: none; }
   .hamburger { display: flex; }
   .mobile-menu { display: block; }
+  /* El selector de idioma, la pastilla de usuario y los botones de
+     login/registro/salir ya están duplicados dentro del drawer lateral
+     (mobile-drawer): ocultarlos aquí evita que compitan por espacio con
+     el hamburger y lo empujen fuera de la vista en pantallas angostas. */
+  .idioma-toggle-wrap { display: none; }
+  .nav-user-pill { display: none; }
+  .nav-actions .btn { display: none; }
   /* En móvil no hay hover: el nombre del logo se muestra siempre */
   .nav-logo-text { max-width: 200px; opacity: 1; margin-left: 0; }
   .nav-logo-text-inner { transform: translateX(0); }
@@ -1222,6 +1302,12 @@ textarea.form-control { resize: vertical; min-height: 100px; overflow-wrap: anyw
   .detail-actions { flex-direction: column; }
   .filters-bar { flex-direction: column; align-items: stretch; }
   .search-input input { width: 100%; }
+  /* En celulares angostos, el nombre del logo compite con el resto de
+     islas del navbar (notificaciones, tema, hamburger); se oculta y
+     queda solo el ícono, que ya funciona como enlace al inicio. */
+  .nav-logo-text { display: none; }
+  .nav-inner { padding: 0 .75rem; gap: .4rem; }
+  .nav-actions { gap: .25rem; padding: .3rem; }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1795,6 +1881,15 @@ textarea.form-control { resize: vertical; min-height: 100px; overflow-wrap: anyw
 .contacto-info-card h3 i { color:var(--verde); }
 .contacto-info-card p  { font-size:.84rem; color:var(--text-muted); line-height:1.6; }
 .contacto-sidebar { display:flex; flex-direction:column; gap:1rem; position:sticky; top:calc(var(--nav-height)+1rem); }
+/* .social-link trae colores blancos fijos porque se diseñó solo para el
+   footer (que siempre es oscuro); aquí la tarjeta sigue el tema de la
+   página, así que en modo claro esos iconos blancos quedaban invisibles
+   sobre el fondo claro. Se sobreescribe con variables que sí cambian
+   con el tema. */
+.contacto-info-social .social-link {
+  background: var(--surface); border-color: var(--border); color: var(--text-muted);
+}
+.contacto-info-social .social-link:hover { color: #fff; }
 
 /* ══════════════════════════════════════════════════════════
    EASTER EGGS

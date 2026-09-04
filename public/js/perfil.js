@@ -141,19 +141,25 @@ function actualizarDotsCosmeticos() {
 }
 
 // ── Control de Pestañas ────────────────────────────────────
-document.querySelectorAll('.pf-tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
+// Delegado en el contenedor (en vez de un listener por botón) para que
+// siga funcionando aunque los botones se vuelvan a pintar más adelante.
+const pfTabsWrap = document.querySelector('.pf-tabs-pill-wrap');
+if (pfTabsWrap) {
+  pfTabsWrap.addEventListener('click', (e) => {
+    const btn = e.target.closest('.pf-tab-btn');
+    if (!btn || !pfTabsWrap.contains(btn)) return;
+
     document.querySelectorAll('.pf-tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.pf-section-panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
-    
+
     const panel = document.getElementById('tab-' + btn.dataset.tab);
     if (panel) panel.classList.add('active');
 
     if (btn.dataset.tab === 'propuestas') loadMisProposals();
     if (btn.dataset.tab === 'gamificacion') Gam.init();
   });
-});
+}
 
 // ── Cargar Datos del Perfil ────────────────────────────────
 let _propuestasCache = [];
@@ -846,6 +852,10 @@ const Gam = {
   renderCosmeticos(tipo) {
     const lista = (this.data.cosmeticos||[]).filter(c => c.tipo === tipo);
     const el = document.getElementById('gamCosmeticosList');
+    // El panel standalone de cosméticos ya no existe (se reemplazó por el
+    // CosDrawer lateral); esta función solo sobrevive porque Gam.equipar()
+    // la sigue llamando al equipar insignias/títulos, así que no debe fallar.
+    if (!el) return;
     if (!lista.length) { el.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem">Todavía no hay cosméticos de este tipo.</p>'; return; }
 
     const accion = { marco_avatar:'marco', fondo_perfil:'fondo', efecto_avatar:'efecto' }[tipo];

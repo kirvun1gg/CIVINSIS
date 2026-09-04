@@ -368,7 +368,7 @@ TXT;
             'titulo_es'         => $traducido ? $d->titulo : null,
             'descripcion_es'    => $traducido ? $d->descripcion : null,
             'categoria_id'      => $d->categoria_id,
-            'categoria'         => $cat->nombre ?? '',
+            'categoria'         => $cat ? $cat->translated('nombre') : '',
             'categoria_icono'   => $cat->icono ?? 'fas fa-tag',
             'categoria_color'   => $cat->color ?? '#36c0a1',
             'autor'             => $autor ? trim($autor->nombre . ' ' . $autor->apellido) : __('civinsis.js.anonimo'),

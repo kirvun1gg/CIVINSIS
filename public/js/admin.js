@@ -349,7 +349,7 @@ loadAdminKpis();
 async function loadAdminPropuestas() {
   const tbody = document.getElementById('adminPropTable');
   try {
-    const r = await fetch('php/propuestas.php?accion=listar&pagina=1&limit=50');
+    const r = await fetch('php/propuestas.php?accion=listar&pagina=1&limite=50');
     const d = await r.json();
     if (!d.success || !d.propuestas.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted)">No hay propuestas</td></tr>'; return; }
     tbody.innerHTML = d.propuestas.map(p => `
@@ -359,7 +359,7 @@ async function loadAdminPropuestas() {
         <td>${p.autor || '–'}</td>
         <td><span class="badge badge-verde">${p.categoria || '–'}</span></td>
         <td><span class="estado-chip estado-${p.estado}">${p.estado}</span></td>
-        <td><span class="progreso-chip progreso-${p.progreso || 'idea'}">${PROGRESO_LABELS[p.progreso || 'idea']}</span></td>
+        <td><span class="progreso-chip progreso-${p.progreso || 'idea'}">${escHtml(p.progreso_label || p.progreso || 'idea')}</span></td>
         <td><strong style="color:var(--naranja)">${p.votos}</strong></td>
         <td style="color:var(--text-muted)">${new Date(p.fecha_creacion).toLocaleDateString('es')}</td>
         <td>
@@ -371,6 +371,7 @@ async function loadAdminPropuestas() {
         </td>
       </tr>
     `).join('');
+    addMobileLabels(tbody);
   } catch(e) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#e74c3c">Error al cargar</td></tr>'; }
 }
 loadAdminStats();
@@ -402,6 +403,7 @@ async function loadAdminComentarios() {
         </td>
       </tr>
     `).join('');
+    addMobileLabels(tbody);
   } catch(e) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#e74c3c">Error al cargar</td></tr>'; }
 }
 
@@ -422,9 +424,9 @@ async function loadAdminUsuarios() {
         <td style="color:var(--text-muted)">${u.email}</td>
         <td>
           <select class="form-control" style="padding:.3rem .6rem;font-size:.8rem" onchange="changeUserRole(${u.id},this.value)">
-            <option value="usuario" ${u.rol==='usuario'?'selected':''}>Usuario</option>
-            <option value="moderador" ${u.rol==='moderador'?'selected':''}>Moderador</option>
-            <option value="admin" ${u.rol==='admin'?'selected':''}>Admin</option>
+            <option value="usuario" ${u.rol==='usuario'?'selected':''}>${CIVI_I18N.roles.usuario}</option>
+            <option value="moderador" ${u.rol==='moderador'?'selected':''}>${CIVI_I18N.roles.moderador}</option>
+            <option value="admin" ${u.rol==='admin'?'selected':''}>${CIVI_I18N.roles.admin}</option>
           </select>
         </td>
         <td style="color:var(--text-muted)">${new Date(u.fecha_registro).toLocaleDateString('es')}</td>
@@ -438,6 +440,7 @@ async function loadAdminUsuarios() {
         </td>
       </tr>
     `).join('');
+    addMobileLabels(tbody);
   } catch(e) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#e74c3c">Error al cargar</td></tr>'; }
 }
 
@@ -515,6 +518,21 @@ async function saveEditProp() {
 
 function escHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/** En pantallas angostas .admin-table pasa de filas a "tarjetas" (ver CSS);
+ * cada celda necesita un data-label con el texto de su columna para mostrar
+ * "Nombre: X" en vez de una tabla ilegible que solo se puede leer haciendo
+ * scroll horizontal. Se toman los encabezados directo del <thead>, así que
+ * no hay que repetir el texto de las columnas en JS. */
+function addMobileLabels(tbody) {
+  if (!tbody) return;
+  const table = tbody.closest('table');
+  if (!table) return;
+  const headers = [...table.querySelectorAll('thead th')].map(th => th.textContent.trim());
+  tbody.querySelectorAll('tr').forEach(tr => {
+    [...tr.children].forEach((td, i) => { if (headers[i]) td.setAttribute('data-label', headers[i]); });
+  });
 }
 
 function showToast(msg, type='info') {
@@ -644,6 +662,7 @@ async function loadAdminCategorias() {
           <button onclick="deleteCat(${cat.id})" class="admin-action-btn delete"><i class="fas fa-trash"></i></button>
         </div></td>
       </tr>`).join('');
+    addMobileLabels(tbody);
   } catch(e) { showToast('Error cargando categorías', 'error'); }
 }
 

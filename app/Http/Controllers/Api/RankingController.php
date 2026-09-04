@@ -14,15 +14,29 @@ class RankingController extends Controller
 {
     use ApiResponse;
 
-    const CATEGORIAS = [
-        'xp'          => ['label' => 'Más XP',                 'icono' => 'fas fa-bolt',              'unidad' => 'XP'],
-        'reputacion'  => ['label' => 'Mayor reputación',        'icono' => 'fas fa-star',              'unidad' => 'rep.'],
-        'logros'      => ['label' => 'Más logros',              'icono' => 'fas fa-trophy',            'unidad' => 'logros'],
-        'desafios'    => ['label' => 'Más desafíos completados','icono' => 'fas fa-flag-checkered',    'unidad' => 'desafíos'],
-        'debatientes' => ['label' => 'Mejores debatientes',     'icono' => 'fas fa-comments',          'unidad' => 'votos'],
-        'propuestas'  => ['label' => 'Propuestas más populares','icono' => 'fas fa-layer-group',       'unidad' => 'votos'],
-        'activos_mes' => ['label' => 'Más activos del mes',     'icono' => 'fas fa-fire',              'unidad' => 'acciones'],
+    const ICONOS = [
+        'xp'          => 'fas fa-bolt',
+        'reputacion'  => 'fas fa-star',
+        'logros'      => 'fas fa-trophy',
+        'desafios'    => 'fas fa-flag-checkered',
+        'debatientes' => 'fas fa-comments',
+        'propuestas'  => 'fas fa-layer-group',
+        'activos_mes' => 'fas fa-fire',
     ];
+
+    /** Label + unidad de cada categoría, traducidos vía civinsis.ranking.categorias.* (nunca por DeepL: es texto fijo de UI, no contenido de usuario). */
+    private static function categoriasMeta(): array
+    {
+        $out = [];
+        foreach (self::ICONOS as $clave => $icono) {
+            $out[$clave] = [
+                'label'  => __("civinsis.ranking.categorias.$clave.label"),
+                'icono'  => $icono,
+                'unidad' => __("civinsis.ranking.categorias.$clave.unidad"),
+            ];
+        }
+        return $out;
+    }
 
     public function handle(Request $request)
     {
@@ -38,14 +52,14 @@ class RankingController extends Controller
     private function categorias()
     {
         $out = [];
-        foreach (self::CATEGORIAS as $clave => $meta) $out[] = array_merge(['clave' => $clave], $meta);
+        foreach (self::categoriasMeta() as $clave => $meta) $out[] = array_merge(['clave' => $clave], $meta);
         return $this->json(true, 'OK', ['categorias' => $out]);
     }
 
     private function listar(Request $request)
     {
         $categoria = (string) $request->input('categoria', 'xp');
-        if (!array_key_exists($categoria, self::CATEGORIAS)) $categoria = 'xp';
+        if (!array_key_exists($categoria, self::ICONOS)) $categoria = 'xp';
         $limit = min(50, max(5, (int) $request->input('limit', 20)));
 
         $resultado = match ($categoria) {
@@ -66,7 +80,7 @@ class RankingController extends Controller
 
         return $this->json(true, 'OK', [
             'categoria'   => $categoria,
-            'meta'        => self::CATEGORIAS[$categoria],
+            'meta'        => self::categoriasMeta()[$categoria],
             'ranking'     => $resultado,
             'mi_posicion' => $miPosicion,
         ]);
@@ -169,7 +183,7 @@ class RankingController extends Controller
             'id'         => $p->id,
             'titulo'     => $p->titulo,
             'autor'      => $p->autor ? trim($p->autor->nombre . ' ' . $p->autor->apellido) : __('civinsis.js.anonimo'),
-            'categoria'  => $p->categoria->nombre ?? '',
+            'categoria'  => $p->categoria ? $p->categoria->translated('nombre') : '',
             'categoria_color' => $p->categoria->color ?? '#36c0a1',
             'categoria_icono' => $p->categoria->icono ?? 'fas fa-tag',
             'valor'      => (int) $p->votos,

@@ -24,7 +24,7 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
   <link rel="stylesheet" href="css/marcos-gsap.css">
   <link rel="stylesheet" href="css/fondos.css">
   <link rel="stylesheet" href="css/efectos.css">
-  <link rel="stylesheet" href="css/perfil.css">
+  <link rel="stylesheet" href="css/perfil.css?v=2">
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
   <script src="js/fondos.js" defer></script>
   <script src="js/efectos-gsap.js" defer></script>
@@ -74,7 +74,7 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
           <div class="pf-badges-row">
             <span class="pf-role-badge <?= $esAdmin ? 'admin' : '' ?>">
               <i class="fas fa-<?= $esAdmin ? 'shield-halved' : 'user-check' ?>"></i>
-              <?= ucfirst($usuarioRol) ?>
+              <?= __('civinsis.roles.' . $usuarioRol) ?>
             </span>
             <span class="pf-visibility-badge" id="profileVisibilityBadge">
               <i class="fas fa-globe"></i> <?= __('civinsis.perfil.perfil_publico') ?>
@@ -361,6 +361,8 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
           <i class="fas fa-chevron-down pf-accordion-chevron"></i>
         </button>
         <div class="pf-accordion-body">
+        <div class="pf-studio-layout">
+        <div>
 
           <!-- Tema Cromático -->
           <div style="margin-bottom:1.75rem">
@@ -469,6 +471,28 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
               <i class="fas fa-smile pf-input-icon"></i>
             </div>
           </div>
+
+        </div>
+
+        <!-- Tarjeta de vista previa en vivo: se actualiza en tiempo real
+             desde perfil.js (setTema/setMarco/setInsignia/aplicarPreview)
+             mientras editas tema, colores, marco e insignia. -->
+        <aside class="pf-preview-sticky-card">
+          <div class="pf-preview-badge-header"><i class="fas fa-eye"></i> <?= __('civinsis.perfil.vista_previa_titulo') ?></div>
+          <div class="pf-live-card-mock">
+            <div class="pf-mock-banner" id="mockBanner"></div>
+            <div class="pf-mock-body">
+              <div class="pf-mock-avatar-wrap">
+                <div class="pf-mock-avatar" id="mockAvatar"><?= $iniciales ?></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:.4rem">
+                <div class="pf-mock-name" id="mockName"><?= htmlspecialchars($usuarioNombre) ?></div>
+                <span class="pf-insignia-badge" id="mockInsignia">🌱</span>
+              </div>
+              <div class="pf-mock-frase" id="mockFrase">"Tu voz transforma el mundo"</div>
+            </div>
+          </div>
+        </aside>
 
         </div>
       </div>
@@ -722,6 +746,7 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
   </div>
 
 </div>
+</div>
 
 <!-- ══════════════════════════════════════════════════════════
      DRAWER LATERAL DE COSMÉTICOS
@@ -763,6 +788,6 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
 <?php echo view('layouts.footer')->render(); ?>
 
 <script src="js/app.js"></script>
-<script src="js/perfil.js"></script>
+<script src="js/perfil.js?v=2"></script>
 </body>
 </html>

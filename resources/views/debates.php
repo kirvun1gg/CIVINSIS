@@ -26,13 +26,10 @@ $categorias      = $categorias ?? collect();
 <main style="padding-top:calc(var(--nav-height) + 2rem);padding-bottom:4rem;min-height:100vh">
   <div class="container">
 
-    <div class="cv-dos-col" style="margin-bottom:1.5rem">
-      <div class="debates-hero" style="margin-bottom:0">
+    <div class="debates-hero">
       <div class="debates-hero-badge"><i class="fas fa-comments"></i> <?= __('civinsis.debates.badge') ?></div>
       <h1><?= __('civinsis.debates.titulo') ?></h1>
       <p><?= __('civinsis.debates.descripcion') ?></p>
-      </div>
-      <div class="cv-anim cv-anim-ancha" id="anim-debates"></div>
     </div>
 
     <div class="dash-topbar">
@@ -64,7 +61,7 @@ $categorias      = $categorias ?? collect();
         <?php foreach ($categorias as $cat): ?>
         <button class="btn btn-sm btn-ghost" data-cat="<?= $cat['id'] ?>" onclick="Debates.filterCat(<?= $cat['id'] ?>, this)" style="gap:.35rem">
           <i class="<?= $cat['icono'] ?>" style="color:<?= $cat['color'] ?>"></i>
-          <?= htmlspecialchars($cat['nombre']) ?>
+          <?= htmlspecialchars($cat->translated('nombre')) ?>
         </button>
         <?php endforeach; ?>
       </div>
@@ -96,7 +93,7 @@ $categorias      = $categorias ?? collect();
         <label class="form-label"><?= __('civinsis.comun.categoria') ?></label>
         <select id="debateCategoria" class="form-control">
           <?php foreach ($categorias as $cat): ?>
-            <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['nombre']) ?></option>
+            <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat->translated('nombre')) ?></option>
           <?php endforeach; ?>
         </select>
       </div>

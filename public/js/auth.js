@@ -21,7 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const panelReg     = document.getElementById('panel-register');
   const scene        = document.getElementById('formsScene');
 
-  let currentPanel = 'login';
+  // El servidor puede renderizar cualquiera de los dos paneles como el
+  // activo (auth.php?tab=registro, usado en varios botones "Registrarse"
+  // del sitio) — antes esto se asumía siempre 'login' a fuerza, por lo que
+  // si se entraba directo a la pestaña de registro, el primer clic en
+  // "Iniciar sesión" no hacía nada (switchTo lo ignoraba por creer que ya
+  // se estaba mostrando login) y la altura del scene se calculaba sobre el
+  // panel equivocado, recortando el formulario (incluido el botón de Google).
+  let currentPanel = tabs.dataset.active === 'register' ? 'register' : 'login';
   let isTransitioning = false;
 
   // ── Sincronizar altura del scene con el panel activo ──────────
@@ -53,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function initTheme() {
-    const saved = localStorage.getItem('civitas-theme');
+    const saved = localStorage.getItem('civitas_theme');
     const sys   = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
     applyTheme(saved || sys);
   }
@@ -61,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
   themeBtn.addEventListener('click', () => {
     const isLight = html.classList.toggle('light-mode');
     themeIcon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
-    localStorage.setItem('civitas-theme', isLight ? 'light' : 'dark');
+    localStorage.setItem('civitas_theme', isLight ? 'light' : 'dark');
 
     // Micro animación del botón
     themeBtn.style.transform = 'rotate(360deg) scale(1.15)';
@@ -70,9 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initTheme();
 
-  // Sincronizar altura inicial del scene (login panel visible por defecto)
-  // Con pequeño delay para que el DOM esté completamente renderizado
-  requestAnimationFrame(() => syncHeight(panelLogin));
+  // Sincronizar altura inicial del scene con el panel que el servidor
+  // dejó realmente visible (no siempre es login, ver comentario arriba).
+  requestAnimationFrame(() => syncHeight(currentPanel === 'register' ? panelReg : panelLogin));
 
   // ════════════════════════════════════════════════
   // TRANSICIÓN FLIP 3D MORPH

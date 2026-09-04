@@ -256,7 +256,7 @@ $activeNav = 'faq';
                   <?php foreach ($categorias as $cat): ?>
                   <span style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;padding:.4rem .7rem;background:var(--surface);border-radius:8px">
                     <i class="<?= $cat['icono'] ?>" style="color:<?= $cat['color'] ?>"></i>
-                    <?= htmlspecialchars($cat['nombre']) ?>
+                    <?= htmlspecialchars($cat->translated('nombre')) ?>
                   </span>
                   <?php endforeach; ?>
                 </div>
@@ -468,9 +468,9 @@ $activeNav = 'faq';
           <a href="contacto.php" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:1.25rem">
             <i class="fas fa-envelope"></i> <?= __('civinsis.faq.sidebar_contactar') ?>
           </a>
-          <a href="contacto.php" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:.5rem">
-            <i class="fas fa-envelope"></i> <?= __('civinsis.faq.sidebar_escribir') ?>
-          </a>
+          <button type="button" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:.5rem" onclick="document.getElementById('civiFab')?.click()">
+            <i class="fas fa-robot"></i> <?= __('civinsis.faq.sidebar_escribir') ?>
+          </button>
         </div>
 
         <div class="faq-sidebar-card faq-sidebar-stats">

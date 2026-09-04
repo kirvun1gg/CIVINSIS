@@ -58,7 +58,7 @@ const Ranking = {
 
     const res = await API.get('php/ranking.php', { accion: 'listar', categoria, limit: 20 });
     if (!res.success) {
-      if (list) list.innerHTML = `<div class="empty-state"><p>No se pudo cargar el ranking.</p></div>`;
+      if (list) list.innerHTML = `<div class="empty-state"><p>${CIVI_I18N.ranking.no_se_pudo_cargar}</p></div>`;
       return;
     }
 
@@ -68,7 +68,7 @@ const Ranking = {
     }
 
     if (!res.ranking.length) {
-      if (list) list.innerHTML = `<div class="empty-state"><p>Todavía no hay datos suficientes en esta categoría.</p></div>`;
+      if (list) list.innerHTML = `<div class="empty-state"><p>${CIVI_I18N.ranking.sin_datos_categoria}</p></div>`;
       document.getElementById('rankingMiPosicion').innerHTML = '';
       return;
     }
@@ -79,7 +79,7 @@ const Ranking = {
     const miBox = document.getElementById('rankingMiPosicion');
     if (miBox) {
       miBox.innerHTML = (res.mi_posicion && res.mi_posicion > 20)
-        ? `<div class="ranking-mi-posicion"><i class="fas fa-user"></i> Tu posición en esta categoría: <strong>#${res.mi_posicion}</strong></div>`
+        ? `<div class="ranking-mi-posicion"><i class="fas fa-user"></i> ${CIVI_I18N.ranking.tu_posicion_categoria} <strong>#${res.mi_posicion}</strong></div>`
         : '';
     }
   },
@@ -98,9 +98,9 @@ const Ranking = {
         <div class="ranking-pos-badge pos-${i}">${this.medalla(i)}</div>
         <div class="ranking-avatar-wrap">${avaInner}</div>
         <div class="ranking-user-info">
-          <div class="ranking-user-name">${esc(u.nombre)} ${soyYo ? '<span class="ranking-tu-tag">(tú)</span>' : ''}</div>
+          <div class="ranking-user-name">${esc(u.nombre)} ${soyYo ? `<span class="ranking-tu-tag">${CIVI_I18N.ranking.tu_tag}</span>` : ''}</div>
           <div class="ranking-user-meta">
-            Nv. ${u.nivel}
+            ${CIVI_I18N.ranking.nivel_abrev} ${u.nivel}
             ${u.titulo ? `<span class="label-titulo ${u.titulo.rareza}" style="color:${u.titulo.color};border-color:${u.titulo.color}">${esc(u.titulo.nombre)}</span>` : ''}
           </div>
         </div>
@@ -116,7 +116,7 @@ const Ranking = {
           <div class="ranking-user-name">${esc(p.titulo)}</div>
           <div class="ranking-user-meta">
             <span class="debate-cat-badge" style="--cat-color:${p.categoria_color}"><i class="${p.categoria_icono}"></i> ${esc(p.categoria)}</span>
-            <span style="margin-left:.5rem">por ${esc(p.autor)}</span>
+            <span style="margin-left:.5rem">${CIVI_I18N.ranking.por_prefijo} ${esc(p.autor)}</span>
           </div>
         </div>
         <div class="ranking-valor"><i class="fas fa-heart" style="color:#e74c3c;font-size:.8rem;margin-right:.25rem"></i>${(p.valor || 0).toLocaleString('es')}</div>

@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use App\Models\Categoria;
+use App\Models\Titulo;
 use App\Services\Translation\DeepLProvider;
 use App\Services\Translation\TranslationProviderInterface;
 
@@ -23,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
         // reemplazando al antiguo session_helper.php / getCategorias().
         View::composer('*', function ($view) {
             $user = auth_user();
+            $tituloEquipado = ($user && $user->titulo_equipado)
+                ? Titulo::where('clave', $user->titulo_equipado)->first()
+                : null;
 
             $view->with([
                 'usuarioLogueado' => (bool) $user,
@@ -32,6 +36,9 @@ class AppServiceProvider extends ServiceProvider
                 'usuarioRol'      => $user->rol_nombre ?? 'invitado',
                 'usuarioAvatar'   => $user->avatar ?? null,
                 'usuarioTema'     => $user->tema_perfil ?? 'verde',
+                'usuarioNivel'    => $user->nivel ?? 1,
+                'usuarioInsigniaEmoji' => $user->insignia ?? null,
+                'usuarioTitulo'   => $tituloEquipado,
                 'categorias'      => Categoria::orderBy('nombre')->get(),
             ]);
         });

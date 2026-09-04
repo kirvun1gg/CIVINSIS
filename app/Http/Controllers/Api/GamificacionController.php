@@ -69,6 +69,14 @@ class GamificacionController extends Controller
         $user = \App\Models\User::find($id);
         if (!$user) return $this->json(false, 'Usuario no encontrado');
 
+        // El dueño del perfil siempre puede verlo; cualquier otra persona
+        // solo si lo dejó público (antes esto nunca se comprobaba, así que
+        // un perfil "privado" era visible para cualquiera igual).
+        $esPropio = Auth::check() && Auth::id() === $user->id;
+        if (!$user->perfil_publico && !$esPropio) {
+            return $this->json(false, 'Este perfil es privado', ['privado' => true]);
+        }
+
         // Datos completos de gamificación
         $data = $this->gam->perfilCompleto($user);
 

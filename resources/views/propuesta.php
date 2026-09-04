@@ -117,7 +117,7 @@ $iniciales = civinsis_iniciales($usuarioNombre, $usuarioLogueado);
         <label class="form-label"><?= __('civinsis.comun.categoria') ?></label>
         <select id="editCategoria" class="form-control">
           <?php foreach ($categorias as $cat): ?>
-            <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['nombre']) ?></option>
+            <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat->translated('nombre')) ?></option>
           <?php endforeach; ?>
         </select>
       </div>

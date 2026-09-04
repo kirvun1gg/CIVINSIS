@@ -47,12 +47,22 @@ const CentroActividad = {
       </div>`;
   },
 
+  /** El servidor no conoce la zona horaria real del visitante (corre en
+   * UTC), así que el saludo se calcula con la hora LOCAL del navegador
+   * en vez de usar saludo.texto (que venía calculado en el servidor). */
+  saludoLocal() {
+    const h = new Date().getHours();
+    if (h < 12) return CIVI_I18N.saludo_manana;
+    if (h < 19) return CIVI_I18N.saludo_tarde;
+    return CIVI_I18N.saludo_noche;
+  },
+
   heroHTML(saludo, s) {
     return `
       <div class="inicio-hero">
         <div class="inicio-hero-top">
           <div>
-            <h1 class="inicio-hero-saludo">${esc(saludo.texto)}, <span>${esc(saludo.nombre)}</span> 👋</h1>
+            <h1 class="inicio-hero-saludo">${esc(this.saludoLocal())}, <span>${esc(saludo.nombre)}</span> 👋</h1>
             <p class="inicio-hero-sub">Esto es lo que está pasando en tu comunidad hoy.</p>
           </div>
           <a href="crear.php" class="btn btn-primary"><i class="fas fa-plus"></i> Nueva propuesta</a>

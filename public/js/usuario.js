@@ -5,7 +5,9 @@ const PERFIL_ID = Number(document.body.dataset.perfilId);
     const r = await fetch('php/gamificacion.php?accion=perfil_publico&id=' + PERFIL_ID);
     const d = await r.json();
     if (!d.success) {
-      document.getElementById('pubName').textContent = 'Usuario no encontrado';
+      document.getElementById('pubName').textContent = d.privado
+        ? (CIVI_I18N.usuario_perfil_privado || 'Este perfil es privado')
+        : 'Usuario no encontrado';
       return;
     }
 
@@ -53,7 +55,7 @@ const PERFIL_ID = Number(document.body.dataset.perfilId);
     if (d.titulo) {
       titleHtml += `<span class="titulo-chip ${d.titulo.rareza}" style="color:${d.titulo.color};border-color:${d.titulo.color}">${d.titulo.nombre}</span>`;
     }
-    titleHtml += `<span class="pf-role-badge"><i class="fas fa-user-check"></i> ${u.rol}</span>`;
+    titleHtml += `<span class="pf-role-badge"><i class="fas fa-user-check"></i> ${(CIVI_I18N.roles && CIVI_I18N.roles[u.rol]) || u.rol}</span>`;
     document.getElementById('pubTitleWrap').innerHTML = titleHtml;
 
     // Stats

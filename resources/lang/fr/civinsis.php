@@ -5,6 +5,7 @@ return [
     'nav' => [
         'inicio'                => 'Accueil',
         'propuestas'            => 'Propositions',
+        'participar'            => 'Participer',
         'debates'               => 'Débats',
         'desafios'              => 'Défis',
         'ranking'               => 'Classement',
@@ -22,7 +23,10 @@ return [
         'mi_perfil'             => 'Mon profil',
         'menu'                  => 'Menu',
         'cambiar_tema'          => 'Changer de thème',
+        'activar_modo_oscuro'   => 'Passer en mode sombre',
+        'activar_modo_claro'    => 'Passer en mode clair',
         'idioma'                => 'Langue',
+        'idioma_actual'         => 'Langue actuelle',
     ],
 
     'footer' => [
@@ -128,6 +132,7 @@ return [
         'nombre'           => 'Nom *',
         'nombre_placeholder'=> 'Votre nom',
         'correo'           => 'E-mail *',
+        'correo_bloqueado' => "C'est l'e-mail de votre compte et il ne peut pas être modifié ici.",
         'asunto'           => 'Sujet *',
         'asunto_placeholder'=> 'Sélectionnez le motif...',
         'asunto_consulta_general' => 'Demande générale',
@@ -148,6 +153,7 @@ return [
         'antes_de_escribir'=> "Avant d'écrire",
         'antes_de_escribir_desc' => 'Consultez notre FAQ, nous avons peut-être déjà la réponse.',
         'ver_faq'          => 'Voir la FAQ',
+        'preguntar_civi'   => 'Demander à CIVI',
         'siguenos'         => 'Suivez-nous',
     ],
 
@@ -450,6 +456,7 @@ return [
         'civi_corregir_ortografia' => "Corriger l'orthographe",
         'civi_reforzar_argumentos' => 'Renforcer les arguments',
         'civi_ver_similares' => 'Voir les similaires',
+        'civi_preguntar' => "Tu ne sais pas quoi créer ? Demande à CIVI",
         'campo_titulo' => 'Titre de la proposition *',
         'campo_titulo_placeholder' => 'Ex : Programme de recyclage dans les parcs publics',
         'campo_titulo_hint' => 'Soyez clair et concis. 200 caractères maximum.',
@@ -491,8 +498,6 @@ return [
     'index' => [
         'titulo_pagina' => 'CIVINSIS – Participation citoyenne des jeunes',
         'hero_badge' => 'Plateforme de participation des jeunes',
-        'letra_c' => 'Communauté !', 'letra_i1' => 'Impact !', 'letra_v' => 'Voix !', 'letra_i2' => 'Idées !',
-        'letra_n' => 'Nouvelle ère !', 'letra_s1' => 'Social !', 'letra_i3' => 'Innovation !', 'letra_s2' => 'Salvadorienne !',
         'hero_titulo_pre' => 'où votre voix', 'hero_titulo_hl' => 'transforme le monde',
         'hero_subtitulo' => "L'espace où les jeunes transforment leurs idées en propositions réelles. Participez, débattez et changez votre communauté dès aujourd'hui.",
         'publica_propuesta' => 'Publiez votre proposition',
@@ -555,6 +560,15 @@ return [
         'boton_crear_cuenta' => 'Créer un compte',
         'ya_tienes_cuenta' => 'Vous avez déjà un compte ?',
         'inicia_sesion_aqui' => 'Connectez-vous ici',
+        'o_continua_con' => 'Ou continuez avec',
+        'boton_google_login' => 'Se connecter avec Google',
+        'boton_google_registro' => "S'inscrire avec Google",
+        'verify_titulo' => 'Vérifiez votre compte',
+        'verify_subtitulo' => 'Nous avons envoyé un code de vérification à votre e-mail Google. Saisissez-le pour terminer la connexion.',
+        'verify_campo_codigo' => 'Code de vérification',
+        'verify_campo_codigo_placeholder' => 'Ex : A1B2C3',
+        'verify_boton' => 'Vérifier',
+        'verify_volver' => 'Retour à la connexion',
     ],
 
     'admin' => [
@@ -704,7 +718,7 @@ return [
         'sidebar_titulo' => "Vous n'avez pas trouvé votre réponse ?",
         'sidebar_desc' => 'Notre équipe est là pour vous aider. Écrivez-nous et nous vous répondrons dans les plus brefs délais.',
         'sidebar_contactar' => "Contacter l'équipe",
-        'sidebar_escribir' => "Écrire à l'équipe",
+        'sidebar_escribir' => 'Demander à CIVI',
         'numeros_titulo' => 'CIVINSIS en chiffres',
         'stat_propuestas_publicadas' => 'Propositions publiées',
         'stat_categorias_activas' => 'Catégories actives',
@@ -811,6 +825,7 @@ return [
         'confirmar_contrasena_placeholder' => 'Répétez le nouveau mot de passe',
         'actualizar_contrasena' => 'Mettre à jour le mot de passe',
 
+        'vista_previa_titulo' => 'Aperçu en direct',
         'mis_cosmeticos' => 'Mes cosmétiques',
         'mis_cosmeticos_desc' => 'Équipez cadres, arrière-plans et effets débloqués.',
         'marcos' => 'Cadres', 'fondos' => 'Arrière-plans', 'efectos' => 'Effets',
@@ -864,6 +879,10 @@ return [
         'ver_traduccion' => 'Voir la traduction',
         'descripcion_completa' => 'Description complète',
         'anonimo' => 'Anonyme',
+        'usuario_perfil_privado' => 'Ce profil est privé',
+        'saludo_manana' => 'Bonjour',
+        'saludo_tarde'  => 'Bon après-midi',
+        'saludo_noche'  => 'Bonsoir',
     ],
 
     'tendencias' => [
@@ -876,6 +895,21 @@ return [
         'badge'      => 'Classement en temps réel',
         'titulo'     => 'Qui fait <span>la différence ?</span>',
         'descripcion'=> 'Explorez les différents classements de la communauté. Changez de catégorie pour voir qui est en tête dans chaque aspect de la participation citoyenne.',
+        'categorias' => [
+            'xp'          => ['label' => "Plus d'XP",                    'unidad' => 'XP'],
+            'reputacion'  => ['label' => 'Réputation la plus élevée',    'unidad' => 'rép.'],
+            'logros'      => ['label' => 'Plus de succès',               'unidad' => 'succès'],
+            'desafios'    => ['label' => 'Plus de défis complétés',      'unidad' => 'défis'],
+            'debatientes' => ['label' => 'Meilleurs débatteurs',         'unidad' => 'votes'],
+            'propuestas'  => ['label' => 'Propositions les plus populaires', 'unidad' => 'votes'],
+            'activos_mes' => ['label' => 'Plus actifs ce mois-ci',       'unidad' => 'actions'],
+        ],
+        'no_se_pudo_cargar'      => 'Impossible de charger le classement.',
+        'sin_datos_categoria'    => 'Pas encore assez de données dans cette catégorie.',
+        'tu_tag'                 => '(toi)',
+        'tu_posicion_categoria'  => 'Ta position dans cette catégorie :',
+        'por_prefijo'            => 'par',
+        'nivel_abrev'            => 'Niv.',
     ],
 
     'desafios' => [
@@ -887,6 +921,24 @@ return [
         'dificultad_medio'  => 'Moyen',
         'dificultad_dificil'=> 'Difficile',
         'todas_categorias'  => 'Toutes les catégories',
+        'sin_resultados'    => 'Aucun défi disponible avec ces filtres.',
+        'estado_completado'   => 'Terminé',
+        'estado_en_progreso'  => 'En cours',
+        'boton_aceptar'       => 'Accepter le défi',
+        'boton_crear_otra'    => 'Créer une autre proposition',
+        'vinculada_titulo'    => 'Proposition liée à un défi',
+        'quitar_vinculo'      => 'Retirer le lien',
+        'sin_ideas_titulo'    => "Besoin d'inspiration ?",
+        'sin_ideas_sub'       => "Essayez l'un de nos défis :",
+        'ver_todos'           => 'Voir tout',
+        'aceptar'             => 'Accepter',
+    ],
+
+    'roles' => [
+        'usuario'    => 'Utilisateur',
+        'moderador'  => 'Modérateur',
+        'admin'      => 'Administrateur',
+        'invitado'   => 'Invité',
     ],
 
 ];

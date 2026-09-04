@@ -5,6 +5,7 @@ return [
     'nav' => [
         'inicio'                => 'Home',
         'propuestas'            => 'Proposals',
+        'participar'            => 'Participate',
         'debates'               => 'Debates',
         'desafios'              => 'Challenges',
         'ranking'               => 'Ranking',
@@ -22,7 +23,10 @@ return [
         'mi_perfil'             => 'My Profile',
         'menu'                  => 'Menu',
         'cambiar_tema'          => 'Toggle theme',
+        'activar_modo_oscuro'   => 'Switch to dark mode',
+        'activar_modo_claro'    => 'Switch to light mode',
         'idioma'                => 'Language',
+        'idioma_actual'         => 'Current language',
     ],
 
     'footer' => [
@@ -128,6 +132,7 @@ return [
         'nombre'           => 'Name *',
         'nombre_placeholder'=> 'Your name',
         'correo'           => 'Email *',
+        'correo_bloqueado' => "This is your account's email and can't be edited here.",
         'asunto'           => 'Subject *',
         'asunto_placeholder'=> 'Select a reason...',
         'asunto_consulta_general' => 'General inquiry',
@@ -148,6 +153,7 @@ return [
         'antes_de_escribir'=> 'Before you write',
         'antes_de_escribir_desc' => 'Check our FAQ, we might already have the answer.',
         'ver_faq'          => 'View FAQ',
+        'preguntar_civi'   => 'Ask CIVI',
         'siguenos'         => 'Follow us',
     ],
 
@@ -450,6 +456,7 @@ return [
         'civi_corregir_ortografia' => 'Fix spelling',
         'civi_reforzar_argumentos' => 'Strengthen arguments',
         'civi_ver_similares' => 'View similar',
+        'civi_preguntar' => "Not sure what to create? Ask CIVI",
         'campo_titulo' => 'Proposal title *',
         'campo_titulo_placeholder' => 'E.g.: Recycling program in public parks',
         'campo_titulo_hint' => 'Be clear and concise. Maximum 200 characters.',
@@ -491,8 +498,6 @@ return [
     'index' => [
         'titulo_pagina' => 'CIVINSIS – Youth Civic Participation',
         'hero_badge' => 'Youth Participation Platform',
-        'letra_c' => 'Community!', 'letra_i1' => 'Impact!', 'letra_v' => 'Voice!', 'letra_i2' => 'Ideas!',
-        'letra_n' => 'New era!', 'letra_s1' => 'Social!', 'letra_i3' => 'Innovation!', 'letra_s2' => 'Salvadoran!',
         'hero_titulo_pre' => 'where your voice', 'hero_titulo_hl' => 'transforms the world',
         'hero_subtitulo' => 'The space where young people turn ideas into real proposals. Participate, debate, and change your community today.',
         'publica_propuesta' => 'Post your proposal',
@@ -555,6 +560,15 @@ return [
         'boton_crear_cuenta' => 'Create account',
         'ya_tienes_cuenta' => 'Already have an account?',
         'inicia_sesion_aqui' => 'Log in here',
+        'o_continua_con' => 'Or continue with',
+        'boton_google_login' => 'Log in with Google',
+        'boton_google_registro' => 'Sign up with Google',
+        'verify_titulo' => 'Verify your account',
+        'verify_subtitulo' => 'We sent a verification code to your Google email. Enter it to complete sign-in.',
+        'verify_campo_codigo' => 'Verification code',
+        'verify_campo_codigo_placeholder' => 'E.g.: A1B2C3',
+        'verify_boton' => 'Verify',
+        'verify_volver' => 'Back to login',
     ],
 
     'admin' => [
@@ -704,7 +718,7 @@ return [
         'sidebar_titulo' => "Didn't find your answer?",
         'sidebar_desc' => 'Our team is here to help. Write to us and we\'ll get back to you as soon as possible.',
         'sidebar_contactar' => 'Contact the team',
-        'sidebar_escribir' => 'Write to the team',
+        'sidebar_escribir' => 'Ask CIVI',
         'numeros_titulo' => 'CIVINSIS by the numbers',
         'stat_propuestas_publicadas' => 'Proposals published',
         'stat_categorias_activas' => 'Active categories',
@@ -811,6 +825,7 @@ return [
         'confirmar_contrasena_placeholder' => 'Repeat the new password',
         'actualizar_contrasena' => 'Update password',
 
+        'vista_previa_titulo' => 'Live preview',
         'mis_cosmeticos' => 'My cosmetics',
         'mis_cosmeticos_desc' => 'Equip unlocked frames, backgrounds, and effects.',
         'marcos' => 'Frames', 'fondos' => 'Backgrounds', 'efectos' => 'Effects',
@@ -864,6 +879,10 @@ return [
         'ver_traduccion' => 'View translation',
         'descripcion_completa' => 'Full description',
         'anonimo' => 'Anonymous',
+        'usuario_perfil_privado' => 'This profile is private',
+        'saludo_manana' => 'Good morning',
+        'saludo_tarde'  => 'Good afternoon',
+        'saludo_noche'  => 'Good evening',
     ],
 
     'tendencias' => [
@@ -876,6 +895,21 @@ return [
         'badge'      => 'Real-time ranking',
         'titulo'     => "Who's <span>making a difference?</span>",
         'descripcion'=> "Explore the community's different rankings. Switch categories to see who's leading in each aspect of civic participation.",
+        'categorias' => [
+            'xp'          => ['label' => 'Most XP',                    'unidad' => 'XP'],
+            'reputacion'  => ['label' => 'Highest reputation',         'unidad' => 'rep.'],
+            'logros'      => ['label' => 'Most achievements',          'unidad' => 'achievements'],
+            'desafios'    => ['label' => 'Most challenges completed',  'unidad' => 'challenges'],
+            'debatientes' => ['label' => 'Best debaters',              'unidad' => 'votes'],
+            'propuestas'  => ['label' => 'Most popular proposals',     'unidad' => 'votes'],
+            'activos_mes' => ['label' => 'Most active this month',     'unidad' => 'actions'],
+        ],
+        'no_se_pudo_cargar'      => "Couldn't load the ranking.",
+        'sin_datos_categoria'    => "There isn't enough data yet in this category.",
+        'tu_tag'                 => '(you)',
+        'tu_posicion_categoria'  => 'Your position in this category:',
+        'por_prefijo'            => 'by',
+        'nivel_abrev'            => 'Lvl.',
     ],
 
     'desafios' => [
@@ -887,6 +921,24 @@ return [
         'dificultad_medio'  => 'Medium',
         'dificultad_dificil'=> 'Hard',
         'todas_categorias'  => 'All categories',
+        'sin_resultados'    => 'No challenges available with these filters.',
+        'estado_completado'   => 'Completed',
+        'estado_en_progreso'  => 'In progress',
+        'boton_aceptar'       => 'Accept challenge',
+        'boton_crear_otra'    => 'Create another proposal',
+        'vinculada_titulo'    => 'Proposal linked to a challenge',
+        'quitar_vinculo'      => 'Remove link',
+        'sin_ideas_titulo'    => 'Out of ideas?',
+        'sin_ideas_sub'       => 'Try one of our challenges:',
+        'ver_todos'           => 'View all',
+        'aceptar'             => 'Accept',
+    ],
+
+    'roles' => [
+        'usuario'    => 'User',
+        'moderador'  => 'Moderator',
+        'admin'      => 'Administrator',
+        'invitado'   => 'Guest',
     ],
 
 ];

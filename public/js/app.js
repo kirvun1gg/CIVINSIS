@@ -19,8 +19,14 @@ const Theme = {
   apply(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem(this.key, theme);
+    // La etiqueta describe la ACCIÓN (a qué modo se cambiará al pulsar),
+    // no el estado actual — es lo que un botón de este tipo debe anunciar.
+    const label = (theme === 'dark'
+      ? window.CIVI_I18N?.nav?.activar_modo_claro
+      : window.CIVI_I18N?.nav?.activar_modo_oscuro) || null;
     document.querySelectorAll('[data-dark-toggle]').forEach(el => {
       el.setAttribute('aria-pressed', theme === 'dark');
+      if (label) { el.setAttribute('aria-label', label); el.setAttribute('title', label); }
     });
   },
 
@@ -425,6 +431,9 @@ const Proposals = {
   init() {
     this.container = document.getElementById('proposalsGrid');
     if (!this.container) return;
+    // Widget "Propuestas recientes" del inicio: solo las N más nuevas,
+    // sin paginación (data-limite en el <div id="proposalsGrid"> de index.php).
+    this.limite = parseInt(this.container.dataset.limite || '0', 10) || 0;
 
     this.load();
 
@@ -466,7 +475,8 @@ const Proposals = {
       categoria: this.currentCat,
       q: this.searchQuery,
       orden: this.currentOrder,
-      pagina: this.currentPage
+      pagina: this.currentPage,
+      ...(this.limite ? { limite: this.limite } : {})
     });
 
     if (!res.success) { this.container.innerHTML = '<p class="text-muted">Error al cargar propuestas.</p>'; return; }
@@ -482,7 +492,11 @@ const Proposals = {
     }
 
     this.container.innerHTML = res.propuestas.map(p => this.cardHTML(p)).join('');
-    this.renderPagination(res.pagina_actual, res.paginas);
+    if (this.limite) {
+      document.getElementById('pagination')?.replaceWith(document.createElement('div'));
+    } else {
+      this.renderPagination(res.pagina_actual, res.paginas);
+    }
     this.attachCardEvents();
     Reveal.init();
   },
@@ -1384,10 +1398,36 @@ const Idioma = {
 
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      dropdown.classList.toggle('open');
+      const abierto = dropdown.classList.toggle('open');
+      btn.setAttribute('aria-expanded', abierto);
     });
     document.addEventListener('click', (e) => {
-      if (!wrap.contains(e.target)) dropdown.classList.remove('open');
+      if (!wrap.contains(e.target)) {
+        dropdown.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  },
+};
+
+// ── Desplegable "Participar" del navbar (Propuestas/Debates/Desafíos) ──
+const NavParticipar = {
+  init() {
+    const wrap = document.getElementById('navParticiparWrap');
+    const btn = document.getElementById('navParticiparBtn');
+    const menu = document.getElementById('navParticiparMenu');
+    if (!wrap || !btn || !menu) return;
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const abierto = menu.classList.toggle('open');
+      btn.setAttribute('aria-expanded', abierto);
+    });
+    document.addEventListener('click', (e) => {
+      if (!wrap.contains(e.target)) {
+        menu.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
     });
   },
 };
@@ -1534,6 +1574,7 @@ document.addEventListener('DOMContentLoaded', () => {
   TopProposals.init();
   Notificaciones.init();
   Idioma.init();
+  NavParticipar.init();
 
   // Init detalle si aplica
   if (document.getElementById('detailContent')) ProposalDetail.init();

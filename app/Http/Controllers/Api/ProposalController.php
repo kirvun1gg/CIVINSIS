@@ -157,7 +157,7 @@ class ProposalController extends Controller
             'progreso_label'   => $this->progresoLabel($p->progreso ?: 'idea'),
             'imagen'           => $p->imagen,
             'categoria_id'     => $p->categoria_id,
-            'categoria'        => $cat->nombre ?? '',
+            'categoria'        => $cat ? $cat->translated('nombre') : '',
             'categoria_icono'  => $cat->icono ?? 'fas fa-tag',
             'categoria_color'  => $cat->color ?? '#36c0a1',
             'categoria_efecto' => $cat->efecto ?? 'default',
@@ -181,6 +181,16 @@ class ProposalController extends Controller
         $orden     = in_array($request->input('orden'), ['votos', 'fecha', 'vistas']) ? $request->input('orden') : 'fecha';
         $pagina    = max(1, (int) $request->input('pagina', 1));
         $porPagina = 9;
+
+        // "limite" es para widgets tipo "propuestas recientes" en el inicio,
+        // que muestran solo las N más nuevas sin paginación (ventana móvil:
+        // al crear una propuesta nueva, la más antigua de las N simplemente
+        // deja de aparecer, sin lógica extra).
+        $limite = (int) $request->input('limite', 0);
+        if ($limite > 0) {
+            $porPagina = min(20, $limite);
+            $pagina = 1;
+        }
 
         $query = Proposal::with(['categoria', 'autor'])->where('estado', 'activa');
         if ($categoria > 0) $query->where('categoria_id', $categoria);
@@ -655,7 +665,16 @@ class ProposalController extends Controller
         $items = Proposal::with('categoria')->where('usuario_id', Auth::id())
             ->orderByDesc('fecha_creacion')->get();
         $this->precargar($items, ['titulo', 'descripcion', 'contenido']);
-        $items = $items->map(fn ($p) => $this->formato($p));
+        // "Mis propuestas" no muestra imagen de portada ni el avatar del
+        // autor (ver perfil.js) — siempre eres tú. Ambos campos vienen en
+        // base64 (cientos de KB cada uno) y formato() los repite en CADA
+        // propuesta, así que con solo 5 propuestas la respuesta pasaba de
+        // 1 MB puro de datos duplicados que nunca se usan en esta pestaña.
+        $items = $items->map(function ($p) {
+            $row = $this->formato($p);
+            unset($row['imagen'], $row['autor_avatar']);
+            return $row;
+        });
 
         return $this->json(true, 'OK', ['propuestas' => $items]);
     }

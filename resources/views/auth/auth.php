@@ -24,7 +24,7 @@ $activeTab = $_GET['tab'] ?? 'login';
 
     <div class="auth-visual-inner">
       <a href="index.php" class="auth-brand">
-        <span class="auth-brand-icon"><img src="/media/logo.png" alt=""></span>
+        <span class="auth-brand-icon"><img src="<?= asset('media/logo.png') ?>" alt=""></span>
         <span class="auth-brand-name">CIVINSIS</span>
       </a>
       <div class="auth-animation-slot" id="authAnimationSlot">
@@ -51,7 +51,7 @@ $activeTab = $_GET['tab'] ?? 'login';
     <div class="auth-form-wrap">
 
       <a href="index.php" class="auth-brand auth-brand-mobile">
-        <span class="auth-brand-icon"><img src="/media/logo.png" alt=""></span>
+        <span class="auth-brand-icon"><img src="<?= asset('media/logo.png') ?>" alt=""></span>
         <span class="auth-brand-name">CIVINSIS</span>
       </a>
 
@@ -99,11 +99,11 @@ $activeTab = $_GET['tab'] ?? 'login';
               <span><?= __('civinsis.auth.boton_iniciar_sesion') ?></span> <i class="fas fa-arrow-right arrow"></i>
             </button>
             
-            <div style="text-align: center; margin: 20px 0; color: #aaa; font-size: 14px;">O</div>
-            
-            <a href="/auth/google" class="submit-btn" style="background-color: #fff; color: #444; border: 1px solid #ccc; text-align: center; display: flex; align-items: center; justify-content: center; text-decoration: none;">
-              <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style="width: 20px; height: 20px; margin-right: 10px;">
-              <span>Iniciar sesión con Google</span>
+            <div class="auth-divider"><?= __('civinsis.auth.o_continua_con') ?></div>
+
+            <a href="<?= route('google.login') ?>" class="btn-google">
+              <i class="fab fa-google"></i>
+              <span><?= __('civinsis.auth.boton_google_login') ?></span>
             </a>
           </form>
           <p class="form-switch"><?= __('civinsis.auth.no_tienes_cuenta') ?> <button type="button" class="switch-btn" data-to="register"><?= __('civinsis.auth.registrate_aqui') ?></button></p>
@@ -170,11 +170,11 @@ $activeTab = $_GET['tab'] ?? 'login';
               <span><?= __('civinsis.auth.boton_crear_cuenta') ?></span> <i class="fas fa-arrow-right arrow"></i>
             </button>
             
-            <div style="text-align: center; margin: 20px 0; color: #aaa; font-size: 14px;">O</div>
-            
-            <a href="/auth/google" class="submit-btn" style="background-color: #fff; color: #444; border: 1px solid #ccc; text-align: center; display: flex; align-items: center; justify-content: center; text-decoration: none;">
-              <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style="width: 20px; height: 20px; margin-right: 10px;">
-              <span>Registrarse con Google</span>
+            <div class="auth-divider"><?= __('civinsis.auth.o_continua_con') ?></div>
+
+            <a href="<?= route('google.login') ?>" class="btn-google">
+              <i class="fab fa-google"></i>
+              <span><?= __('civinsis.auth.boton_google_registro') ?></span>
             </a>
           </form>
           <p class="form-switch"><?= __('civinsis.auth.ya_tienes_cuenta') ?> <button type="button" class="switch-btn" data-to="login"><?= __('civinsis.auth.inicia_sesion_aqui') ?></button></p>

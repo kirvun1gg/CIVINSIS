@@ -45,6 +45,14 @@ return [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
+        // En local, PHP en Windows/WAMP normalmente no trae un bundle de
+        // certificados CA configurado, así que cURL falla al verificar el
+        // TLS de Google (el mismo problema que ya se vio con Groq y DeepL
+        // en este entorno). Se desactiva solo en local, igual que en esos.
+        // (Ojo: dentro de archivos de config hay que usar env(), nunca
+        // app()->environment() — el contenedor aún no tiene el entorno
+        // detectado en este punto tan temprano del arranque.)
+        'guzzle' => env('APP_ENV') === 'local' ? ['verify' => false] : [],
     ],
 
 ];

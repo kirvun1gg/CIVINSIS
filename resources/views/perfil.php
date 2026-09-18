@@ -496,6 +496,7 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
 
         </div>
       </div>
+      </div>
 
       <!-- ─── ACORDEÓN 5: Privacidad ─── -->
       <div class="pf-accordion" id="accPrivacidad">

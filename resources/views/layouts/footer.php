@@ -31,7 +31,6 @@ $categorias_footer = is_array($categorias) ? $categorias : $categorias->all();
             <a href="debates.php" class="footer-link"><?= __('civinsis.footer.debates') ?></a>
             <a href="desafios.php" class="footer-link"><?= __('civinsis.footer.desafios') ?></a>
             <a href="ranking.php" class="footer-link"><?= __('civinsis.footer.ranking') ?></a>
-            <a href="tendencias.php" class="footer-link"><?= __('civinsis.footer.tendencias') ?></a>
             <a href="index.php#top-votadas" class="footer-link"><?= __('civinsis.footer.mas_votadas') ?></a>
             <a href="index.php#como-funciona" class="footer-link"><?= __('civinsis.footer.como_funciona') ?></a>
             <a href="faq.php" class="footer-link"><?= __('civinsis.footer.faq') ?></a>

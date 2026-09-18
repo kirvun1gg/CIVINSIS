@@ -32,6 +32,8 @@ return [
 
     'groq' => [
         'key'   => env('GROQ_API_KEY'),
+        // qwen3.8-27b es multimodal: procesa texto e imágenes (usado también
+        // para moderar avatares/portadas de propuesta, ver ImageModerationService).
         'model' => env('GROQ_MODEL', 'qwen/qwen3.8-27b'),
         'url'   => env('GROQ_URL', 'https://api.groq.com/openai/v1/chat/completions'),
     ],

@@ -323,6 +323,16 @@ class ProposalController extends Controller
         if ($imagen !== '' && !preg_match('/^data:image\/(jpeg|png|gif|webp);base64,/', $imagen)) $imagen = '';
         if (strlen($imagen) > 5_000_000) $imagen = '';
 
+        if ($imagen !== '') {
+            $analisis = app(\App\Services\ImageModerationService::class)->analizar($imagen);
+            if ($analisis['inapropiada']) {
+                Log::warning('Imagen de propuesta rechazada por moderación IA', [
+                    'usuario_id' => Auth::id(), 'razon' => $analisis['razon'],
+                ]);
+                return $this->json(false, 'La imagen no es apropiada para la plataforma: ' . $analisis['razon']);
+            }
+        }
+
         $p = Proposal::create([
             'titulo'           => $titulo,
             'descripcion'      => $descripcion,
@@ -419,7 +429,16 @@ class ProposalController extends Controller
         ]);
         if ($request->filled('imagen_base64')) {
             $img = (string) $request->input('imagen_base64');
-            if (preg_match('/^data:image\/(jpeg|png|gif|webp);base64,/', $img)) $p->imagen = $img;
+            if (preg_match('/^data:image\/(jpeg|png|gif|webp);base64,/', $img) && strlen($img) <= 5_000_000) {
+                $analisis = app(\App\Services\ImageModerationService::class)->analizar($img);
+                if ($analisis['inapropiada']) {
+                    Log::warning('Imagen de propuesta (edición) rechazada por moderación IA', [
+                        'usuario_id' => Auth::id(), 'propuesta_id' => $p->id, 'razon' => $analisis['razon'],
+                    ]);
+                    return $this->json(false, 'La imagen no es apropiada para la plataforma: ' . $analisis['razon']);
+                }
+                $p->imagen = $img;
+            }
         }
         $p->save();
 

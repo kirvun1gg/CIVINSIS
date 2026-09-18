@@ -200,6 +200,14 @@ class AuthController extends Controller
             return $this->json(false, 'Formato de imagen no válido');
         if (strlen($avatar) > 2_800_000) return $this->json(false, 'La imagen es demasiado grande');
 
+        $analisis = app(\App\Services\ImageModerationService::class)->analizar($avatar);
+        if ($analisis['inapropiada']) {
+            \Illuminate\Support\Facades\Log::warning('Avatar rechazado por moderación IA', [
+                'usuario_id' => $u->id, 'razon' => $analisis['razon'],
+            ]);
+            return $this->json(false, 'La imagen no es apropiada: ' . $analisis['razon']);
+        }
+
         $u->update(['avatar' => $avatar]);
         return $this->json(true, 'Avatar actualizado correctamente', ['avatar' => $avatar]);
     }

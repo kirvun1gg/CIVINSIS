@@ -4,6 +4,10 @@
 
 'use strict';
 
+// ── i18n de toasts (evaluado en cada llamada, no al cargar el script) ──
+function tApp() { return (window.CIVI_I18N && CIVI_I18N.toast && CIVI_I18N.toast.app) || {}; }
+function tComunApp() { return (window.CIVI_I18N && CIVI_I18N.toast && CIVI_I18N.toast.comunes) || {}; }
+
 // ── Tema (modo oscuro) ─────────────────────────────────────
 const Theme = {
   key: 'civitas_theme',
@@ -300,7 +304,7 @@ const API = {
       });
       return await res.json();
     } catch(e) {
-      return { success: false, message: 'Error de conexión: ' + e.message };
+      return { success: false, message: (tApp().error_conexion_prefijo || 'Error de conexión: ') + e.message };
     }
   },
 
@@ -310,7 +314,7 @@ const API = {
       const res = await fetch(url, { method: 'POST', body: new FormData(formEl) });
       return await res.json();
     } catch(e) {
-      return { success: false, message: 'Error de conexión: ' + e.message };
+      return { success: false, message: (tApp().error_conexion_prefijo || 'Error de conexión: ') + e.message };
     }
   },
 
@@ -320,7 +324,7 @@ const API = {
       const res = await fetch(url + (qs ? '?' + qs : ''));
       return await res.json();
     } catch(e) {
-      return { success: false, message: 'Error de conexión' };
+      return { success: false, message: tComunApp().error_conexion || 'Error de conexión' };
     }
   }
 };
@@ -371,7 +375,7 @@ const Auth = {
         const btn = regForm.querySelector('[type=submit]');
         const pass = regForm.querySelector('[name=password]').value;
         const conf = regForm.querySelector('[name=confirm_password]').value;
-        if (pass !== conf) { Toast.show('Las contraseñas no coinciden', 'error'); return; }
+        if (pass !== conf) { Toast.show(tComunApp().contrasenas_no_coinciden || 'Las contraseñas no coinciden', 'error'); return; }
         this.setLoading(btn, true);
         const data = {
           accion: 'registro',
@@ -1077,7 +1081,7 @@ const ProposalDetail = {
   async submitComment(propuestaId) {
     const textarea = document.getElementById('commentText');
     const contenido = textarea.value.trim();
-    if (!contenido) { Toast.show('Escribe un comentario antes de publicar', 'error'); return; }
+    if (!contenido) { Toast.show(tApp().comentario_vacio || 'Escribe un comentario antes de publicar', 'error'); return; }
     const res = await API.post('php/propuestas.php', { accion: 'comentar', propuesta_id: propuestaId, contenido });
     if (res.success) {
       const list = document.getElementById('commentsList');
@@ -1089,7 +1093,7 @@ const ProposalDetail = {
       textarea.value = '';
       const cnt = document.querySelector('.comments-count');
       if (cnt) cnt.textContent = parseInt(cnt.textContent || 0) + 1;
-      Toast.show('¡Comentario publicado!', 'success');
+      Toast.show(tApp().comentario_publicado || '¡Comentario publicado!', 'success');
     } else {
       Toast.show(res.message, 'error');
     }
@@ -1181,7 +1185,7 @@ const CreateProposal = {
       };
 
       if (!data.titulo.trim() || !data.categoria_id) {
-        Toast.show('Completa el título y la categoría', 'error');
+        Toast.show(tApp().completa_titulo_categoria || 'Completa el título y la categoría', 'error');
         Auth.setLoading(btn, false);
         return;
       }
@@ -1192,7 +1196,7 @@ const CreateProposal = {
         Toast.show(res.message, 'success');
         setTimeout(function() { window.location.href = 'propuesta.php?id=' + res.id; }, 900);
       } else {
-        Toast.show(res.message || 'Error al publicar', 'error');
+        Toast.show(res.message || tApp().error_publicar || 'Error al publicar', 'error');
       }
     });
   }
@@ -1725,7 +1729,7 @@ document.querySelectorAll('.cl:not(.cl-c)').forEach(letter => {
         document.body.appendChild(flash);
         setTimeout(() => flash.remove(), 900);
         if (typeof Toast !== 'undefined') {
-          Toast.show('🎮 ¡Código Konami activado! ¡Eres un pro!', 'success');
+          Toast.show(tApp().konami || '🎮 ¡Código Konami activado! ¡Eres un pro!', 'success');
         }
         // Confetti de letras CIVINSIS
         const letters = ['C','I','V','I','T','A','S'];
@@ -1760,7 +1764,7 @@ document.querySelectorAll('.cl:not(.cl-c)').forEach(letter => {
       clicks = 0;
       brand.classList.toggle('secret');
       if (brand.classList.contains('secret') && typeof Toast !== 'undefined') {
-        Toast.show('🌿 "La participación es el primer paso del cambio." — CIVINSIS', 'info');
+        Toast.show(tApp().cita_footer || '🌿 "La participación es el primer paso del cambio." — CIVINSIS', 'info');
       }
     }
   });
@@ -1796,10 +1800,11 @@ document.querySelectorAll('.cl:not(.cl-c)').forEach(letter => {
     if (lc >= 5) {
       lc = 0;
       if (typeof Toast !== 'undefined') {
+        const t = tApp();
         const msgs = [
-          '🚀 "El cambio empieza con una idea." — CIVINSIS',
-          '🌱 Gracias por creer en la participación ciudadana.',
-          '⚡ ¡Sigues explorando! La curiosidad es poder.',
+          t.logo_msg_1 || '🚀 "El cambio empieza con una idea." — CIVINSIS',
+          t.logo_msg_2 || '🌱 Gracias por creer en la participación ciudadana.',
+          t.logo_msg_3 || '⚡ ¡Sigues explorando! La curiosidad es poder.',
         ];
         Toast.show(msgs[Math.floor(Math.random()*msgs.length)], 'info');
       }

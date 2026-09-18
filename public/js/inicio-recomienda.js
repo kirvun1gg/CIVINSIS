@@ -11,8 +11,9 @@
     const d = await res.json();
     if (!d || !d.success) return;
 
-    const props = (d.propuestas || []).map((p) => ({ ...p, tipo: 'Propuesta', ti: 'fa-file-alt' }));
-    const debs  = (d.debates   || []).map((x) => ({ ...x, tipo: 'Debate',    ti: 'fa-comments' }));
+    const i18n = window.CIVI_I18N.recomienda;
+    const props = (d.propuestas || []).map((p) => ({ ...p, tipo: i18n.tipo_propuesta, ti: 'fa-file-alt' }));
+    const debs  = (d.debates   || []).map((x) => ({ ...x, tipo: i18n.tipo_debate,    ti: 'fa-comments' }));
     const items = [...props, ...debs];
     if (!items.length && !d.desafio) return; // nada nuevo → no ocupamos espacio
 
@@ -28,17 +29,17 @@
     const des = d.desafio ? `
       <a href="${esc(d.desafio.url)}" class="civi-reco-desafio">
         <div>
-          <div class="txt"><i class="fas fa-bolt" style="color:var(--naranja)"></i> Reto: ${esc(d.desafio.titulo)}</div>
+          <div class="txt"><i class="fas fa-bolt" style="color:var(--naranja)"></i> ${esc(i18n.reto_prefijo)}: ${esc(d.desafio.titulo)}</div>
           <div class="razon">${esc(d.desafio.razon)}</div>
         </div>
-        <span class="btn btn-sm btn-primary">Aceptar</span>
+        <span class="btn btn-sm btn-primary">${esc(CIVI_I18N.desafios.aceptar)}</span>
       </a>` : '';
 
     box.innerHTML = `
       <div class="civi-reco-head">
         <div class="civi-reco-ava"><i class="fas fa-robot"></i></div>
         <div>
-          <div class="civi-reco-title">CIVI te recomienda</div>
+          <div class="civi-reco-title">${esc(i18n.titulo_widget)}</div>
           <div class="civi-reco-intro">${esc(d.intro)}</div>
         </div>
       </div>

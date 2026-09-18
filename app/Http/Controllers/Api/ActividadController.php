@@ -7,12 +7,16 @@ use App\Models\Comentario;
 use App\Models\Debate;
 use App\Models\DebateRespuesta;
 use App\Models\Desafio;
+use App\Models\Logro;
+use App\Models\Mision;
 use App\Models\Notificacion;
 use App\Models\Proposal;
 use App\Models\UsuarioDesafio;
 use App\Support\ApiResponse;
 use App\Services\GamificacionService;
+use App\Services\TranslationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -50,11 +54,23 @@ class ActividadController extends Controller
     private function saludo($user): array
     {
         $hora = (int) now()->format('H');
-        $franja = $hora < 12 ? 'Buenos días' : ($hora < 19 ? 'Buenas tardes' : 'Buenas noches');
+        $franja = $hora < 12 ? __('civinsis.js.saludo_manana') : ($hora < 19 ? __('civinsis.js.saludo_tarde') : __('civinsis.js.saludo_noche'));
         return [
             'texto'  => $franja,
             'nombre' => $user->nombre,
         ];
+    }
+
+    /**
+     * Pre-carga (1 sola llamada agrupada a DeepL) las traducciones de $campos
+     * para toda una colección, evitando una petición HTTP por elemento.
+     * Después de esto, cada $modelo->translated($campo) lee de caché.
+     */
+    private function precargar($items, array $campos): void
+    {
+        $locale = App::getLocale();
+        if ($locale === 'es' || $items->isEmpty()) return;
+        app(TranslationService::class)->warmMany($items, $campos, $locale);
     }
 
     private function stats($user): array
@@ -76,7 +92,7 @@ class ActividadController extends Controller
         $hoy = now()->toDateString();
         $sem = now()->startOfWeek()->toDateString();
 
-        $misiones = DB::table('misiones')->where('activo', true)->get();
+        $misiones = Mision::where('activo', true)->get();
         foreach ($misiones as $m) {
             $periodo = $m->tipo === 'diaria' ? $hoy : $sem;
             $p = DB::table('usuario_misiones')->where('usuario_id', $user->id)
@@ -84,8 +100,8 @@ class ActividadController extends Controller
             $completada = (bool) ($p->completada ?? false);
             if (!$completada) {
                 return [
-                    'nombre'      => $m->nombre,
-                    'descripcion' => $m->descripcion,
+                    'nombre'      => $m->translated('nombre'),
+                    'descripcion' => $m->translated('descripcion'),
                     'tipo'        => $m->tipo,
                     'progreso'    => (int) ($p->progreso ?? 0),
                     'cantidad'    => (int) $m->cantidad,
@@ -108,8 +124,8 @@ class ActividadController extends Controller
 
         return [
             'id'          => $d->id,
-            'titulo'      => $d->titulo,
-            'descripcion' => $d->descripcion,
+            'titulo'      => $d->translated('titulo'),
+            'descripcion' => $d->translated('descripcion'),
             'dificultad'  => $d->dificultad,
             'icono'       => $d->icono,
             'xp'          => $d->xp_recompensa,
@@ -122,12 +138,12 @@ class ActividadController extends Controller
             ->orderByDesc('desbloqueado_at')->first();
         if (!$ul) return null;
 
-        $logro = DB::table('logros')->where('id', $ul->logro_id)->first();
+        $logro = Logro::find($ul->logro_id);
         if (!$logro) return null;
 
         return [
-            'nombre'      => $logro->nombre,
-            'descripcion' => $logro->descripcion,
+            'nombre'      => $logro->translated('nombre'),
+            'descripcion' => $logro->translated('descripcion'),
             'icono'       => $logro->icono,
             'color'       => $logro->color ?? '#ffb300',
         ];
@@ -139,17 +155,20 @@ class ActividadController extends Controller
         $misPropuestas = Proposal::where('usuario_id', $user->id)->pluck('id');
         if ($misPropuestas->isEmpty()) return [];
 
-        return Comentario::with('usuario')
+        $comentarios = Comentario::with('usuario')
             ->whereIn('propuesta_id', $misPropuestas)
             ->where('usuario_id', '!=', $user->id)
             ->where('censurado', false)
-            ->orderByDesc('created_at')->limit(5)->get()
-            ->map(function ($c) {
+            ->orderByDesc('created_at')->limit(5)->get();
+
+        $this->precargar($comentarios, ['contenido']);
+
+        return $comentarios->map(function ($c) {
                 $u = $c->usuario;
                 return [
-                    'autor'        => $u ? trim($u->nombre . ' ' . $u->apellido) : 'Alguien',
+                    'autor'        => $u ? trim($u->nombre . ' ' . $u->apellido) : __('civinsis.js.anonimo'),
                     'avatar'       => $u->avatar ?? null,
-                    'texto'        => mb_strimwidth($c->contenido, 0, 90, '…'),
+                    'texto'        => mb_strimwidth($c->translated('contenido'), 0, 90, '…'),
                     'propuesta_id' => $c->propuesta_id,
                     'fecha'        => optional($c->created_at)->diffForHumans(),
                 ];
@@ -159,16 +178,20 @@ class ActividadController extends Controller
     /** Propuestas activas de otros, priorizando las que están en votación. */
     private function propuestasRecomendadas($user): array
     {
-        return Proposal::with(['categoria', 'autor'])
+        $propuestas = Proposal::with(['categoria', 'autor'])
             ->where('usuario_id', '!=', $user->id)
             ->where('censurada', false)
             ->orderByRaw("CASE WHEN progreso = 'votacion' THEN 0 ELSE 1 END")
             ->orderByDesc('votos')->orderByDesc('created_at')
-            ->limit(4)->get()
-            ->map(fn ($p) => [
+            ->limit(4)->get();
+
+        $this->precargar($propuestas, ['titulo']);
+        $this->precargar($propuestas->pluck('categoria')->filter()->unique('id'), ['nombre']);
+
+        return $propuestas->map(fn ($p) => [
                 'id'              => $p->id,
-                'titulo'          => $p->titulo,
-                'categoria'       => $p->categoria->nombre ?? '',
+                'titulo'          => $p->translated('titulo'),
+                'categoria'       => $p->categoria ? $p->categoria->translated('nombre') : '',
                 'categoria_icono' => $p->categoria->icono ?? 'fas fa-tag',
                 'categoria_color' => $p->categoria->color ?? '#36c0a1',
                 'progreso'        => $p->progreso ?? 'idea',
@@ -179,14 +202,18 @@ class ActividadController extends Controller
     /** Debates activos con más participación reciente. */
     private function debatesRecomendados($user): array
     {
-        return Debate::with('categoria')
+        $debates = Debate::with('categoria')
             ->where('censurado', false)->where('estado', 'activo')
             ->orderByDesc('respuestas_count')->orderByDesc('fecha_creacion')
-            ->limit(4)->get()
-            ->map(fn ($d) => [
+            ->limit(4)->get();
+
+        $this->precargar($debates, ['titulo']);
+        $this->precargar($debates->pluck('categoria')->filter()->unique('id'), ['nombre']);
+
+        return $debates->map(fn ($d) => [
                 'id'              => $d->id,
-                'titulo'          => $d->titulo,
-                'categoria'       => $d->categoria->nombre ?? '',
+                'titulo'          => $d->translated('titulo'),
+                'categoria'       => $d->categoria ? $d->categoria->translated('nombre') : '',
                 'categoria_icono' => $d->categoria->icono ?? 'fas fa-tag',
                 'categoria_color' => $d->categoria->color ?? '#36c0a1',
                 'respuestas'      => (int) $d->respuestas_count,
@@ -198,10 +225,11 @@ class ActividadController extends Controller
     {
         $items = collect();
 
-        Proposal::where('usuario_id', $user->id)->latest('created_at')->limit(4)->get()
-            ->each(fn ($p) => $items->push([
+        $misPropuestasRecientes = Proposal::where('usuario_id', $user->id)->latest('created_at')->limit(4)->get();
+        $this->precargar($misPropuestasRecientes, ['titulo']);
+        $misPropuestasRecientes->each(fn ($p) => $items->push([
                 'tipo' => 'propuesta', 'icono' => 'fas fa-lightbulb', 'color' => '#36c0a1',
-                'texto' => 'Creaste la propuesta «' . mb_strimwidth($p->titulo, 0, 45, '…') . '»',
+                'texto' => __('civinsis.inicio.act_creaste_propuesta', ['titulo' => mb_strimwidth($p->translated('titulo'), 0, 45, '…')]),
                 'enlace' => 'propuesta.php?id=' . $p->id,
                 'fecha' => $p->created_at, 'fecha_humana' => optional($p->created_at)->diffForHumans(),
             ]));
@@ -209,7 +237,7 @@ class ActividadController extends Controller
         Comentario::where('usuario_id', $user->id)->latest('created_at')->limit(4)->get()
             ->each(fn ($c) => $items->push([
                 'tipo' => 'comentario', 'icono' => 'fas fa-comment', 'color' => '#3b82f6',
-                'texto' => 'Comentaste en una propuesta',
+                'texto' => __('civinsis.inicio.act_comentaste'),
                 'enlace' => 'propuesta.php?id=' . $c->propuesta_id,
                 'fecha' => $c->created_at, 'fecha_humana' => optional($c->created_at)->diffForHumans(),
             ]));
@@ -217,7 +245,7 @@ class ActividadController extends Controller
         DebateRespuesta::where('usuario_id', $user->id)->latest('fecha_creacion')->limit(4)->get()
             ->each(fn ($r) => $items->push([
                 'tipo' => 'debate', 'icono' => 'fas fa-comments', 'color' => '#8b5cf6',
-                'texto' => 'Participaste en un debate',
+                'texto' => __('civinsis.inicio.act_participaste_debate'),
                 'enlace' => 'debate.php?id=' . $r->debate_id,
                 'fecha' => $r->fecha_creacion, 'fecha_humana' => optional($r->fecha_creacion)->diffForHumans(),
             ]));

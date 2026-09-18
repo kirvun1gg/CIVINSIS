@@ -85,6 +85,10 @@ $civiI18n['roles']    = __('civinsis.roles');
 $civiI18n['nav']      = __('civinsis.nav');
 $civiI18n['ranking']  = __('civinsis.ranking');
 $civiI18n['desafios'] = __('civinsis.desafios');
+$civiI18n['inicio']     = __('civinsis.inicio');
+$civiI18n['progreso']   = __('civinsis.progreso');
+$civiI18n['recomienda'] = __('civinsis.recomienda');
+$civiI18n['toast']      = __('civinsis.toast');
 ?>
 <script>
 window.CIVI_I18N = <?= str_replace('</', '<\/', json_encode($civiI18n, JSON_UNESCAPED_UNICODE)) ?>;

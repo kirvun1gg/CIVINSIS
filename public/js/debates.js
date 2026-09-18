@@ -3,6 +3,8 @@
    Depende de API, Toast y Modal definidos en app.js
    ============================================================ */
 
+function tDebates() { return (window.CIVI_I18N && CIVI_I18N.toast && CIVI_I18N.toast.debates) || {}; }
+
 function timeAgoDebate(fecha) {
   if (!fecha) return '';
   const diff = (Date.now() - new Date(fecha.replace(' ', 'T'))) / 1000;
@@ -145,7 +147,7 @@ const Debates = {
     const descripcion = document.getElementById('debateDescripcion').value.trim();
     const categoria_id = document.getElementById('debateCategoria').value;
 
-    if (!titulo || !descripcion) { Toast.show('Completa la pregunta y la descripción', 'error'); return; }
+    if (!titulo || !descripcion) { Toast.show(tDebates().completa_pregunta || 'Completa la pregunta y la descripción', 'error'); return; }
 
     const res = await API.post('php/debates.php', { accion: 'crear', titulo, descripcion, categoria_id });
     if (res.success) {
@@ -381,7 +383,7 @@ const DebateDetail = {
 
   async enviarRespuesta(debateId) {
     const contenido = document.getElementById('respuestaText').value.trim();
-    if (!contenido) { Toast.show('Escribe algo antes de publicar', 'error'); return; }
+    if (!contenido) { Toast.show(tDebates().escribe_antes_publicar || 'Escribe algo antes de publicar', 'error'); return; }
 
     const payload = { accion: 'responder', debate_id: debateId, contenido };
     if (this.replyTo?.parentId) payload.parent_id = this.replyTo.parentId;
@@ -389,7 +391,7 @@ const DebateDetail = {
 
     const res = await API.post('php/debates.php', payload);
     if (res.success) {
-      Toast.show('¡Respuesta publicada!', 'success');
+      Toast.show(tDebates().respuesta_publicada || '¡Respuesta publicada!', 'success');
       document.getElementById('respuestaText').value = '';
       this.cancelarReply();
       this.cargarRespuestas();
@@ -400,7 +402,7 @@ const DebateDetail = {
   },
 
   async votar(id, btn) {
-    if (!this.usuarioId) { Toast.show('Inicia sesión para votar', 'error'); return; }
+    if (!this.usuarioId) { Toast.show(tDebates().inicia_sesion_votar || 'Inicia sesión para votar', 'error'); return; }
     const res = await API.post('php/debates.php', { accion: 'votar_respuesta', respuesta_id: id });
     if (res.success) {
       btn.classList.toggle('active', res.votado);

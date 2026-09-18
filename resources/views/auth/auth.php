@@ -186,6 +186,14 @@ $activeTab = $_GET['tab'] ?? 'login';
 </div><!-- /auth-split -->
 
 <div class="toast-container" id="toastContainer"></div>
+<?php
+// auth.php es una página standalone (no incluye layouts/footer.php), así que
+// expone aquí solo lo que auth-forms.js necesita para traducir sus toasts.
+$authI18n = ['toast' => __('civinsis.toast')];
+?>
+<script>
+window.CIVI_I18N = <?= str_replace('</', '<\/', json_encode($authI18n, JSON_UNESCAPED_UNICODE)) ?>;
+</script>
 <script src="js/auth.js?v=2"></script>
 <script src="js/auth-forms.js"></script>
 </body>

@@ -1,3 +1,7 @@
+// ── i18n de toasts (evaluado en cada llamada, no al cargar el script) ──
+function tAdmin() { return (window.CIVI_I18N && CIVI_I18N.toast && CIVI_I18N.toast.admin) || {}; }
+function tComunAdmin() { return (window.CIVI_I18N && CIVI_I18N.toast && CIVI_I18N.toast.comunes) || {}; }
+
 // Tabs admin
 document.querySelectorAll('[data-admin-tab]').forEach(tab => {
   tab.addEventListener('click', () => {
@@ -47,7 +51,7 @@ function spamCerrar() { document.getElementById('spamModal').classList.remove('o
 async function spamEliminar() {
   const ids = [...document.querySelectorAll('.spam-check:checked')]
     .flatMap(c => c.dataset.ids.split(',').map(Number));
-  if (!ids.length) { showToast('No seleccionaste nada', 'error'); return; }
+  if (!ids.length) { showToast(tAdmin().nada_seleccionado || 'No seleccionaste nada', 'error'); return; }
   if (!confirm(`¿Eliminar ${ids.length} comentarios? Esta acción no se puede deshacer.`)) return;
   try {
     const r = await fetch('php/admin.php', {
@@ -57,7 +61,7 @@ async function spamEliminar() {
     const d = await r.json();
     showToast(d.message, d.success ? 'success' : 'error');
     if (d.success) { spamCerrar(); loadAdminComentarios(); }
-  } catch (e) { showToast('Error de conexión', 'error'); }
+  } catch (e) { showToast(tComunAdmin().error_conexion || 'Error de conexión', 'error'); }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -72,9 +76,9 @@ async function gamInit() {
     try {
       const r = await fetch('php/admin.php?accion=gestion_esquema');
       const d = await r.json();
-      if (!d.success) { showToast('No se pudo cargar la configuración', 'error'); return; }
+      if (!d.success) { showToast(tAdmin().error_cargar_config || 'No se pudo cargar la configuración', 'error'); return; }
       _gamEsquema = d.entidades;
-    } catch (e) { showToast('Error de conexión', 'error'); return; }
+    } catch (e) { showToast(tComunAdmin().error_conexion || 'Error de conexión', 'error'); return; }
 
     document.getElementById('gamChips').innerHTML = Object.entries(_gamEsquema).map(([k, e]) => `
       <button class="gam-chip ${k === _gamEntidad ? 'active' : ''}" data-ent="${k}" onclick="gamCambiar('${k}')">
@@ -197,7 +201,7 @@ async function gamGuardar() {
     const d = await r.json();
     showToast(d.message, d.success ? 'success' : 'error');
     if (d.success) { gamCerrar(); gamCargar(); }
-  } catch (err) { showToast('Error de conexión', 'error'); }
+  } catch (err) { showToast(tComunAdmin().error_conexion || 'Error de conexión', 'error'); }
 }
 
 async function gamEliminar(id) {
@@ -210,7 +214,7 @@ async function gamEliminar(id) {
     const d = await r.json();
     showToast(d.message, d.success ? 'success' : 'error');
     if (d.success) gamCargar();
-  } catch (err) { showToast('Error de conexión', 'error'); }
+  } catch (err) { showToast(tComunAdmin().error_conexion || 'Error de conexión', 'error'); }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -296,9 +300,9 @@ async function adminAccion(payload, confirmMsg) {
       body: JSON.stringify(payload),
     });
     const d = await r.json();
-    showToast(d.message || (d.success ? 'Listo' : 'Error'), d.success ? 'success' : 'error');
+    showToast(d.message || (d.success ? tAdmin().listo || 'Listo' : tAdmin().error_generico || 'Error'), d.success ? 'success' : 'error');
     return d.success;
-  } catch (e) { showToast('Error de conexión', 'error'); return false; }
+  } catch (e) { showToast(tComunAdmin().error_conexion || 'Error de conexión', 'error'); return false; }
 }
 
 async function destacarContenido(tipo, id) {
@@ -453,9 +457,9 @@ async function changeUserRole(userId, nuevoRol) {
       body: JSON.stringify({ accion: 'cambiar_rol', usuario_id: userId, rol: nuevoRol })
     });
     const d = await r.json();
-    if (d.success) showToast('Rol actualizado', 'success');
-    else showToast(d.mensaje || 'Error al cambiar rol', 'error');
-  } catch(e) { showToast('Error de conexión', 'error'); }
+    if (d.success) showToast(tAdmin().rol_actualizado || 'Rol actualizado', 'success');
+    else showToast(d.mensaje || tAdmin().error_cambiar_rol || 'Error al cambiar rol', 'error');
+  } catch(e) { showToast(tComunAdmin().error_conexion || 'Error de conexión', 'error'); }
 }
 
 // ── Confirm + Delete ──────────────────────────────────────
@@ -483,13 +487,13 @@ document.getElementById('confirmBtn').addEventListener('click', async () => {
     const r = await fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
     const d = await r.json();
     if (d.success) {
-      showToast('Eliminado correctamente', 'success');
+      showToast(tAdmin().eliminado_correctamente || 'Eliminado correctamente', 'success');
       if (tipo === 'propuesta') loadAdminPropuestas();
       else if (tipo === 'comentario') loadAdminComentarios();
       else if (tipo === 'usuario') loadAdminUsuarios();
       loadAdminKpis();
-    } else showToast(d.mensaje || 'Error al eliminar', 'error');
-  } catch(e) { showToast('Error de conexión', 'error'); }
+    } else showToast(d.mensaje || tAdmin().error_eliminar || 'Error al eliminar', 'error');
+  } catch(e) { showToast(tComunAdmin().error_conexion || 'Error de conexión', 'error'); }
 });
 
 // ── Editar propuesta ─────────────────────────────────────
@@ -511,9 +515,9 @@ async function saveEditProp() {
       body: JSON.stringify({ accion: 'admin_editar', id, titulo, estado })
     });
     const d = await r.json();
-    if (d.success) { showToast('Propuesta actualizada', 'success'); closeEditProp(); loadAdminPropuestas(); }
-    else showToast(d.mensaje || 'Error al actualizar', 'error');
-  } catch(e) { showToast('Error de conexión', 'error'); }
+    if (d.success) { showToast(tAdmin().propuesta_actualizada || 'Propuesta actualizada', 'success'); closeEditProp(); loadAdminPropuestas(); }
+    else showToast(d.mensaje || tAdmin().error_actualizar || 'Error al actualizar', 'error');
+  } catch(e) { showToast(tComunAdmin().error_conexion || 'Error de conexión', 'error'); }
 }
 
 function escHtml(str) {
@@ -610,21 +614,21 @@ function closeContactReply() { document.getElementById('contactReplyModal').clas
 
 async function sendContactReply() {
   const txt = document.getElementById('contactReplyText').value.trim();
-  if (!txt) { showToast('Escribe una respuesta antes de guardar', 'error'); return; }
+  if (!txt) { showToast(tAdmin().escribe_respuesta || 'Escribe una respuesta antes de guardar', 'error'); return; }
   try {
     const r = await fetch('php/contacto.php', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ accion:'responder', id: currentContactId, respuesta: txt }) });
     const d = await r.json();
-    if (d.success) { showToast('Respuesta guardada', 'success'); closeContactReply(); loadContactMessages(); }
-    else showToast(d.message||'Error', 'error');
-  } catch(e) { showToast('Error de conexión', 'error'); }
+    if (d.success) { showToast(tAdmin().respuesta_guardada || 'Respuesta guardada', 'success'); closeContactReply(); loadContactMessages(); }
+    else showToast(d.message || tAdmin().error_generico || 'Error', 'error');
+  } catch(e) { showToast(tComunAdmin().error_conexion || 'Error de conexión', 'error'); }
 }
 
 async function markMsgRead(id, silent=false) {
   try {
     await fetch('php/contacto.php', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ accion:'marcar_leido', id }) });
-    if (!silent) { showToast('Marcado como leído', 'success'); loadContactMessages(); }
+    if (!silent) { showToast(tAdmin().marcado_leido || 'Marcado como leído', 'success'); loadContactMessages(); }
   } catch(e) {}
 }
 
@@ -633,8 +637,8 @@ function deleteMsgConfirm(id) {
     const r = await fetch('php/contacto.php', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ accion:'eliminar', id }) });
     const d = await r.json();
-    if (d.success) { showToast('Mensaje eliminado', 'success'); closeConfirm(); loadContactMessages(); }
-    else showToast('Error al eliminar', 'error');
+    if (d.success) { showToast(tAdmin().mensaje_eliminado || 'Mensaje eliminado', 'success'); closeConfirm(); loadContactMessages(); }
+    else showToast(tAdmin().error_eliminar || 'Error al eliminar', 'error');
   });
 }
 
@@ -663,7 +667,7 @@ async function loadAdminCategorias() {
         </div></td>
       </tr>`).join('');
     addMobileLabels(tbody);
-  } catch(e) { showToast('Error cargando categorías', 'error'); }
+  } catch(e) { showToast(tAdmin().error_cargar_categorias || 'Error cargando categorías', 'error'); }
 }
 
 function openCatModal(id=null, nombre='', icono='fas fa-tag', color='#36c0a1', desc='') {
@@ -687,7 +691,7 @@ document.getElementById('catIcono')?.addEventListener('input', function() {
 
 async function saveCat() {
   const nombre = document.getElementById('catNombre').value.trim();
-  if (!nombre) { showToast('El nombre es obligatorio', 'error'); return; }
+  if (!nombre) { showToast(tAdmin().nombre_obligatorio || 'El nombre es obligatorio', 'error'); return; }
   const data = {
     accion: currentCatId ? 'editar' : 'crear',
     id: currentCatId,
@@ -699,17 +703,17 @@ async function saveCat() {
   try {
     const r = await fetch('php/admin_categorias.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
     const d = await r.json();
-    if (d.success) { showToast(currentCatId?'Categoría actualizada':'Categoría creada', 'success'); closeCatModal(); loadAdminCategorias(); }
-    else showToast(d.message||'Error', 'error');
-  } catch(e) { showToast('Error de conexión', 'error'); }
+    if (d.success) { showToast(currentCatId ? (tAdmin().categoria_actualizada || 'Categoría actualizada') : (tAdmin().categoria_creada || 'Categoría creada'), 'success'); closeCatModal(); loadAdminCategorias(); }
+    else showToast(d.message || tAdmin().error_generico || 'Error', 'error');
+  } catch(e) { showToast(tComunAdmin().error_conexion || 'Error de conexión', 'error'); }
 }
 
 function deleteCat(id) {
   openConfirm('¿Eliminar categoría?', 'Las propuestas en esta categoría podrían verse afectadas.', async () => {
     const r = await fetch('php/admin_categorias.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({accion:'eliminar', id}) });
     const d = await r.json();
-    if (d.success) { showToast('Categoría eliminada', 'success'); closeConfirm(); loadAdminCategorias(); }
-    else showToast(d.message||'Error al eliminar', 'error');
+    if (d.success) { showToast(tAdmin().categoria_eliminada || 'Categoría eliminada', 'success'); closeConfirm(); loadAdminCategorias(); }
+    else showToast(d.message || tAdmin().error_eliminar || 'Error al eliminar', 'error');
   });
 }
 
@@ -791,12 +795,12 @@ async function marcarAlertaRevisada(id) {
     });
     const d = await r.json();
     if (d.success) {
-      showToast('Alerta marcada como revisada', 'success');
+      showToast(tAdmin().alerta_revisada || 'Alerta marcada como revisada', 'success');
       loadAlertas();
     } else {
-      showToast(d.mensaje || 'Error', 'error');
+      showToast(d.mensaje || tAdmin().error_generico || 'Error', 'error');
     }
-  } catch(e) { showToast('Error de conexión', 'error'); }
+  } catch(e) { showToast(tComunAdmin().error_conexion || 'Error de conexión', 'error'); }
 }
 
 async function aprobarAlerta(id) {
@@ -809,12 +813,12 @@ async function aprobarAlerta(id) {
     });
     const d = await r.json();
     if (d.success) {
-      showToast(d.message || 'Contenido publicado', 'success');
+      showToast(d.message || tAdmin().contenido_publicado || 'Contenido publicado', 'success');
       loadAlertas();
     } else {
-      showToast(d.message || 'Error', 'error');
+      showToast(d.message || tAdmin().error_generico || 'Error', 'error');
     }
-  } catch(e) { showToast('Error de conexión', 'error'); }
+  } catch(e) { showToast(tComunAdmin().error_conexion || 'Error de conexión', 'error'); }
 }
 
 async function censurarAlerta(id) {
@@ -827,12 +831,12 @@ async function censurarAlerta(id) {
     });
     const d = await r.json();
     if (d.success) {
-      showToast(d.message || 'Contenido censurado', 'success');
+      showToast(d.message || tAdmin().contenido_censurado || 'Contenido censurado', 'success');
       loadAlertas();
     } else {
-      showToast(d.message || 'Error', 'error');
+      showToast(d.message || tAdmin().error_generico || 'Error', 'error');
     }
-  } catch(e) { showToast('Error de conexión', 'error'); }
+  } catch(e) { showToast(tComunAdmin().error_conexion || 'Error de conexión', 'error'); }
 }
 
 // Load contact messages badge on init

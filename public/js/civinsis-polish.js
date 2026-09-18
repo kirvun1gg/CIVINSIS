@@ -73,7 +73,7 @@
           <h2 class="cv-celebra-titulo" id="cvTitulo"></h2>
           <p class="cv-celebra-texto" id="cvTexto"></p>
           <button type="button" class="cv-celebra-btn" id="cvCerrar">
-            <i class="fas fa-check"></i> <span>¡Seguir participando!</span>
+            <i class="fas fa-check"></i> <span>${(window.CIVI_I18N && CIVI_I18N.celebra_seguir) || '¡Seguir participando!'}</span>
           </button>
         </div>`;
       document.body.appendChild(c);
@@ -151,20 +151,24 @@
 
     celebrarNivel(nivel, yaPendiente) {
       if (!yaPendiente) this._guardarPendiente({ tipo: 'nivel', valor: nivel });
+      const i18n = window.CIVI_I18N || {};
       this.celebrar({
-        kicker: 'Has subido de nivel',
+        kicker: i18n.celebra_subiste_nivel || 'Has subido de nivel',
         titulo: `¡Nivel ${nivel}!`,
-        texto: 'Tu participación está construyendo comunidad. Sigue así: cada aporte cuenta.',
+        texto: i18n.celebra_nivel_texto || 'Tu participación está construyendo comunidad. Sigue así: cada aporte cuenta.',
         icono: 'fa-arrow-trend-up', sonido: 'nivel',
       });
     },
 
     celebrarLogro(nombre, total, yaPendiente) {
       if (!yaPendiente) this._guardarPendiente({ tipo: 'logro', nombre, valor: total });
+      const i18n = window.CIVI_I18N || {};
       this.celebrar({
-        kicker: 'Logro desbloqueado',
-        titulo: nombre || '¡Nuevo logro!',
-        texto: total ? `Ya llevas ${total} logros. Tu constancia se nota.` : 'Tu constancia se nota.',
+        kicker: i18n.celebra_logro_desbloqueado || 'Logro desbloqueado',
+        titulo: nombre || i18n.celebra_nuevo_logro || '¡Nuevo logro!',
+        texto: total
+          ? (i18n.celebra_logro_total || 'Ya llevas {n} logros. Tu constancia se nota.').replace('{n}', total)
+          : (i18n.celebra_logro_constancia || 'Tu constancia se nota.'),
         icono: 'fa-award', sonido: 'logro',
       });
     },

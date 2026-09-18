@@ -17,6 +17,7 @@
   const btnRedac = $('civiRedactar');
 
   const IA_URL = 'php/ia.php';
+  const ti = () => (window.CIVI_I18N && CIVI_I18N.toast && CIVI_I18N.toast.crear_ia) || {};
 
   // ── utilidades ────────────────────────────────────────────────
   const esc = (s) => { const d = document.createElement('div'); d.textContent = s ?? ''; return d.innerHTML; };
@@ -53,7 +54,7 @@
   }
   function requiereDesc() {
     if ((desc.value || '').trim().length < 8 && (titulo.value || '').trim().length < 8) {
-      Toast.show('Escribe primero un título o una descripción', 'error');
+      Toast.show(ti().escribe_titulo_o_desc || 'Escribe primero un título o una descripción', 'error');
       return false;
     }
     return true;
@@ -62,18 +63,18 @@
   // ── 1) Redactar borrador desde una idea ───────────────────────
   btnRedac?.addEventListener('click', async () => {
     const txt = (idea.value || '').trim();
-    if (txt.length < 6) { Toast.show('Cuéntame tu idea en una frase', 'error'); return; }
+    if (txt.length < 6) { Toast.show(ti().cuentame_idea || 'Cuéntame tu idea en una frase', 'error'); return; }
     busy(btnRedac, true);
     const res = await API.post(IA_URL, { accion: 'redactar', idea: txt });
     busy(btnRedac, false);
-    if (!res.success) { Toast.show(res.message || 'No se pudo redactar', 'error'); return; }
+    if (!res.success) { Toast.show(res.message || ti().no_se_pudo_redactar || 'No se pudo redactar', 'error'); return; }
     const b = res.borrador || {};
     if (b.titulo)      titulo.value = b.titulo;
     if (b.descripcion) desc.value   = b.descripcion;
     if (b.contenido)   { editor.innerHTML = nl2p(b.contenido); sync(); }
     refresh();
     hideResult();
-    Toast.show('Borrador listo — revísalo y edítalo a tu gusto', 'success');
+    Toast.show(ti().borrador_listo || 'Borrador listo — revísalo y edítalo a tu gusto', 'success');
   });
 
   // ── Router de las herramientas ────────────────────────────────
@@ -93,7 +94,7 @@
         `<button type="button" class="civi-titulo-opt" data-t="${esc(t)}">${esc(t)}</button>`).join('');
       showResult(head('fa-heading', 'Elige un título (clic para usarlo):') + (opts || '<p>Sin sugerencias.</p>'));
       result.querySelectorAll('.civi-titulo-opt').forEach((o) => {
-        o.onclick = () => { titulo.value = o.dataset.t; refresh(); hideResult(); Toast.show('Título aplicado', 'success'); };
+        o.onclick = () => { titulo.value = o.dataset.t; refresh(); hideResult(); Toast.show(ti().titulo_aplicado || 'Título aplicado', 'success'); };
       });
     },
 
@@ -108,16 +109,16 @@
         catSel.value = String(res.categoria_id);
         catSel.dispatchEvent(new Event('change'));
         refresh();
-        Toast.show('Categoría detectada: ' + res.categoria_nombre, 'success');
+        Toast.show((ti().categoria_detectada || 'Categoría detectada: {categoria}').replace('{categoria}', res.categoria_nombre), 'success');
       } else {
-        Toast.show('CIVI sugiere: ' + (res.sugerida || 'sin coincidencia clara'), 'info');
+        Toast.show((ti().civi_sugiere_toast || 'CIVI sugiere: {sugerida}').replace('{sugerida}', res.sugerida || ti().sin_coincidencia_clara || 'sin coincidencia clara'), 'info');
       }
     },
 
     // 4) Corregir ortografía (sobre la descripción)
     async ortografia(btn) {
       const texto = (desc.value || '').trim();
-      if (texto.length < 4) { Toast.show('Escribe la descripción primero', 'error'); return; }
+      if (texto.length < 4) { Toast.show(ti().escribe_descripcion_primero || 'Escribe la descripción primero', 'error'); return; }
       busy(btn, true);
       const res = await API.post(IA_URL, { accion: 'ortografia', texto });
       busy(btn, false);
@@ -127,13 +128,13 @@
         `<div>${nl2p(res.respuesta)}</div>` +
         `<button type="button" class="btn btn-primary btn-sm" id="civiApplyOrto"><i class="fas fa-check"></i> Aplicar a la descripción</button>`
       );
-      $('civiApplyOrto').onclick = () => { desc.value = res.respuesta.trim(); refresh(); hideResult(); Toast.show('Descripción actualizada', 'success'); };
+      $('civiApplyOrto').onclick = () => { desc.value = res.respuesta.trim(); refresh(); hideResult(); Toast.show(ti().descripcion_actualizada || 'Descripción actualizada', 'success'); };
     },
 
     // 5) Reforzar argumentos (sobre el contenido completo)
     async argumentos(btn) {
       const texto = (editor.innerText || '').trim();
-      if (texto.length < 20) { Toast.show('Escribe primero el contenido completo', 'error'); return; }
+      if (texto.length < 20) { Toast.show(ti().escribe_contenido_primero || 'Escribe primero el contenido completo', 'error'); return; }
       busy(btn, true);
       const res = await API.post(IA_URL, { accion: 'argumentos', texto });
       busy(btn, false);
@@ -143,7 +144,7 @@
         `<div>${nl2p(res.respuesta)}</div>` +
         `<button type="button" class="btn btn-primary btn-sm" id="civiApplyArg"><i class="fas fa-check"></i> Reemplazar contenido</button>`
       );
-      $('civiApplyArg').onclick = () => { editor.innerHTML = nl2p(res.respuesta); sync(); hideResult(); Toast.show('Contenido actualizado', 'success'); };
+      $('civiApplyArg').onclick = () => { editor.innerHTML = nl2p(res.respuesta); sync(); hideResult(); Toast.show(ti().contenido_actualizado || 'Contenido actualizado', 'success'); };
     },
 
     // 6) Detectar propuestas similares

@@ -2,6 +2,11 @@
 //  CIVINSIS — Sistema de Perfil Interactivo
 // ════════════════════════════════════════════════════════════
 
+// ── i18n de toasts (evaluado en cada llamada, no al cargar el script,
+//    para no depender del orden de carga respecto a window.CIVI_I18N) ──
+function tPerfil() { return (window.CIVI_I18N && CIVI_I18N.toast && CIVI_I18N.toast.perfil) || {}; }
+function tComun()  { return (window.CIVI_I18N && CIVI_I18N.toast && CIVI_I18N.toast.comunes) || {}; }
+
 // ── Control de Acordeones ──────────────────────────────────
 function toggleAccordion(id) {
   const acc = document.getElementById(id);
@@ -95,26 +100,26 @@ const CosDrawer = {
   
   async equipar(tipo, clave, desbloqueado, currentDrawerTipo) {
     if (!desbloqueado) {
-      showToast('Aún no has desbloqueado este cosmético.', 'info');
+      showToast(tPerfil().cosmetico_no_desbloqueado || 'Aún no has desbloqueado este cosmético.', 'info');
       return;
     }
-    
+
     const r = await fetch('php/gamificacion.php', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({accion:'equipar',tipo,clave})
     });
     const d = await r.json();
     if (d.success) {
-      showToast('Cosmético equipado correctamente', 'success');
+      showToast(tPerfil().cosmetico_equipado || 'Cosmético equipado correctamente', 'success');
       await Gam.init(); // Recargar data
       Gam.renderWidget();
       if (Gam.data) aplicarCosmeticos(Gam.data);
       this.filter(currentDrawerTipo);
-      
+
       // Actualizar el dot de equipado en los botones rápidos
       actualizarDotsCosmeticos();
     } else {
-      showToast(d.mensaje||'Error al equipar.', 'error');
+      showToast(d.mensaje || tPerfil().error_equipar || 'Error al equipar.', 'error');
     }
   }
 };
@@ -449,13 +454,13 @@ document.getElementById('editProfileForm').addEventListener('submit', async func
     });
     const d = await r.json();
     if (d.success) {
-      showToast('¡Perfil actualizado con éxito!', 'success');
+      showToast(tPerfil().perfil_actualizado || '¡Perfil actualizado con éxito!', 'success');
       loadProfileData();
     } else {
-      showToast(d.mensaje || 'Error al actualizar el perfil', 'error');
+      showToast(d.mensaje || tPerfil().error_actualizar_perfil || 'Error al actualizar el perfil', 'error');
     }
   } catch (err) {
-    showToast('Error de conexión con el servidor', 'error');
+    showToast(tPerfil().error_conexion_servidor || 'Error de conexión con el servidor', 'error');
   }
 
   btn.disabled = false;
@@ -467,7 +472,7 @@ async function changeAvatar(input) {
   if (!input.files || !input.files[0]) return;
   const file = input.files[0];
   if (file.size > 2 * 1024 * 1024) {
-    showToast('La imagen no puede superar 2MB', 'error');
+    showToast(tPerfil().imagen_max_2mb || 'La imagen no puede superar 2MB', 'error');
     return;
   }
   const reader = new FileReader();
@@ -485,13 +490,13 @@ async function changeAvatar(input) {
       });
       const d = await r.json();
       if (d.success) {
-        showToast('Foto de perfil actualizada correctamente', 'success');
+        showToast(tPerfil().foto_actualizada || 'Foto de perfil actualizada correctamente', 'success');
         if (window.refreshNavAvatar) window.refreshNavAvatar(base64);
       } else {
-        showToast(d.mensaje || 'Error al actualizar foto', 'error');
+        showToast(d.mensaje || tPerfil().error_actualizar_foto || 'Error al actualizar foto', 'error');
       }
     } catch (err) {
-      showToast('Error de conexión', 'error');
+      showToast(tComun().error_conexion || 'Error de conexión', 'error');
     }
   };
   reader.readAsDataURL(file);
@@ -621,8 +626,8 @@ document.getElementById('changePassForm').addEventListener('submit', async funct
   e.preventDefault();
   const nueva   = document.getElementById('passNueva').value;
   const confirm = document.getElementById('passConfirm').value;
-  if (nueva !== confirm) { showToast('Las contraseñas no coinciden', 'error'); return; }
-  if (nueva.length < 8)  { showToast('La contraseña debe tener al menos 8 caracteres', 'error'); return; }
+  if (nueva !== confirm) { showToast(tComun().contrasenas_no_coinciden || 'Las contraseñas no coinciden', 'error'); return; }
+  if (nueva.length < 8)  { showToast(tPerfil().password_min_caracteres || 'La contraseña debe tener al menos 8 caracteres', 'error'); return; }
 
   const btn = this.querySelector('[type=submit]');
   btn.disabled = true;
@@ -640,14 +645,14 @@ document.getElementById('changePassForm').addEventListener('submit', async funct
     });
     const d = await r.json();
     if (d.success) {
-      showToast('¡Contraseña actualizada con éxito!', 'success');
+      showToast(tPerfil().password_actualizada || '¡Contraseña actualizada con éxito!', 'success');
       this.reset();
       evaluarPassword('');
     } else {
-      showToast(d.mensaje || 'Error al cambiar contraseña', 'error');
+      showToast(d.mensaje || tPerfil().error_cambiar_password || 'Error al cambiar contraseña', 'error');
     }
   } catch (err) {
-    showToast('Error de conexión', 'error');
+    showToast(tComun().error_conexion || 'Error de conexión', 'error');
   }
 
   btn.disabled = false;
@@ -953,7 +958,7 @@ const Gam = {
 
   async equipar(tipo, clave, desbloqueado) {
     if (desbloqueado === false) {
-      showToast('Todavía no has desbloqueado este cosmético', 'info');
+      showToast(tPerfil().cosmetico_no_desbloqueado || 'Aún no has desbloqueado este cosmético.', 'info');
       return;
     }
     const r = await fetch('php/gamificacion.php', {
@@ -962,7 +967,7 @@ const Gam = {
     });
     const d = await r.json();
     if (d.success) {
-      showToast('Cosmético equipado correctamente', 'success');
+      showToast(tPerfil().cosmetico_equipado || 'Cosmético equipado correctamente', 'success');
       await this.init();
       this.renderWidget();
       this.renderTitulos();
@@ -970,7 +975,7 @@ const Gam = {
       if (this.data) aplicarCosmeticos(this.data);
       if (window.CosRefrescar) window.CosRefrescar();
     } else {
-      showToast(d.mensaje||'No puedes equipar ese ítem', 'error');
+      showToast(d.mensaje || tPerfil().error_equipar_item || 'No puedes equipar ese ítem', 'error');
     }
   },
 

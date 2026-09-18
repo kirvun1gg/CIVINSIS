@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -31,6 +32,9 @@ class SetLocale
         }
 
         App::setLocale($locale);
+        // Sin esto, diffForHumans() (fechas relativas como "hace 2 horas") siempre
+        // sale en el locale por defecto de Carbon, ignorando el idioma del usuario.
+        Carbon::setLocale($locale);
 
         return $next($request);
     }

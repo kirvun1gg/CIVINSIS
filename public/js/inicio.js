@@ -11,9 +11,17 @@ if (typeof esc !== 'function') {
   };
 }
 
-const DIF_LABEL_INI = { facil: 'Fácil', medio: 'Medio', dificil: 'Difícil' };
+const DIF_LABEL_INI = {
+  get facil()   { return CIVI_I18N.desafios.dificultad_facil; },
+  get medio()   { return CIVI_I18N.desafios.dificultad_medio; },
+  get dificil() { return CIVI_I18N.desafios.dificultad_dificil; },
+};
 const PROGRESO_LABEL_INI = {
-  idea: 'Idea', discusion: 'Discusión', mejoras: 'Mejoras', votacion: 'Votación', destacada: 'Destacada'
+  get idea()      { return CIVI_I18N.progreso.idea_label; },
+  get discusion() { return CIVI_I18N.progreso.discusion_label; },
+  get mejoras()   { return CIVI_I18N.progreso.mejoras_label; },
+  get votacion()  { return CIVI_I18N.progreso.votacion_label; },
+  get destacada() { return CIVI_I18N.progreso.destacada_label; },
 };
 
 const CentroActividad = {
@@ -23,7 +31,7 @@ const CentroActividad = {
 
     const res = await API.get('php/actividad.php', { accion: 'panel' });
     if (!res.success) {
-      cont.innerHTML = `<div class="empty-state"><p>No se pudo cargar tu panel. Intenta recargar.</p></div>`;
+      cont.innerHTML = `<div class="empty-state"><p>${esc(CIVI_I18N.inicio.error_carga)}</p></div>`;
       return;
     }
     cont.innerHTML = this.render(res);
@@ -63,15 +71,15 @@ const CentroActividad = {
         <div class="inicio-hero-top">
           <div>
             <h1 class="inicio-hero-saludo">${esc(this.saludoLocal())}, <span>${esc(saludo.nombre)}</span> 👋</h1>
-            <p class="inicio-hero-sub">Esto es lo que está pasando en tu comunidad hoy.</p>
+            <p class="inicio-hero-sub">${esc(CIVI_I18N.inicio.hero_subtitulo)}</p>
           </div>
-          <a href="crear.php" class="btn btn-primary"><i class="fas fa-plus"></i> Nueva propuesta</a>
+          <a href="crear.php" class="btn btn-primary"><i class="fas fa-plus"></i> ${esc(CIVI_I18N.nav.nueva_propuesta)}</a>
         </div>
         <div class="inicio-stats">
           <div class="inicio-stat">
             <div class="inicio-stat-icon" style="background:rgba(54,192,161,.14);color:var(--verde-500)"><i class="fas fa-star"></i></div>
             <div>
-              <div class="inicio-stat-num">Nivel ${s.nivel}</div>
+              <div class="inicio-stat-num">${esc(CIVI_I18N.inicio.nivel_label)} ${s.nivel}</div>
               <div class="inicio-stat-label">${s.xp} XP</div>
               <div class="inicio-nivel-bar"><span style="width:${s.porcentaje_nivel}%"></span></div>
             </div>
@@ -80,14 +88,14 @@ const CentroActividad = {
             <div class="inicio-stat-icon" style="background:rgba(155,89,182,.14);color:#9b59b6"><i class="fas fa-award"></i></div>
             <div>
               <div class="inicio-stat-num">${s.reputacion}</div>
-              <div class="inicio-stat-label">Reputación</div>
+              <div class="inicio-stat-label">${esc(CIVI_I18N.inicio.reputacion)}</div>
             </div>
           </div>
           <div class="inicio-stat">
             <div class="inicio-stat-icon" style="background:rgba(239,126,34,.14);color:var(--naranja-500)"><i class="fas fa-fire"></i></div>
             <div>
-              <div class="inicio-stat-num">${s.racha_dias} ${s.racha_dias === 1 ? 'día' : 'días'}</div>
-              <div class="inicio-stat-label">Racha activa</div>
+              <div class="inicio-stat-num">${s.racha_dias} ${esc(s.racha_dias === 1 ? CIVI_I18N.inicio.dia_singular : CIVI_I18N.inicio.dia_plural)}</div>
+              <div class="inicio-stat-label">${esc(CIVI_I18N.inicio.racha_activa)}</div>
             </div>
           </div>
         </div>
@@ -99,7 +107,7 @@ const CentroActividad = {
       <div class="inicio-card">
         <div class="inicio-card-header">
           <h3><i class="${icono}"></i> ${titulo}</h3>
-          ${enlaceVerTodo ? `<a href="${enlaceVerTodo}" class="inicio-ver-todo">Ver todo <i class="fas fa-arrow-right"></i></a>` : ''}
+          ${enlaceVerTodo ? `<a href="${enlaceVerTodo}" class="inicio-ver-todo">${esc(CIVI_I18N.inicio.ver_todo)} <i class="fas fa-arrow-right"></i></a>` : ''}
         </div>
         ${contenido}
       </div>`;
@@ -107,11 +115,11 @@ const CentroActividad = {
 
   misionHTML(m) {
     if (!m) {
-      return this.card('Misión activa', 'fas fa-bullseye',
-        `<p class="inicio-vacio">¡Completaste todas tus misiones! 🎉</p>`);
+      return this.card(CIVI_I18N.inicio.mision_activa, 'fas fa-bullseye',
+        `<p class="inicio-vacio">${esc(CIVI_I18N.inicio.mision_vacia)}</p>`);
     }
     const pct = m.cantidad ? Math.min(100, Math.round((m.progreso / m.cantidad) * 100)) : 0;
-    return this.card('Misión activa', 'fas fa-bullseye', `
+    return this.card(CIVI_I18N.inicio.mision_activa, 'fas fa-bullseye', `
       <div class="inicio-mision">
         <div class="inicio-mision-top">
           <span class="inicio-mision-nombre">${esc(m.nombre)}</span>
@@ -125,7 +133,7 @@ const CentroActividad = {
 
   desafioHTML(d) {
     if (!d) return '';
-    return this.card('Desafío recomendado', 'fas fa-flag-checkered', `
+    return this.card(CIVI_I18N.inicio.desafio_recomendado, 'fas fa-flag-checkered', `
       <div class="inicio-desafio" onclick="Desafios&&Desafios.aceptar?Desafios.aceptar(${d.id}):location.href='desafios.php'">
         <div class="inicio-desafio-icon"><i class="${d.icono}"></i></div>
         <div class="inicio-desafio-body">
@@ -135,13 +143,13 @@ const CentroActividad = {
             <span><i class="fas fa-bolt"></i> ${d.xp} XP</span>
           </div>
         </div>
-        <a href="crear.php?desafio_id=${d.id}" class="btn btn-sm btn-primary" onclick="event.stopPropagation()">Aceptar</a>
+        <a href="crear.php?desafio_id=${d.id}" class="btn btn-sm btn-primary" onclick="event.stopPropagation()">${esc(CIVI_I18N.desafios.aceptar)}</a>
       </div>`, 'desafios.php');
   },
 
   logroHTML(l) {
     if (!l) return '';
-    return this.card('Último logro', 'fas fa-trophy', `
+    return this.card(CIVI_I18N.inicio.ultimo_logro, 'fas fa-trophy', `
       <div class="inicio-logro">
         <div class="inicio-logro-icon" style="color:${l.color};background:${l.color}22">${l.icono || '<i class="fas fa-medal"></i>'}</div>
         <div>
@@ -153,8 +161,8 @@ const CentroActividad = {
 
   respuestasHTML(lista) {
     if (!lista || !lista.length) {
-      return this.card('Respuestas recibidas', 'fas fa-reply',
-        `<p class="inicio-vacio">Aún no has recibido comentarios en tus propuestas.</p>`);
+      return this.card(CIVI_I18N.inicio.respuestas_recibidas, 'fas fa-reply',
+        `<p class="inicio-vacio">${esc(CIVI_I18N.inicio.respuestas_vacio)}</p>`);
     }
     const items = lista.map(r => `
       <a href="${r.propuesta_id ? 'propuesta.php?id=' + r.propuesta_id : '#'}" class="inicio-respuesta">
@@ -164,13 +172,13 @@ const CentroActividad = {
           <div class="inicio-resp-texto">${esc(r.texto)}</div>
         </div>
       </a>`).join('');
-    return this.card('Respuestas recibidas', 'fas fa-reply', items);
+    return this.card(CIVI_I18N.inicio.respuestas_recibidas, 'fas fa-reply', items);
   },
 
   propuestasHTML(lista) {
     if (!lista || !lista.length) {
-      return this.card('Propuestas para ti', 'fas fa-layer-group',
-        `<p class="inicio-vacio">No hay propuestas nuevas por ahora.</p>`, 'dashboard.php');
+      return this.card(CIVI_I18N.inicio.propuestas_para_ti, 'fas fa-layer-group',
+        `<p class="inicio-vacio">${esc(CIVI_I18N.inicio.propuestas_vacio)}</p>`, 'dashboard.php');
     }
     const items = lista.map(p => `
       <a href="propuesta.php?id=${p.id}" class="inicio-lista-item">
@@ -183,29 +191,29 @@ const CentroActividad = {
           </div>
         </div>
       </a>`).join('');
-    return this.card('Propuestas para ti', 'fas fa-layer-group', items, 'dashboard.php');
+    return this.card(CIVI_I18N.inicio.propuestas_para_ti, 'fas fa-layer-group', items, 'dashboard.php');
   },
 
   debatesHTML(lista) {
     if (!lista || !lista.length) {
-      return this.card('Debates recomendados', 'fas fa-comments',
-        `<p class="inicio-vacio">No hay debates activos por ahora.</p>`, 'debates.php');
+      return this.card(CIVI_I18N.inicio.debates_recomendados, 'fas fa-comments',
+        `<p class="inicio-vacio">${esc(CIVI_I18N.inicio.debates_vacio)}</p>`, 'debates.php');
     }
     const items = lista.map(d => `
       <a href="debate.php?id=${d.id}" class="inicio-lista-item">
         <span class="inicio-cat-dot" style="background:${d.categoria_color}"><i class="${d.categoria_icono}"></i></span>
         <div class="inicio-lista-body">
           <div class="inicio-lista-titulo">${esc(d.titulo)}</div>
-          <div class="inicio-lista-meta"><span><i class="fas fa-reply"></i> ${d.respuestas} respuestas</span></div>
+          <div class="inicio-lista-meta"><span><i class="fas fa-reply"></i> ${d.respuestas} ${esc(CIVI_I18N.inicio.respuestas_sufijo)}</span></div>
         </div>
       </a>`).join('');
-    return this.card('Debates recomendados', 'fas fa-comments', items, 'debates.php');
+    return this.card(CIVI_I18N.inicio.debates_recomendados, 'fas fa-comments', items, 'debates.php');
   },
 
   actividadHTML(lista) {
     if (!lista || !lista.length) {
-      return this.card('Tu actividad reciente', 'fas fa-clock-rotate-left',
-        `<p class="inicio-vacio">Todavía no tienes actividad. ¡Empieza creando una propuesta!</p>`);
+      return this.card(CIVI_I18N.inicio.actividad_reciente, 'fas fa-clock-rotate-left',
+        `<p class="inicio-vacio">${esc(CIVI_I18N.inicio.actividad_vacio)}</p>`);
     }
     const items = lista.map(a => `
       <a href="${a.enlace}" class="inicio-actividad-item">
@@ -215,7 +223,7 @@ const CentroActividad = {
           <div class="inicio-act-fecha">${esc(a.fecha_humana)}</div>
         </div>
       </a>`).join('');
-    return this.card('Tu actividad reciente', 'fas fa-clock-rotate-left', items);
+    return this.card(CIVI_I18N.inicio.actividad_reciente, 'fas fa-clock-rotate-left', items);
   }
 };
 

@@ -438,15 +438,15 @@
           setTimeout(() => {
             if (window.CV) window.CV.celebrarNivel(d.nivel);
             else this.suggest({ id: 'lvl_' + d.nivel, once: true, sticky: true,
-              texto: `¡Felicidades! 🎉 Acabas de subir al nivel ${d.nivel}.` });
+              texto: (CIVI_I18N.nudge_nivel_corto || '¡Felicidades! 🎉 Acabas de subir al nivel {n}.').replace('{n}', d.nivel) });
           }, 700);
           return;
         }
         if (prevL !== null && d.logros > parseInt(prevL, 10)) {
           setTimeout(() => {
-            if (window.CV) window.CV.celebrarLogro('¡Nuevo logro!', d.logros);
+            if (window.CV) window.CV.celebrarLogro(CIVI_I18N.celebra_nuevo_logro || '¡Nuevo logro!', d.logros);
             else this.suggest({ id: 'logro_' + d.logros, once: true, sticky: true,
-              texto: `¡Desbloqueaste un nuevo logro! 🏅 Ya llevas ${d.logros}.` });
+              texto: (CIVI_I18N.nudge_logro_corto || '¡Desbloqueaste un nuevo logro! 🏅 Ya llevas {n}.').replace('{n}', d.logros) });
           }, 700);
         }
       } catch (e) { /* silencioso */ }
@@ -490,14 +490,14 @@
           // Celebración a pantalla completa si la capa de pulido está cargada
           if (window.CV) window.CV.celebrarNivel(d.nivel);
           else this.suggest({ id: 'lvl_' + d.nivel, once: true, sticky: true,
-            texto: `¡Felicidades! 🎉 Acabas de subir al nivel ${d.nivel}. Estás creciendo como ciudadano.` });
+            texto: (CIVI_I18N.nudge_nivel_largo || '¡Felicidades! 🎉 Acabas de subir al nivel {n}. Estás creciendo como ciudadano.').replace('{n}', d.nivel) });
           return;
         }
         // 2) ¡Nuevo logro!
         if (prevLogros !== null && d.logros > prevLogros) {
-          if (window.CV) window.CV.celebrarLogro('¡Nuevo logro!', d.logros);
+          if (window.CV) window.CV.celebrarLogro(CIVI_I18N.celebra_nuevo_logro || '¡Nuevo logro!', d.logros);
           else this.suggest({ id: 'logro_' + d.logros, once: true, sticky: true,
-            texto: `¡Desbloqueaste un nuevo logro! 🏅 Ya llevas ${d.logros}. Sigue así.` });
+            texto: (CIVI_I18N.nudge_logro_largo || '¡Desbloqueaste un nuevo logro! 🏅 Ya llevas {n}. Sigue así.').replace('{n}', d.logros) });
           return;
         }
         // 3) A un paso de subir de nivel
@@ -563,7 +563,7 @@
                   // dejar el cursor al final para que el usuario siga editando
                   const n = el.value.length;
                   try { el.setSelectionRange(n, n); } catch (e) {}
-                  if (window.Toast) Toast.show('CIVI reformuló tu comentario — revísalo y edítalo antes de publicar', 'success');
+                  if (window.Toast) Toast.show(CIVI_I18N.toast.civi.comentario_reformulado || 'CIVI reformuló tu comentario — revísalo y edítalo antes de publicar', 'success');
                 }
               } catch (e) { /* silencioso */ }
             },

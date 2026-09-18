@@ -985,7 +985,8 @@ TXT;
                 ->select('propuestas.categoria_id', DB::raw('COUNT(*) as t'))
                 ->groupBy('propuestas.categoria_id')->orderByDesc('t')->value('propuestas.categoria_id');
         }
-        $catFavNombre = $catFavId ? optional(Categoria::find($catFavId))->nombre : null;
+        $catFavModelo = $catFavId ? Categoria::find($catFavId) : null;
+        $catFavNombre = $catFavModelo ? $catFavModelo->translated('nombre') : null;
 
         // Lo que ya tocó (para no recomendárselo)
         $votadas    = Voto::where('usuario_id', $u->id)->pluck('propuesta_id')->all();
@@ -1002,14 +1003,15 @@ TXT;
             ->orderByRaw("CASE WHEN progreso = 'votacion' THEN 0 ELSE 1 END")
             ->orderByDesc('votos')->limit(3)->get()
             ->map(function ($p) use ($catFavId) {
+                $catNombre = $p->categoria ? $p->categoria->translated('nombre') : null;
                 $razon = $p->categoria_id === $catFavId && $catFavId
-                    ? 'Porque te interesa ' . ($p->categoria->nombre ?? 'este tema')
+                    ? __('civinsis.recomienda.propuesta_razon_categoria', ['categoria' => $catNombre ?? __('civinsis.recomienda.propuesta_categoria_generica')])
                     : ($p->progreso === 'votacion'
-                        ? 'Está en votación y tu voto cuenta ahora'
-                        : 'Está ganando apoyo en la comunidad');
+                        ? __('civinsis.recomienda.propuesta_razon_votacion')
+                        : __('civinsis.recomienda.propuesta_razon_apoyo'));
                 return [
-                    'id' => $p->id, 'titulo' => $p->titulo, 'razon' => $razon,
-                    'categoria' => $p->categoria->nombre ?? '',
+                    'id' => $p->id, 'titulo' => $p->translated('titulo'), 'razon' => $razon,
+                    'categoria' => $catNombre ?? '',
                     'icono' => $p->categoria->icono ?? 'fas fa-tag',
                     'color' => $p->categoria->color ?? '#36c0a1',
                     'url' => 'propuesta.php?id=' . $p->id,
@@ -1023,12 +1025,13 @@ TXT;
             ->orderByRaw('CASE WHEN categoria_id = ? THEN 0 ELSE 1 END', [$catFavId ?: 0])
             ->latest('fecha_creacion')->limit(2)->get()
             ->map(function ($d) use ($catFavId) {
+                $catNombre = $d->categoria ? $d->categoria->translated('nombre') : null;
                 $razon = $d->categoria_id === $catFavId && $catFavId
-                    ? 'Sobre ' . ($d->categoria->nombre ?? 'tu tema favorito') . ', donde más participas'
-                    : 'Un debate activo donde tu opinión sumaría';
+                    ? __('civinsis.recomienda.debate_razon_categoria', ['categoria' => $catNombre ?? __('civinsis.recomienda.debate_categoria_generica')])
+                    : __('civinsis.recomienda.debate_razon_generico');
                 return [
-                    'id' => $d->id, 'titulo' => $d->titulo, 'razon' => $razon,
-                    'categoria' => $d->categoria->nombre ?? '',
+                    'id' => $d->id, 'titulo' => $d->translated('titulo'), 'razon' => $razon,
+                    'categoria' => $catNombre ?? '',
                     'icono' => $d->categoria->icono ?? 'fas fa-comments',
                     'color' => $d->categoria->color ?? '#ef7e22',
                     'url' => 'debate.php?id=' . $d->id,
@@ -1040,21 +1043,22 @@ TXT;
             ->when($desafHechos, fn($q) => $q->whereNotIn('id', $desafHechos))
             ->orderByRaw('CASE WHEN categoria_id = ? THEN 0 ELSE 1 END', [$catFavId ?: 0])
             ->orderByDesc('xp_recompensa')->first();
+        $desCatNombre = $des && $des->categoria ? $des->categoria->translated('nombre') : null;
         $desafio = $des ? [
-            'id' => $des->id, 'titulo' => $des->titulo,
+            'id' => $des->id, 'titulo' => $des->translated('titulo'),
             'razon' => ($des->categoria_id === $catFavId && $catFavId)
-                ? 'Un reto de ' . ($des->categoria->nombre ?? 'tu tema') . ' para ti'
-                : 'Un reto para ganar ' . ($des->xp_recompensa ?? 0) . ' XP',
+                ? __('civinsis.recomienda.desafio_razon_categoria', ['categoria' => $desCatNombre ?? __('civinsis.recomienda.desafio_categoria_generica')])
+                : __('civinsis.recomienda.desafio_razon_xp', ['xp' => $des->xp_recompensa ?? 0]),
             'xp' => $des->xp_recompensa ?? 0,
             'url' => 'crear.php?desafio_id=' . $des->id,
         ] : null;
 
         // Intro narrada (con respaldo determinista)
         $intro = $catFavNombre
-            ? "Basándome en tu interés por {$catFavNombre} y en tu actividad, te sugiero:"
-            : 'Basándome en tu actividad en la comunidad, te sugiero:';
+            ? __('civinsis.recomienda.intro_con_categoria', ['categoria' => $catFavNombre])
+            : __('civinsis.recomienda.intro_generico');
         if ($props->isEmpty() && $debs->isEmpty() && !$desafio) {
-            $intro = '¡Vas al día! Por ahora no tengo nada nuevo que recomendarte. Sigue participando.';
+            $intro = __('civinsis.recomienda.intro_vacio');
         }
 
         return $this->json(true, 'OK', [

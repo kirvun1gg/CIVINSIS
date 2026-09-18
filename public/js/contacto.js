@@ -30,12 +30,14 @@ document.getElementById('contactoForm').addEventListener('submit', async functio
       this.style.display = 'none';
       document.getElementById('contactoSuccess').style.display = 'block';
     } else {
-      Toast.show(d.message || 'Error al enviar', 'error');
+      const tc = (window.CIVI_I18N && CIVI_I18N.toast && CIVI_I18N.toast.contacto) || {};
+      Toast.show(d.message || tc.error_enviar || 'Error al enviar', 'error');
       btn.disabled = false;
       btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar mensaje';
     }
   } catch(err) {
-    Toast.show('Error de conexión', 'error');
+    const tcm = (window.CIVI_I18N && CIVI_I18N.toast && CIVI_I18N.toast.comunes) || {};
+    Toast.show(tcm.error_conexion || 'Error de conexión', 'error');
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar mensaje';
   }

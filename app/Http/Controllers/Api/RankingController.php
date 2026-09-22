@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Proposal;
 use App\Models\Titulo;
 use App\Support\ApiResponse;
+use App\Support\CatalogoTraducido;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +46,7 @@ class RankingController extends Controller
         return match ($accion) {
             'categorias' => $this->categorias(),
             'listar'     => $this->listar($request),
-            default      => $this->json(false, 'Acción no reconocida'),
+            default      => $this->json(false, __('civinsis.toast.comunes.accion_no_reconocida')),
         };
     }
 
@@ -166,7 +167,7 @@ class RankingController extends Controller
             'xp'       => $u->xp_total,
             'reputacion' => $u->reputacion,
             'valor'    => $valor,
-            'titulo'   => $titulo ? ['nombre' => $titulo->nombre, 'color' => $titulo->color, 'rareza' => $titulo->rareza] : null,
+            'titulo'   => $titulo ? ['nombre' => CatalogoTraducido::campo('titulos', $titulo->clave, 'nombre', $titulo->nombre), 'color' => $titulo->color, 'rareza' => $titulo->rareza] : null,
         ];
     }
 

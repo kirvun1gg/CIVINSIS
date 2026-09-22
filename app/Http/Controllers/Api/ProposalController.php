@@ -12,6 +12,7 @@ use App\Models\PropuestaProgreso;
 use App\Models\UsuarioDesafio;
 use App\Models\Voto;
 use App\Support\ApiResponse;
+use App\Support\CatalogoTraducido;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
@@ -97,7 +98,7 @@ class ProposalController extends Controller
             'admin_comentarios'  => $this->adminComentarios(),
             'eliminar_comentario'=> $this->eliminarComentario($request),
             'admin_editar'       => $this->adminEditar($request),
-            default              => $this->json(false, 'Acción no reconocida'),
+            default              => $this->json(false, __('civinsis.toast.comunes.accion_no_reconocida')),
         };
     }
 
@@ -119,6 +120,19 @@ class ProposalController extends Controller
         $locale = App::getLocale();
         if ($locale === 'es' || $items->isEmpty()) return;
         app(TranslationService::class)->warmMany($items, $campos, $locale);
+    }
+
+    /**
+     * Precarga el nombre de las categorías de una colección de propuestas.
+     * Sin esto, formato() traduce la categoría de cada propuesta con su
+     * propia llamada a DeepL (una por propuesta, no por categoría única),
+     * lo que además de lento puede fallar de forma intermitente en listados
+     * grandes — de ahí que a veces "algunas" categorías salieran sin traducir.
+     */
+    private function precargarCategorias($items): void
+    {
+        $categorias = $items->pluck('categoria')->filter()->unique('id');
+        $this->precargar($categorias, ['nombre']);
     }
 
     /** Da formato a una propuesta para el frontend, incluyendo datos de autor + tarjeta. */
@@ -230,6 +244,7 @@ class ProposalController extends Controller
         }
 
         $this->precargar($items, ['titulo', 'descripcion', 'contenido']);
+        $this->precargarCategorias($items);
         $propuestas = $items->map(function ($p) use ($votadas, $topAspectos) {
             $row = $this->formato($p);
             $row['ya_vote'] = in_array($p->id, $votadas);
@@ -251,10 +266,10 @@ class ProposalController extends Controller
     private function detalle(Request $request)
     {
         $id = (int) $request->input('id');
-        if (!$id) return $this->json(false, 'ID inválido');
+        if (!$id) return $this->json(false, __('civinsis.toast.comunes.id_invalido'));
 
         $p = Proposal::with(['categoria', 'autor'])->find($id);
-        if (!$p) return $this->json(false, 'Propuesta no encontrada');
+        if (!$p) return $this->json(false, __('civinsis.toast.comunes.propuesta_no_encontrada'));
 
         $p->increment('vistas');
 
@@ -307,7 +322,7 @@ class ProposalController extends Controller
 
     private function crear(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.debes_iniciar_sesion'));
 
         $titulo      = trim((string) $request->input('titulo'));
         $descripcion = trim((string) $request->input('descripcion'));
@@ -318,7 +333,7 @@ class ProposalController extends Controller
         $desafioId   = $request->input('desafio_id') ? (int) $request->input('desafio_id') : null;
 
         if ($titulo === '' || $descripcion === '' || !$categoria)
-            return $this->json(false, 'Por favor completa todos los campos obligatorios');
+            return $this->json(false, __('civinsis.toast.proposal.completa_campos_obligatorios'));
 
         if ($imagen !== '' && !preg_match('/^data:image\/(jpeg|png|gif|webp);base64,/', $imagen)) $imagen = '';
         if (strlen($imagen) > 5_000_000) $imagen = '';
@@ -329,7 +344,7 @@ class ProposalController extends Controller
                 Log::warning('Imagen de propuesta rechazada por moderación IA', [
                     'usuario_id' => Auth::id(), 'razon' => $analisis['razon'],
                 ]);
-                return $this->json(false, 'La imagen no es apropiada para la plataforma: ' . $analisis['razon']);
+                return $this->json(false, __('civinsis.toast.proposal.imagen_no_apropiada', ['razon' => $analisis['razon']]));
             }
         }
 
@@ -364,7 +379,7 @@ class ProposalController extends Controller
         // Completar desafío vinculado (si esta propuesta nació de uno)
         if ($desafioId) $this->completarDesafio($desafioId, $p);
 
-        return $this->json(true, '¡Propuesta publicada exitosamente!', ['id' => $p->id]);
+        return $this->json(true, __('civinsis.toast.proposal.publicada_exitosamente'), ['id' => $p->id]);
     }
 
     /** Marca el desafío como completado por el usuario y otorga sus recompensas (solo la primera vez). */
@@ -400,7 +415,7 @@ class ProposalController extends Controller
 
     private function editar(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.debes_iniciar_sesion'));
 
         $id          = (int) $request->input('id');
         $titulo      = trim((string) $request->input('titulo'));
@@ -409,12 +424,12 @@ class ProposalController extends Controller
         $categoria   = (int) $request->input('categoria_id');
 
         if (!$id || $titulo === '' || $descripcion === '' || !$categoria)
-            return $this->json(false, 'Datos incompletos');
+            return $this->json(false, __('civinsis.toast.comunes.datos_incompletos'));
 
         $p = Proposal::find($id);
-        if (!$p) return $this->json(false, 'Propuesta no encontrada');
+        if (!$p) return $this->json(false, __('civinsis.toast.comunes.propuesta_no_encontrada'));
         if ($p->usuario_id !== Auth::id() && auth_user()->rol_nombre !== 'admin')
-            return $this->json(false, 'No tienes permiso para editar esta propuesta');
+            return $this->json(false, __('civinsis.toast.proposal.sin_permiso_editar'));
 
         $p->fill([
             'titulo'           => $titulo,
@@ -435,26 +450,26 @@ class ProposalController extends Controller
                     Log::warning('Imagen de propuesta (edición) rechazada por moderación IA', [
                         'usuario_id' => Auth::id(), 'propuesta_id' => $p->id, 'razon' => $analisis['razon'],
                     ]);
-                    return $this->json(false, 'La imagen no es apropiada para la plataforma: ' . $analisis['razon']);
+                    return $this->json(false, __('civinsis.toast.proposal.imagen_no_apropiada', ['razon' => $analisis['razon']]));
                 }
                 $p->imagen = $img;
             }
         }
         $p->save();
 
-        return $this->json(true, 'Propuesta actualizada correctamente');
+        return $this->json(true, __('civinsis.toast.proposal.actualizada_correctamente'));
     }
 
     private function eliminar(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.debes_iniciar_sesion'));
         $p = Proposal::find((int) $request->input('id'));
-        if (!$p) return $this->json(false, 'Propuesta no encontrada');
+        if (!$p) return $this->json(false, __('civinsis.toast.comunes.propuesta_no_encontrada'));
         if ($p->usuario_id !== Auth::id() && auth_user()->rol_nombre !== 'admin')
-            return $this->json(false, 'No tienes permiso para eliminar esta propuesta');
+            return $this->json(false, __('civinsis.toast.proposal.sin_permiso_eliminar'));
 
         $p->delete();
-        return $this->json(true, 'Propuesta eliminada correctamente');
+        return $this->json(true, __('civinsis.toast.proposal.eliminada_correctamente'));
     }
 
     /**
@@ -466,19 +481,19 @@ class ProposalController extends Controller
      */
     private function valorar(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión para valorar');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.proposal.inicia_sesion_valorar'));
 
         $pid     = (int) $request->input('propuesta_id');
         $aspecto = (string) $request->input('aspecto');
 
-        if (!$pid) return $this->json(false, 'ID de propuesta inválido');
-        if (!array_key_exists($aspecto, self::ASPECTOS)) return $this->json(false, 'Aspecto inválido');
+        if (!$pid) return $this->json(false, __('civinsis.toast.proposal.id_propuesta_invalido'));
+        if (!array_key_exists($aspecto, self::ASPECTOS)) return $this->json(false, __('civinsis.toast.proposal.aspecto_invalido'));
 
         $p = Proposal::find($pid);
-        if (!$p) return $this->json(false, 'Propuesta no encontrada');
-        if ($p->usuario_id === Auth::id()) return $this->json(false, 'No puedes valorar tu propia propuesta');
+        if (!$p) return $this->json(false, __('civinsis.toast.comunes.propuesta_no_encontrada'));
+        if ($p->usuario_id === Auth::id()) return $this->json(false, __('civinsis.toast.proposal.no_valorar_propia'));
         if (($p->progreso ?? 'idea') !== 'votacion') {
-            return $this->json(false, 'Esta propuesta solo puede valorarse cuando está en la fase de Votación');
+            return $this->json(false, __('civinsis.toast.proposal.solo_valorar_en_votacion'));
         }
 
         // Voto previo de este usuario (solo puede haber uno)
@@ -520,7 +535,8 @@ class ProposalController extends Controller
             } catch (\Throwable $e) {}
         }
 
-        return $this->json(true, 'Valoración ' . $accion, [
+        $accionKey = ['removido' => 'valoracion_removido', 'cambiado' => 'valoracion_cambiado', 'agregado' => 'valoracion_agregado'][$accion] ?? 'valoracion_agregado';
+        return $this->json(true, __('civinsis.toast.proposal.' . $accionKey), [
             'accion'      => $accion,
             'aspecto'     => $aspecto,
             'votos'       => $p->votos,
@@ -574,12 +590,12 @@ class ProposalController extends Controller
 
     private function comentar(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión para comentar');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.proposal.inicia_sesion_comentar'));
         $pid       = (int) $request->input('propuesta_id');
         $contenido = trim((string) $request->input('contenido'));
 
-        if (!$pid || $contenido === '') return $this->json(false, 'El comentario no puede estar vacío');
-        if (strlen($contenido) > 1000) return $this->json(false, 'El comentario es demasiado largo (máximo 1000 caracteres)');
+        if (!$pid || $contenido === '') return $this->json(false, __('civinsis.toast.proposal.comentario_vacio'));
+        if (strlen($contenido) > 1000) return $this->json(false, __('civinsis.toast.proposal.comentario_muy_largo'));
 
         $c = Comentario::create(['propuesta_id' => $pid, 'usuario_id' => Auth::id(), 'contenido' => $contenido]);
         $c->load('usuario');
@@ -603,8 +619,8 @@ class ProposalController extends Controller
             $meta = self::PROGRESO_STAGES['discusion'];
             try {
                 Notificacion::crear(
-                    $p->usuario_id, 'progreso_propuesta',
-                    "¡Tu propuesta «{$p->titulo}» recibió su primer comentario y pasó a la fase \"" . $this->progresoLabel('discusion') . "\"!",
+                    $p->usuario_id, 'progreso_propuesta', 'primer_comentario',
+                    ['titulo' => $p->titulo, 'fase_clave' => 'discusion'],
                     'propuesta.php?id=' . $p->id, $meta['icono'], $meta['color']
                 );
             } catch (\Throwable $e) {}
@@ -617,13 +633,13 @@ class ProposalController extends Controller
             $gam->otorgarReputacion(auth_user(), 'Comentaste en una propuesta', 2, null, $c->id);
         } catch (\Throwable $e) {}
 
-        return $this->json(true, 'Comentario publicado', ['comentario' => $this->formatoComentario($c)]);
+        return $this->json(true, __('civinsis.toast.proposal.comentario_publicado'), ['comentario' => $this->formatoComentario($c)]);
     }
 
     private function comentarios(Request $request)
     {
         $id = (int) $request->input('id');
-        if (!$id) return $this->json(false, 'ID inválido');
+        if (!$id) return $this->json(false, __('civinsis.toast.comunes.id_invalido'));
 
         $comentarios = Comentario::with('usuario')->where('propuesta_id', $id)
             ->orderByDesc('fecha_creacion')->get();
@@ -663,7 +679,7 @@ class ProposalController extends Controller
     {
         if (!$u || !$u->titulo_equipado) return null;
         $t = \App\Models\Titulo::where('clave', $u->titulo_equipado)->first();
-        return $t ? ['nombre' => $t->nombre, 'color' => $t->color, 'rareza' => $t->rareza] : null;
+        return $t ? ['nombre' => CatalogoTraducido::campo('titulos', $t->clave, 'nombre', $t->nombre), 'color' => $t->color, 'rareza' => $t->rareza] : null;
     }
 
     private function top(Request $request)
@@ -673,6 +689,7 @@ class ProposalController extends Controller
             ->where('estado', 'activa')->where('votos', '>', 0)
             ->orderByDesc('votos')->limit($limit)->get();
         $this->precargar($items, ['titulo', 'descripcion', 'contenido']);
+        $this->precargarCategorias($items);
         $items = $items->map(fn ($p) => $this->formato($p));
 
         return $this->json(true, 'OK', ['propuestas' => $items]);
@@ -680,10 +697,11 @@ class ProposalController extends Controller
 
     private function misPropuestas()
     {
-        if (!Auth::check()) return $this->json(false, 'No autenticado');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.no_autenticado'));
         $items = Proposal::with('categoria')->where('usuario_id', Auth::id())
             ->orderByDesc('fecha_creacion')->get();
         $this->precargar($items, ['titulo', 'descripcion', 'contenido']);
+        $this->precargarCategorias($items);
         // "Mis propuestas" no muestra imagen de portada ni el avatar del
         // autor (ver perfil.js) — siempre eres tú. Ambos campos vienen en
         // base64 (cientos de KB cada uno) y formato() los repite en CADA
@@ -702,7 +720,7 @@ class ProposalController extends Controller
     private function adminComentarios()
     {
         if (!Auth::check() || !in_array(auth_user()->rol_nombre, ['admin', 'moderador']))
-            return $this->json(false, 'Sin permisos');
+            return $this->json(false, __('civinsis.toast.comunes.sin_permisos'));
 
         // Moderación siempre trabaja sobre el contenido original, sin traducir
         // (punto 24: la moderación no depende del idioma mostrado al público).
@@ -715,29 +733,29 @@ class ProposalController extends Controller
     private function eliminarComentario(Request $request)
     {
         if (!Auth::check() || !in_array(auth_user()->rol_nombre, ['admin', 'moderador']))
-            return $this->json(false, 'Sin permisos');
+            return $this->json(false, __('civinsis.toast.comunes.sin_permisos'));
         $id = (int) $request->input('id');
-        if (!$id) return $this->json(false, 'ID inválido');
+        if (!$id) return $this->json(false, __('civinsis.toast.comunes.id_invalido'));
         Comentario::where('id', $id)->delete();
-        return $this->json(true, 'Comentario eliminado');
+        return $this->json(true, __('civinsis.toast.proposal.comentario_eliminado'));
     }
 
     /** Cambia la fase del ciclo de vida de una propuesta (acción de admin/moderador). */
     private function cambiarProgreso(Request $request)
     {
         if (!Auth::check() || !in_array(auth_user()->rol_nombre, ['admin', 'moderador']))
-            return $this->json(false, 'Sin permisos');
+            return $this->json(false, __('civinsis.toast.comunes.sin_permisos'));
 
         $id       = (int) $request->input('id');
         $progreso = (string) $request->input('progreso');
 
-        if (!array_key_exists($progreso, self::PROGRESO_STAGES)) return $this->json(false, 'Fase inválida');
+        if (!array_key_exists($progreso, self::PROGRESO_STAGES)) return $this->json(false, __('civinsis.toast.proposal.fase_invalida'));
 
         $p = Proposal::find($id);
-        if (!$p) return $this->json(false, 'Propuesta no encontrada');
+        if (!$p) return $this->json(false, __('civinsis.toast.comunes.propuesta_no_encontrada'));
 
         if ($p->progreso === $progreso) {
-            return $this->json(true, 'La propuesta ya estaba en esa fase', ['progreso' => $progreso]);
+            return $this->json(true, __('civinsis.toast.proposal.ya_en_esa_fase'), ['progreso' => $progreso]);
         }
 
         $p->progreso = $progreso;
@@ -756,13 +774,14 @@ class ProposalController extends Controller
         Notificacion::crear(
             $p->usuario_id,
             'progreso_propuesta',
-            "Tu propuesta «{$p->titulo}» avanzó a la fase \"{$label}\"",
+            'cambio_fase',
+            ['titulo' => $p->titulo, 'fase_clave' => $progreso],
             'propuesta.php?id=' . $p->id,
             $meta['icono'],
             $meta['color']
         );
 
-        return $this->json(true, "Propuesta movida a la fase «{$label}»", ['progreso' => $progreso]);
+        return $this->json(true, __('civinsis.toast.proposal.movida_a_fase', ['fase' => $label]), ['progreso' => $progreso]);
     }
 
     /**
@@ -772,22 +791,22 @@ class ProposalController extends Controller
      */
     private function decidirFase(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.debes_iniciar_sesion'));
 
         $id      = (int) $request->input('id');
         $destino = (string) $request->input('destino'); // 'mejoras' | 'votacion'
 
-        if (!in_array($destino, ['mejoras', 'votacion'], true)) return $this->json(false, 'Opción inválida');
+        if (!in_array($destino, ['mejoras', 'votacion'], true)) return $this->json(false, __('civinsis.toast.proposal.opcion_invalida'));
 
         $p = Proposal::find($id);
-        if (!$p) return $this->json(false, 'Propuesta no encontrada');
-        if ($p->usuario_id !== Auth::id()) return $this->json(false, 'Solo el autor puede decidir esto');
-        if ($p->progreso !== 'discusion') return $this->json(false, 'Esta propuesta ya no está en fase de discusión');
+        if (!$p) return $this->json(false, __('civinsis.toast.comunes.propuesta_no_encontrada'));
+        if ($p->usuario_id !== Auth::id()) return $this->json(false, __('civinsis.toast.proposal.solo_autor_decide'));
+        if ($p->progreso !== 'discusion') return $this->json(false, __('civinsis.toast.proposal.ya_no_en_discusion'));
 
         $comentariosComunidad = Comentario::where('propuesta_id', $p->id)
             ->where('usuario_id', '!=', $p->usuario_id)->where('censurado', false)->count();
         if ($comentariosComunidad < self::UMBRAL_SUGERENCIA_MEJORA) {
-            return $this->json(false, 'Todavía no hay suficientes comentarios de la comunidad para esta decisión');
+            return $this->json(false, __('civinsis.toast.proposal.insuficientes_comentarios'));
         }
 
         $p->progreso = $destino;
@@ -799,20 +818,20 @@ class ProposalController extends Controller
         ]);
 
         $label = $this->progresoLabel($destino);
-        return $this->json(true, "¡Listo! Tu propuesta pasó a la fase «{$label}»", ['progreso' => $destino]);
+        return $this->json(true, __('civinsis.toast.proposal.listo_paso_a_fase', ['fase' => $label]), ['progreso' => $destino]);
     }
 
     private function adminEditar(Request $request)
     {
         if (!Auth::check() || !in_array(auth_user()->rol_nombre, ['admin', 'moderador']))
-            return $this->json(false, 'Sin permisos');
+            return $this->json(false, __('civinsis.toast.comunes.sin_permisos'));
         $id     = (int) $request->input('id');
         $titulo = trim((string) $request->input('titulo'));
         $estado = in_array($request->input('estado'), ['activa', 'en_revision', 'aprobada', 'rechazada'])
             ? $request->input('estado') : 'activa';
-        if (!$id || $titulo === '') return $this->json(false, 'Datos inválidos');
+        if (!$id || $titulo === '') return $this->json(false, __('civinsis.toast.comunes.datos_invalidos'));
         Proposal::where('id', $id)->update(['titulo' => $titulo, 'estado' => $estado]);
-        return $this->json(true, 'Propuesta actualizada');
+        return $this->json(true, __('civinsis.toast.admin.propuesta_actualizada'));
     }
 
     // ─────────────────────────────────────────────────────────────

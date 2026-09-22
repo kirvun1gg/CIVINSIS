@@ -32962,3 +32962,19 @@ Stack trace:
 #58 C:\\wamp64\\www\\CIVINSIS\\server.php(21): require_once('C:\\\\wamp64\\\\www\\\\C...')
 #59 {main}
 "} 
+[2026-09-22 02:48:23] local.ERROR: Error llamando a DeepL: cURL error 6: Could not resolve host: api-free.deepl.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-free.deepl.com/v2/translate  
+[2026-09-22 02:48:34] local.ERROR: Error llamando a DeepL: cURL error 6: Could not resolve host: api-free.deepl.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-free.deepl.com/v2/translate  
+[2026-09-22 02:48:45] local.ERROR: Error llamando a DeepL: cURL error 6: Could not resolve host: api-free.deepl.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-free.deepl.com/v2/translate  
+[2026-09-22 02:48:55] local.ERROR: Error llamando a DeepL: cURL error 6: Could not resolve host: api-free.deepl.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-free.deepl.com/v2/translate  
+[2026-09-22 02:48:55] local.ERROR: Error llamando a DeepL: cURL error 6: Could not resolve host: api-free.deepl.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-free.deepl.com/v2/translate  
+[2026-09-22 02:48:55] local.ERROR: Error llamando a DeepL: cURL error 6: Could not resolve host: api-free.deepl.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-free.deepl.com/v2/translate  
+[2026-09-22 02:48:55] local.ERROR: Error llamando a DeepL: cURL error 6: Could not resolve host: api-free.deepl.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-free.deepl.com/v2/translate  
+[2026-09-22 02:48:55] local.ERROR: Error llamando a DeepL: cURL error 6: Could not resolve host: api-free.deepl.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-free.deepl.com/v2/translate  
+[2026-09-22 02:48:55] local.ERROR: Error llamando a DeepL: cURL error 6: Could not resolve host: api-free.deepl.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-free.deepl.com/v2/translate  
+[2026-09-22 02:48:55] local.ERROR: Error llamando a DeepL: cURL error 6: Could not resolve host: api-free.deepl.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-free.deepl.com/v2/translate  
+[2026-09-22 02:48:55] local.ERROR: Error llamando a DeepL: cURL error 6: Could not resolve host: api-free.deepl.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-free.deepl.com/v2/translate  
+[2026-09-22 02:48:55] local.ERROR: Error llamando a DeepL: cURL error 6: Could not resolve host: api-free.deepl.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-free.deepl.com/v2/translate  
+[2026-09-22 02:48:55] local.ERROR: Error llamando a DeepL: cURL error 6: Could not resolve host: api-free.deepl.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-free.deepl.com/v2/translate  
+[2026-09-22 02:48:55] local.ERROR: Error llamando a DeepL: cURL error 6: Could not resolve host: api-free.deepl.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-free.deepl.com/v2/translate  
+[2026-09-22 02:48:55] local.ERROR: Error llamando a DeepL: cURL error 6: Could not resolve host: api-free.deepl.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-free.deepl.com/v2/translate  
+[2026-09-22 02:48:55] local.ERROR: Error llamando a DeepL: cURL error 6: Could not resolve host: api-free.deepl.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-free.deepl.com/v2/translate  

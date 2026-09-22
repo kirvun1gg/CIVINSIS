@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Categoria;
+use App\Models\CiviConversacion;
 use App\Models\Comentario;
 use App\Models\Debate;
 use App\Models\DebateRespuesta;
@@ -14,6 +15,7 @@ use App\Models\UsuarioDesafio;
 use App\Models\Voto;
 use App\Support\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -28,7 +30,12 @@ class IaController extends Controller
         $accion = $request->input('accion', 'chat');
 
         return match ($accion) {
-            'chat'              => $this->chat($request),
+            'chat'                => $this->chat($request),
+            // ── Memoria de chat de CIVI (página exclusiva) ───────────
+            'chat_conversaciones' => $this->chatConversaciones($request),
+            'chat_conversacion'   => $this->chatConversacion($request),
+            'chat_renombrar'      => $this->chatRenombrar($request),
+            'chat_eliminar'       => $this->chatEliminar($request),
             'mejorar'           => $this->mejorar($request),
             'ideas'             => $this->ideas($request),
             'sugerir_mejoras'   => $this->sugerirMejoras($request),
@@ -54,17 +61,28 @@ class IaController extends Controller
             'revisar_tono'      => $this->revisarTono($request),
             'crecimiento'       => $this->crecimiento($request),
             'recomendar'        => $this->recomendar($request),
-            default             => $this->json(false, 'Acción no reconocida'),
+            default             => $this->json(false, __('civinsis.toast.comunes.accion_no_reconocida')),
         };
     }
 
     // ─────────────────────────────────────────────────────────────
     //  SYSTEM PROMPT — CIVI abierta y amigable
     // ─────────────────────────────────────────────────────────────
+    /** Nombre del idioma actual para instruir a la IA (App::getLocale() ya refleja el idioma del usuario). */
+    private function idiomaRespuesta(): string
+    {
+        return match (App::getLocale()) {
+            'en' => 'inglés (English)',
+            'fr' => 'francés (français)',
+            default => 'español',
+        };
+    }
+
     private function systemPrompt(): string
     {
         $cats   = Categoria::pluck('nombre')->implode(', ');
         $nombre = Auth::check() ? auth_user()->nombre : 'visitante';
+        $idioma = $this->idiomaRespuesta();
 
         return <<<TXT
 Eres "CIVI", el entrenador cívico de CIVINSIS, una plataforma salvadoreña de participación
@@ -92,8 +110,9 @@ a participar más.
 También puedes responder preguntas generales (ciencia, historia, cultura, tecnología) con
 precisión y naturalidad. Si no sabes algo con certeza, dilo con honestidad.
 
-Reglas: responde SIEMPRE en español; sé conciso (~120 palabras salvo que pidan más detalle);
-nunca generes contenido ofensivo, violento o inapropiado.
+Reglas: responde SIEMPRE en {$idioma}, sin importar en qué idioma te escriban; sé conciso
+(~120 palabras salvo que pidan más detalle); nunca generes contenido ofensivo, violento o
+inapropiado.
 TXT;
     }
 
@@ -102,9 +121,18 @@ TXT;
     // ─────────────────────────────────────────────────────────────
     private function chat(Request $request)
     {
-        $mensaje   = trim((string) $request->input('mensaje', ''));
-        $historial = $request->input('historial', []);
-        if ($mensaje === '') return $this->json(false, 'Escribe un mensaje');
+        $mensaje = trim((string) $request->input('mensaje', ''));
+        if ($mensaje === '') return $this->json(false, __('civinsis.toast.ia.escribe_mensaje'));
+
+        // Con sesión: la conversación vive en BD y ES la memoria (por usuario,
+        // persistente entre visitas — ver app/Models/CiviConversacion.php).
+        // Sin sesión (invitado): memoria efímera tal como la manda el cliente,
+        // como funcionaba antes de este cambio.
+        $conversacion = null;
+        if (Auth::check()) {
+            $conversacion = $this->obtenerOCrearConversacion($request);
+            if (!$conversacion) return $this->json(false, __('civinsis.toast.ia.conversacion_no_encontrada'));
+        }
 
         // System prompt base + contexto real del usuario (para que CIVI entienda su progreso)
         $system = $this->systemPrompt();
@@ -121,16 +149,116 @@ TXT;
         }
 
         $messages = [['role' => 'system', 'content' => $system]];
-        if (is_array($historial)) {
-            foreach (array_slice($historial, -8) as $h) {
-                $role       = ($h['role'] ?? '') === 'user' ? 'user' : 'assistant';
-                $messages[] = ['role' => $role, 'content' => (string) ($h['content'] ?? '')];
+
+        if ($conversacion) {
+            foreach ($conversacion->mensajes()->orderByDesc('created_at')->limit(16)->get()->reverse() as $m) {
+                $messages[] = ['role' => $m->rol, 'content' => $m->contenido];
+            }
+        } else {
+            $historial = $request->input('historial', []);
+            if (is_array($historial)) {
+                foreach (array_slice($historial, -8) as $h) {
+                    $role       = ($h['role'] ?? '') === 'user' ? 'user' : 'assistant';
+                    $messages[] = ['role' => $role, 'content' => (string) ($h['content'] ?? '')];
+                }
             }
         }
         $messages[] = ['role' => 'user', 'content' => $mensaje];
 
         $respuesta = $this->llamarGroq($messages);
-        return $this->json(true, 'OK', ['respuesta' => $respuesta['texto'], 'fuente' => $respuesta['fuente']]);
+        $extra = ['respuesta' => $respuesta['texto'], 'fuente' => $respuesta['fuente']];
+
+        if ($conversacion) {
+            $conversacion->mensajes()->create(['rol' => 'user', 'contenido' => $mensaje]);
+            $conversacion->mensajes()->create(['rol' => 'assistant', 'contenido' => $respuesta['texto']]);
+            if (!$conversacion->titulo) {
+                $conversacion->titulo = CiviConversacion::tituloDesde($mensaje);
+            }
+            $conversacion->touch();
+            $conversacion->save();
+            $extra['conversacion_id'] = $conversacion->id;
+            $extra['titulo']          = $conversacion->titulo;
+        }
+
+        return $this->json(true, 'OK', $extra);
+    }
+
+    /** Conversación indicada por el cliente (si es del usuario) o una nueva. */
+    private function obtenerOCrearConversacion(Request $request): ?CiviConversacion
+    {
+        $id = (int) $request->input('conversacion_id', 0);
+        if ($id) {
+            return CiviConversacion::where('id', $id)->where('usuario_id', Auth::id())->first();
+        }
+        return CiviConversacion::create(['usuario_id' => Auth::id()]);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  Memoria de chat — historial de conversaciones por usuario
+    // ─────────────────────────────────────────────────────────────
+    private function chatConversaciones(Request $request)
+    {
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.no_autenticado'));
+
+        $conversaciones = CiviConversacion::where('usuario_id', Auth::id())
+            ->whereHas('mensajes')
+            ->orderByDesc('updated_at')
+            ->get()
+            ->map(fn ($c) => [
+                'id'         => $c->id,
+                'titulo'     => $c->titulo ?: __('civinsis.civi_pagina.conversacion_sin_titulo'),
+                'fecha'      => optional($c->updated_at)->diffForHumans(),
+                'updated_at' => optional($c->updated_at)->toDateTimeString(),
+            ]);
+
+        return $this->json(true, 'OK', ['conversaciones' => $conversaciones]);
+    }
+
+    private function chatConversacion(Request $request)
+    {
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.no_autenticado'));
+
+        $id = (int) $request->input('id');
+        $c  = CiviConversacion::where('id', $id)->where('usuario_id', Auth::id())->first();
+        if (!$c) return $this->json(false, __('civinsis.toast.ia.conversacion_no_encontrada'));
+
+        $mensajes = $c->mensajes()->get()->map(fn ($m) => [
+            'id'        => $m->id,
+            'rol'       => $m->rol,
+            'contenido' => $m->contenido,
+        ]);
+
+        return $this->json(true, 'OK', ['id' => $c->id, 'titulo' => $c->titulo, 'mensajes' => $mensajes]);
+    }
+
+    private function chatRenombrar(Request $request)
+    {
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.no_autenticado'));
+
+        $id     = (int) $request->input('id');
+        $titulo = trim((string) $request->input('titulo', ''));
+        if ($titulo === '') return $this->json(false, __('civinsis.toast.ia.titulo_vacio'));
+
+        $c = CiviConversacion::where('id', $id)->where('usuario_id', Auth::id())->first();
+        if (!$c) return $this->json(false, __('civinsis.toast.ia.conversacion_no_encontrada'));
+
+        $c->titulo = mb_substr($titulo, 0, 60);
+        $c->save();
+
+        return $this->json(true, 'OK', ['titulo' => $c->titulo]);
+    }
+
+    private function chatEliminar(Request $request)
+    {
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.no_autenticado'));
+
+        $id = (int) $request->input('id');
+        $c  = CiviConversacion::where('id', $id)->where('usuario_id', Auth::id())->first();
+        if (!$c) return $this->json(false, __('civinsis.toast.ia.conversacion_no_encontrada'));
+
+        $c->delete();
+
+        return $this->json(true, __('civinsis.toast.ia.conversacion_eliminada'));
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -139,7 +267,7 @@ TXT;
     private function mejorar(Request $request)
     {
         $texto = trim((string) $request->input('texto', ''));
-        if ($texto === '') return $this->json(false, 'No hay texto que mejorar');
+        if ($texto === '') return $this->json(false, __('civinsis.toast.ia.no_hay_texto_mejorar'));
 
         $messages = [
             ['role' => 'system', 'content' => $this->systemPrompt()],
@@ -173,12 +301,12 @@ TXT;
     // ─────────────────────────────────────────────────────────────
     private function sugerirMejoras(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.debes_iniciar_sesion'));
 
         $id = (int) $request->input('id');
         $p  = Proposal::find($id);
-        if (!$p) return $this->json(false, 'Propuesta no encontrada');
-        if ($p->usuario_id !== Auth::id()) return $this->json(false, 'Solo el autor puede pedir sugerencias para esta propuesta');
+        if (!$p) return $this->json(false, __('civinsis.toast.comunes.propuesta_no_encontrada'));
+        if ($p->usuario_id !== Auth::id()) return $this->json(false, __('civinsis.toast.ia.solo_autor_sugerencias'));
 
         $comentarios = \App\Models\Comentario::where('propuesta_id', $id)->where('censurado', false)
             ->orderByDesc('fecha_creacion')->limit(15)->pluck('contenido')->implode("\n- ");
@@ -211,15 +339,15 @@ TXT;
         // pero también lo llamamos internamente desde ProposalController.
         $tipo  = $request->input('tipo', 'comentario'); // comentario | propuesta
         $id    = (int) $request->input('id');
-        if (!$id) return $this->json(false, 'ID inválido');
+        if (!$id) return $this->json(false, __('civinsis.toast.comunes.id_invalido'));
 
         if ($tipo === 'comentario') {
             $item = Comentario::find($id);
-            if (!$item) return $this->json(false, 'Comentario no encontrado');
+            if (!$item) return $this->json(false, __('civinsis.toast.ia.comentario_no_encontrado'));
             $texto = $item->contenido;
         } else {
             $item = Proposal::find($id);
-            if (!$item) return $this->json(false, 'Propuesta no encontrada');
+            if (!$item) return $this->json(false, __('civinsis.toast.comunes.propuesta_no_encontrada'));
             $texto = $item->titulo . ' ' . $item->descripcion . ' ' . $item->contenido;
         }
 
@@ -227,14 +355,14 @@ TXT;
 
         if ($resultado['inapropiado']) {
             $this->aplicarCensura($tipo, $item, $texto, $resultado);
-            return $this->json(true, 'Contenido censurado', [
+            return $this->json(true, __('civinsis.toast.admin.contenido_censurado'), [
                 'censurado' => true,
                 'razon'     => $resultado['razon'],
                 'severidad' => $resultado['severidad'],
             ]);
         }
 
-        return $this->json(true, 'Contenido apropiado', ['censurado' => false]);
+        return $this->json(true, __('civinsis.toast.ia.contenido_apropiado'), ['censurado' => false]);
     }
 
     /**
@@ -328,7 +456,7 @@ TXT;
     private function alertas(Request $request)
     {
         if (!Auth::check() || !in_array(auth_user()->rol_nombre, ['admin', 'moderador']))
-            return $this->json(false, 'Sin permisos');
+            return $this->json(false, __('civinsis.toast.comunes.sin_permisos'));
 
         $soloSinRevisar = $request->boolean('sin_revisar', false);
 
@@ -358,18 +486,18 @@ TXT;
     private function marcarRevisado(Request $request)
     {
         if (!Auth::check() || !in_array(auth_user()->rol_nombre, ['admin', 'moderador']))
-            return $this->json(false, 'Sin permisos');
+            return $this->json(false, __('civinsis.toast.comunes.sin_permisos'));
 
         $id    = (int) $request->input('id');
         $alerta = ModeracionAlerta::find($id);
-        if (!$alerta) return $this->json(false, 'Alerta no encontrada');
+        if (!$alerta) return $this->json(false, __('civinsis.toast.ia.alerta_no_encontrada'));
 
         $alerta->revisado      = true;
         $alerta->revisado_at   = now();
         $alerta->revisado_por  = Auth::id();
         $alerta->save();
 
-        return $this->json(true, 'Alerta marcada como revisada');
+        return $this->json(true, __('civinsis.toast.admin.alerta_revisada'));
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -380,16 +508,16 @@ TXT;
     private function aprobar(Request $request)
     {
         if (!Auth::check() || !in_array(auth_user()->rol_nombre, ['admin', 'moderador']))
-            return $this->json(false, 'Sin permisos');
+            return $this->json(false, __('civinsis.toast.comunes.sin_permisos'));
 
         $id = (int) $request->input('id'); // ID de la alerta (no del contenido)
         $alerta = ModeracionAlerta::find($id);
-        if (!$alerta) return $this->json(false, 'Alerta no encontrada');
+        if (!$alerta) return $this->json(false, __('civinsis.toast.ia.alerta_no_encontrada'));
 
         switch ($alerta->tipo) {
             case 'propuesta':
                 $item = Proposal::find($alerta->referencia_id);
-                if (!$item) return $this->json(false, 'La propuesta ya no existe');
+                if (!$item) return $this->json(false, __('civinsis.toast.ia.propuesta_ya_no_existe'));
                 $item->censurada     = false;
                 $item->razon_censura = null;
                 $item->estado        = 'activa';
@@ -398,7 +526,7 @@ TXT;
 
             case 'comentario':
                 $item = Comentario::find($alerta->referencia_id);
-                if (!$item) return $this->json(false, 'El comentario ya no existe');
+                if (!$item) return $this->json(false, __('civinsis.toast.ia.comentario_ya_no_existe'));
                 $item->censurado      = false;
                 $item->razon_censura  = null;
                 $item->contenido      = $item->contenido_original ?: $item->contenido;
@@ -407,7 +535,7 @@ TXT;
 
             case 'debate':
                 $item = Debate::find($alerta->referencia_id);
-                if (!$item) return $this->json(false, 'El debate ya no existe');
+                if (!$item) return $this->json(false, __('civinsis.toast.ia.debate_ya_no_existe'));
                 $item->censurado     = false;
                 $item->razon_censura = null;
                 $item->save();
@@ -415,7 +543,7 @@ TXT;
 
             case 'debate_respuesta':
                 $item = DebateRespuesta::find($alerta->referencia_id);
-                if (!$item) return $this->json(false, 'La respuesta ya no existe');
+                if (!$item) return $this->json(false, __('civinsis.toast.ia.respuesta_ya_no_existe'));
                 $item->censurado      = false;
                 $item->razon_censura  = null;
                 $item->contenido      = $item->contenido_original ?: $item->contenido;
@@ -423,7 +551,7 @@ TXT;
                 break;
 
             default:
-                return $this->json(false, 'Tipo de contenido no reconocido');
+                return $this->json(false, __('civinsis.toast.ia.tipo_no_reconocido'));
         }
 
         $alerta->revisado      = true;
@@ -431,7 +559,7 @@ TXT;
         $alerta->revisado_por  = Auth::id();
         $alerta->save();
 
-        return $this->json(true, 'Contenido publicado. La alerta quedó cerrada.');
+        return $this->json(true, __('civinsis.toast.ia.contenido_publicado_alerta_cerrada'));
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -445,9 +573,10 @@ TXT;
     private function sysTool(): string
     {
         $cats = Categoria::pluck('nombre')->implode(', ');
+        $idioma = $this->idiomaRespuesta();
         return "Eres CIVI, el asistente de redacción y entrenador cívico de CIVINSIS, "
             . "una plataforma salvadoreña de participación ciudadana juvenil "
-            . "(categorías: {$cats}). Respondes SIEMPRE en español, con precisión, y sigues "
+            . "(categorías: {$cats}). Respondes SIEMPRE en {$idioma}, con precisión, y sigues "
             . "EXACTAMENTE el formato pedido, sin introducciones ni despedidas.";
     }
 
@@ -464,7 +593,7 @@ TXT;
     private function redactar(Request $request)
     {
         $idea = trim((string) $request->input('idea', ''));
-        if (mb_strlen($idea) < 6) return $this->json(false, 'Cuéntame tu idea en una frase');
+        if (mb_strlen($idea) < 6) return $this->json(false, __('civinsis.toast.crear_ia.cuentame_idea'));
 
         $prompt = <<<TXT
 Un ciudadano quiere crear una propuesta pero solo tiene esta idea inicial:
@@ -496,7 +625,7 @@ TXT;
     private function ortografia(Request $request)
     {
         $texto = trim((string) $request->input('texto', ''));
-        if ($texto === '') return $this->json(false, 'No hay texto que corregir');
+        if ($texto === '') return $this->json(false, __('civinsis.toast.ia.no_hay_texto_corregir'));
 
         $prompt = "Corrige ÚNICAMENTE la ortografía, tildes, puntuación y errores gramaticales "
             . "del siguiente texto. NO cambies el significado, el estilo ni agregues contenido. "
@@ -509,7 +638,7 @@ TXT;
     private function argumentos(Request $request)
     {
         $texto = trim((string) $request->input('texto', ''));
-        if ($texto === '') return $this->json(false, 'No hay texto que reforzar');
+        if ($texto === '') return $this->json(false, __('civinsis.toast.ia.no_hay_texto_reforzar'));
 
         $prompt = "Refuerza los argumentos de esta propuesta ciudadana: hazla más persuasiva, "
             . "agrega razones concretas y ejemplos plausibles, y responde a objeciones típicas. "
@@ -526,7 +655,7 @@ TXT;
         $desc    = trim((string) $request->input('descripcion', ''));
         $excluir = (int) $request->input('excluir_id', 0);
         $base    = trim($titulo . ' ' . $desc);
-        if (mb_strlen($base) < 8) return $this->json(false, 'Escribe un título y una descripción primero');
+        if (mb_strlen($base) < 8) return $this->json(false, __('civinsis.toast.ia.escribe_titulo_descripcion'));
 
         $stop = ['para', 'como', 'este', 'esta', 'esto', 'pero', 'porque', 'cuando', 'donde',
                  'sobre', 'entre', 'desde', 'hacia', 'todos', 'todas', 'nuestro', 'nuestra',
@@ -568,13 +697,13 @@ TXT;
     {
         $id = (int) $request->input('id');
         $p  = Proposal::find($id);
-        if (!$p) return $this->json(false, 'Propuesta no encontrada');
+        if (!$p) return $this->json(false, __('civinsis.toast.comunes.propuesta_no_encontrada'));
 
         $texto = trim(strip_tags((string) $p->contenido));
-        if (mb_strlen($texto) < 200) return $this->json(false, 'Esta propuesta ya es corta; no necesita resumen');
+        if (mb_strlen($texto) < 200) return $this->json(false, __('civinsis.toast.ia.propuesta_ya_corta'));
 
         $prompt = "Resume esta propuesta ciudadana en 3 o 4 puntos clave (lista) y una frase final de "
-            . "conclusión. Español, claro y neutral.\nTítulo: {$p->titulo}\n\n{$texto}";
+            . "conclusión. En {$this->idiomaRespuesta()}, claro y neutral.\nTítulo: {$p->titulo}\n\n{$texto}";
         $r = $this->pedir($this->sysTool(), $prompt, 350);
         return $this->json(true, 'OK', ['resumen' => $r['texto'], 'fuente' => $r['fuente']]);
     }
@@ -586,7 +715,7 @@ TXT;
         if ($texto === '') {
             $texto = trim(($request->input('titulo', '') . ' ' . $request->input('descripcion', '')));
         }
-        if (mb_strlen($texto) < 8) return $this->json(false, 'Escribe primero una descripción');
+        if (mb_strlen($texto) < 8) return $this->json(false, __('civinsis.toast.ia.escribe_primero_descripcion'));
 
         $prompt = "Propón 5 títulos posibles para esta propuesta ciudadana. Claros, atractivos y de "
             . "máximo 90 caracteres. Devuelve SOLO una lista, un título por línea, sin numeración ni "
@@ -605,7 +734,7 @@ TXT;
         $titulo = trim((string) $request->input('titulo', ''));
         $desc   = trim((string) $request->input('descripcion', ''));
         $texto  = trim($titulo . ' ' . $desc);
-        if (mb_strlen($texto) < 8) return $this->json(false, 'Escribe un título y una descripción primero');
+        if (mb_strlen($texto) < 8) return $this->json(false, __('civinsis.toast.ia.escribe_titulo_descripcion'));
 
         $cats  = Categoria::get(['id', 'nombre']);
         $lista = $cats->pluck('nombre')->implode(', ');
@@ -630,7 +759,7 @@ TXT;
     private function explicar(Request $request)
     {
         $concepto = trim((string) $request->input('concepto', ''));
-        if ($concepto === '') return $this->json(false, '¿Qué concepto quieres que te explique?');
+        if ($concepto === '') return $this->json(false, __('civinsis.toast.ia.que_concepto'));
 
         $prompt = "Explica de forma sencilla, breve (máximo 120 palabras) y con un ejemplo cercano a "
             . "El Salvador el concepto ciudadano: \"{$concepto}\". Si no fuera un concepto cívico, "
@@ -642,7 +771,7 @@ TXT;
     // ── Reporte personalizado del ciudadano ──
     private function reporte(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.debes_iniciar_sesion'));
         $u = auth_user();
 
         $numProp        = Proposal::where('usuario_id', $u->id)->count();
@@ -684,13 +813,23 @@ TXT;
     //  Lee la actividad REAL del usuario y produce guía personalizada.
     // ═════════════════════════════════════════════════════════════
 
+    // Claves válidas (los valores no se usan como texto: la etiqueta
+    // traducida vive en civinsis.civi_coach.aspectos_plural, ver abajo).
     private const ASPECTOS_POS = [
-        'creativa'    => 'creativas',
-        'argumentada' => 'bien argumentadas',
-        'comunidad'   => 'beneficiosas para la comunidad',
-        'factible'    => 'factibles',
-        'innovadora'  => 'innovadoras',
+        'creativa'    => 1,
+        'argumentada' => 1,
+        'comunidad'   => 1,
+        'factible'    => 1,
+        'innovadora'  => 1,
     ];
+
+    /** Adjetivo plural traducido para "tus propuestas destacan por ser ___". */
+    private function aspectoPositivoLabel(?string $clave): string
+    {
+        $llave = 'civinsis.civi_coach.aspectos_plural.' . ($clave ?? '');
+        $valor = __($llave);
+        return $valor === $llave ? __('civinsis.civi_coach.aspectos_plural.default') : $valor;
+    }
 
     /** Agrega toda la actividad del usuario en señales medibles. */
     private function perfilActividad($u): array
@@ -775,46 +914,42 @@ TXT;
     private function construirObjetivo(array $s): array
     {
         if ($s['propuestas'] === 0) {
-            return ['clave' => 'primera_propuesta', 'titulo' => 'Comparte tu primera propuesta',
-                'descripcion' => 'Ya conoces la plataforma; es momento de proponer tu propia idea.',
-                'cta_texto' => 'Crear propuesta', 'cta_url' => 'crear.php'];
+            return $this->objetivo('primera_propuesta', 'crear.php');
         }
         if ($s['comentarios'] === 0) {
-            return ['clave' => 'primeros_comentarios', 'titulo' => 'Comenta en 3 propuestas',
-                'descripcion' => 'Aportar en las ideas de otros amplía tu participación y tu reputación.',
-                'cta_texto' => 'Ver propuestas', 'cta_url' => 'dashboard.php'];
+            return $this->objetivo('primeros_comentarios', 'dashboard.php');
         }
         if ($s['aportes'] === 0) {
-            return ['clave' => 'primer_debate', 'titulo' => 'Da tu opinión en un debate',
-                'descripcion' => 'Los debates son el mejor lugar para practicar tus argumentos.',
-                'cta_texto' => 'Ir a debates', 'cta_url' => 'debates.php'];
+            return $this->objetivo('primer_debate', 'debates.php');
         }
         if ($s['xp_faltante'] > 0 && $s['xp_faltante'] <= 60) {
-            return ['clave' => 'subir_nivel', 'titulo' => "Solo te faltan {$s['xp_faltante']} XP para el nivel " . ($s['nivel'] + 1),
-                'descripcion' => 'Un comentario valioso o un voto en una propuesta te acercan.',
-                'cta_texto' => 'Participar', 'cta_url' => 'dashboard.php'];
+            return $this->objetivo('subir_nivel', 'dashboard.php', ['xp' => $s['xp_faltante'], 'nivel' => $s['nivel'] + 1]);
         }
         if ($s['mision_cerca'] && $s['mision_cerca']['cantidad'] > 0
             && $s['mision_cerca']['progreso'] / $s['mision_cerca']['cantidad'] >= 0.5) {
             $falta = $s['mision_cerca']['cantidad'] - $s['mision_cerca']['progreso'];
-            return ['clave' => 'mision_cerca', 'titulo' => "Completa la misión: {$s['mision_cerca']['nombre']}",
-                'descripcion' => "Te falta muy poco ({$falta}) para desbloquearla.",
-                'cta_texto' => 'Ver misiones', 'cta_url' => 'progreso.php'];
+            return $this->objetivo('mision_cerca', 'progreso.php', ['falta' => $falta, 'mision' => $s['mision_cerca']['nombre']]);
         }
         // Diversificar según estilo
         if ($s['estilo'] === 'comentarista') {
-            return ['clave' => 'diversificar_propuesta', 'titulo' => 'Convierte una idea en propuesta',
-                'descripcion' => 'Comentas muy bien; comparte una idea propia y llévala más lejos.',
-                'cta_texto' => 'Crear propuesta', 'cta_url' => 'crear.php'];
+            return $this->objetivo('diversificar_propuesta', 'crear.php');
         }
         if ($s['estilo'] === 'proponente') {
-            return ['clave' => 'diversificar_debate', 'titulo' => 'Abre o participa en un debate',
-                'descripcion' => 'Tienes buenas ideas; llévalas a un debate para enriquecerlas.',
-                'cta_texto' => 'Ir a debates', 'cta_url' => 'debates.php'];
+            return $this->objetivo('diversificar_debate', 'debates.php');
         }
-        return ['clave' => 'seguir', 'titulo' => 'Sigue construyendo comunidad',
-            'descripcion' => 'Vas muy bien. Elige un desafío nuevo y mantén tu racha.',
-            'cta_texto' => 'Ver desafíos', 'cta_url' => 'desafios.php'];
+        return $this->objetivo('seguir', 'desafios.php');
+    }
+
+    /** Arma un objetivo del coach resolviendo titulo/descripcion/cta por clave (civi_coach.objetivo.*). */
+    private function objetivo(string $clave, string $url, array $params = []): array
+    {
+        return [
+            'clave'       => $clave,
+            'titulo'      => __("civinsis.civi_coach.objetivo.{$clave}.titulo", $params),
+            'descripcion' => __("civinsis.civi_coach.objetivo.{$clave}.descripcion", $params),
+            'cta_texto'   => __("civinsis.civi_coach.objetivo.{$clave}.cta"),
+            'cta_url'     => $url,
+        ];
     }
 
     /** Señales de crecimiento motivadoras (máx. 3). */
@@ -822,20 +957,19 @@ TXT;
     {
         $out = [];
         if ($s['xp_faltante'] > 0 && $s['xp_faltante'] <= 120) {
-            $out[] = ['icono' => 'fa-bolt', 'texto' => "Solo te faltan {$s['xp_faltante']} XP para subir al nivel " . ($s['nivel'] + 1) . '.'];
+            $out[] = ['icono' => 'fa-bolt', 'texto' => __('civinsis.civi_coach.progreso.xp_faltante', ['xp' => $s['xp_faltante'], 'nivel' => $s['nivel'] + 1])];
         }
         if ($s['mision_cerca'] && $s['mision_cerca']['cantidad'] > 0) {
             $falta = $s['mision_cerca']['cantidad'] - $s['mision_cerca']['progreso'];
             if ($falta > 0 && $falta <= $s['mision_cerca']['cantidad']) {
-                $out[] = ['icono' => 'fa-bullseye', 'texto' => "Te falta {$falta} para completar «{$s['mision_cerca']['nombre']}»."];
+                $out[] = ['icono' => 'fa-bullseye', 'texto' => __('civinsis.civi_coach.progreso.mision_cerca', ['falta' => $falta, 'mision' => $s['mision_cerca']['nombre']])];
             }
         }
         if ($s['racha'] >= 2) {
-            $out[] = ['icono' => 'fa-fire', 'texto' => "Llevas {$s['racha']} días seguidos participando. ¡No rompas la racha!"];
+            $out[] = ['icono' => 'fa-fire', 'texto' => __('civinsis.civi_coach.progreso.racha', ['dias' => $s['racha']])];
         }
         if ($s['valoraciones_positivas'] > 0 && $s['aspecto_fuerte']) {
-            $lbl = self::ASPECTOS_POS[$s['aspecto_fuerte']] ?? 'valiosas';
-            $out[] = ['icono' => 'fa-star', 'texto' => "La comunidad valora tus propuestas como {$lbl}."];
+            $out[] = ['icono' => 'fa-star', 'texto' => __('civinsis.civi_coach.progreso.valoraciones', ['aspecto' => $this->aspectoPositivoLabel($s['aspecto_fuerte'])])];
         }
         return array_slice($out, 0, 3);
     }
@@ -844,24 +978,21 @@ TXT;
     private function hechosAnalisis(array $s): array
     {
         $f = [];
-        $estilos = ['comentarista' => 'comentando', 'proponente' => 'creando propuestas',
-                    'debatiente' => 'debatiendo', 'equilibrado' => 'de forma equilibrada',
-                    'nuevo' => 'explorando la plataforma'];
-        $f[] = 'Participas principalmente ' . ($estilos[$s['estilo']] ?? 'explorando') . '.';
-        if ($s['categoria_favorita']) $f[] = "El tema donde más participas es {$s['categoria_favorita']}.";
+        $estiloTraducido = __('civinsis.civi_coach.estilos.' . $s['estilo']);
+        $f[] = __('civinsis.civi_coach.hechos.participas', ['estilo' => $estiloTraducido]);
+        if ($s['categoria_favorita']) $f[] = __('civinsis.civi_coach.hechos.tema_favorito', ['categoria' => $s['categoria_favorita']]);
         if ($s['aspecto_fuerte']) {
-            $lbl = self::ASPECTOS_POS[$s['aspecto_fuerte']] ?? 'valiosas';
-            $f[] = "Tus propuestas destacan por ser {$lbl}.";
+            $f[] = __('civinsis.civi_coach.hechos.destacan', ['aspecto' => $this->aspectoPositivoLabel($s['aspecto_fuerte'])]);
         }
-        if ($s['aportes'] === 0)          $f[] = 'Podrías crecer participando más en debates.';
-        elseif ($s['propuestas'] === 0)   $f[] = 'Aún no has creado tu primera propuesta.';
+        if ($s['aportes'] === 0)          $f[] = __('civinsis.civi_coach.hechos.crecer_debates');
+        elseif ($s['propuestas'] === 0)   $f[] = __('civinsis.civi_coach.hechos.sin_propuestas');
         return $f;
     }
 
     // ── Acción principal del mentor: panel completo personalizado ──
     private function coach(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.debes_iniciar_sesion'));
         $u = auth_user();
 
         $s        = $this->perfilActividad($u);
@@ -887,10 +1018,8 @@ TXT;
             ? trim($r['texto'])
             : implode(' ', $hechos);
 
-        $nombre = $u->nombre;
-        $saludo = $s['estilo'] === 'nuevo'
-            ? "¡Hola, {$nombre}! Empecemos a construir tu camino cívico."
-            : "¡Hola de nuevo, {$nombre}! Esto es lo que veo en tu progreso.";
+        $saludoClave = $s['estilo'] === 'nuevo' ? 'saludo_nuevo' : 'saludo_regreso';
+        $saludo = __("civinsis.civi_coach.{$saludoClave}", ['nombre' => $u->nombre]);
 
         return $this->json(true, 'OK', [
             'saludo'    => $saludo,
@@ -912,25 +1041,31 @@ TXT;
         $s        = $this->perfilActividad($u);
 
         $n = null; // ['texto','cta_texto','cta_url','prioridad']
-        $set = function ($texto, $cta, $url, $pri) use (&$n) {
-            if (!$n || $pri > $n['prioridad']) $n = compact('texto') + ['cta_texto' => $cta, 'cta_url' => $url, 'prioridad' => $pri];
+        $set = function (string $clave, string $url, int $pri, array $params = []) use (&$n) {
+            if ($n && $pri <= $n['prioridad']) return;
+            $n = [
+                'texto'     => __("civinsis.civi_coach.nudge.{$clave}.texto", $params),
+                'cta_texto' => __("civinsis.civi_coach.nudge.{$clave}.cta"),
+                'cta_url'   => $url,
+                'prioridad' => $pri,
+            ];
         };
 
         // Reglas por contexto — CIVI solo habla si detecta una oportunidad real
         if ($s['propuestas'] === 0 && in_array($contexto, ['dashboard', 'propuestas', 'inicio', 'perfil'])) {
-            $set('He notado que aún no has creado tu primera propuesta. ¿La construimos juntos?', 'Crear propuesta', 'crear.php', 3);
+            $set('primera_propuesta', 'crear.php', 3);
         }
         if ($s['propuestas'] === 0 && $s['comentarios'] >= 3) {
-            $set('Tus comentarios reciben buenas valoraciones. Tal vez ya sea momento de compartir una idea propia.', 'Crear propuesta', 'crear.php', 4);
+            $set('buenos_comentarios', 'crear.php', 4);
         }
         if ($s['aportes'] === 0 && in_array($contexto, ['debates', 'debate'])) {
-            $set('Aún no has opinado en ningún debate. Tu punto de vista puede enriquecerlo.', 'Participar', 'debates.php', 2);
+            $set('primer_debate', 'debates.php', 2);
         }
         if ($s['xp_faltante'] > 0 && $s['xp_faltante'] <= 40) {
-            $set("Estás a solo {$s['xp_faltante']} XP de subir al nivel " . ($s['nivel'] + 1) . '. ¡Un aporte más!', 'Participar', 'dashboard.php', 3);
+            $set('xp_cerca', 'dashboard.php', 3, ['xp' => $s['xp_faltante'], 'nivel' => $s['nivel'] + 1]);
         }
         if ($s['inactividad_dias'] !== null && $s['inactividad_dias'] >= 4 && $s['categoria_favorita']) {
-            $set("Han aparecido novedades en {$s['categoria_favorita']}, tu tema favorito. ¿Les echas un vistazo?", 'Ver propuestas', 'dashboard.php', 2);
+            $set('inactividad', 'dashboard.php', 2, ['categoria' => $s['categoria_favorita']]);
         }
 
         if (!$n) return $this->json(true, 'OK', ['mostrar' => false]);
@@ -942,7 +1077,7 @@ TXT;
     private function tono(Request $request)
     {
         $texto = trim((string) $request->input('texto', ''));
-        if ($texto === '') return $this->json(false, 'No hay comentario que reformular');
+        if ($texto === '') return $this->json(false, __('civinsis.toast.ia.no_hay_comentario_reformular'));
 
         $prompt = "Reescribe este comentario de una plataforma de participación ciudadana para que "
             . "sea respetuoso y constructivo, SIN perder la crítica o el punto de vista de la persona. "
@@ -971,7 +1106,7 @@ TXT;
     // ── Recomendaciones de contenido personalizadas (con el "por qué") ──
     private function recomendar(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.debes_iniciar_sesion'));
         $u = auth_user();
 
         // Categoría favorita (por sus propuestas y comentarios)
@@ -1110,18 +1245,18 @@ TXT;
     private function censurar(Request $request)
     {
         if (!Auth::check() || !in_array(auth_user()->rol_nombre, ['admin', 'moderador']))
-            return $this->json(false, 'Sin permisos');
+            return $this->json(false, __('civinsis.toast.comunes.sin_permisos'));
 
         $id = (int) $request->input('id'); // ID de la alerta (no del contenido)
         $alerta = ModeracionAlerta::find($id);
-        if (!$alerta) return $this->json(false, 'Alerta no encontrada');
+        if (!$alerta) return $this->json(false, __('civinsis.toast.ia.alerta_no_encontrada'));
 
         $razon = $alerta->razon ?: 'Contenido inapropiado';
 
         switch ($alerta->tipo) {
             case 'comentario':
                 $item = Comentario::find($alerta->referencia_id);
-                if (!$item) return $this->json(false, 'El comentario ya no existe');
+                if (!$item) return $this->json(false, __('civinsis.toast.ia.comentario_ya_no_existe'));
                 if (!$item->contenido_original) $item->contenido_original = $item->contenido;
                 $item->contenido     = '[Comentario retirado por un moderador]';
                 $item->censurado     = true;
@@ -1131,7 +1266,7 @@ TXT;
 
             case 'debate_respuesta':
                 $item = DebateRespuesta::find($alerta->referencia_id);
-                if (!$item) return $this->json(false, 'La respuesta ya no existe');
+                if (!$item) return $this->json(false, __('civinsis.toast.ia.respuesta_ya_no_existe'));
                 if (!$item->contenido_original) $item->contenido_original = $item->contenido;
                 $item->contenido     = '[Respuesta retirada por un moderador]';
                 $item->censurado     = true;
@@ -1141,7 +1276,7 @@ TXT;
 
             case 'propuesta':
                 $item = Proposal::find($alerta->referencia_id);
-                if (!$item) return $this->json(false, 'La propuesta ya no existe');
+                if (!$item) return $this->json(false, __('civinsis.toast.ia.propuesta_ya_no_existe'));
                 $item->censurada     = true;
                 $item->razon_censura = $razon;
                 $item->estado        = 'en_revision';
@@ -1150,14 +1285,14 @@ TXT;
 
             case 'debate':
                 $item = Debate::find($alerta->referencia_id);
-                if (!$item) return $this->json(false, 'El debate ya no existe');
+                if (!$item) return $this->json(false, __('civinsis.toast.ia.debate_ya_no_existe'));
                 $item->censurado     = true;
                 $item->razon_censura = $razon;
                 $item->save();
                 break;
 
             default:
-                return $this->json(false, 'Tipo no soportado');
+                return $this->json(false, __('civinsis.toast.admin.tipo_no_soportado'));
         }
 
         $alerta->revisado     = true;
@@ -1165,7 +1300,7 @@ TXT;
         $alerta->revisado_por = Auth::id();
         $alerta->save();
 
-        return $this->json(true, 'Contenido censurado y alerta cerrada');
+        return $this->json(true, __('civinsis.toast.ia.contenido_censurado_alerta_cerrada'));
     }
 
     private function llamarGroq(array $messages, int $maxTokens = 700): array

@@ -576,7 +576,13 @@
       r.tl.kill();
       r.svgs.forEach((s) => { gsap.killTweensOf(s.querySelectorAll('*')); s.remove(); });
     });
-    if (quedan.length) vivos.set(host, quedan); else vivos.delete(host);
+    if (quedan.length) {
+      vivos.set(host, quedan);
+    } else {
+      vivos.delete(host);
+      // Solo las previews (repeat:-1) se enganchan a PerfShared — ver reproducir().
+      if (window.PerfShared) window.PerfShared.unwatch(host);
+    }
     if (!quedan.length) host.classList.remove('fx-host');
   }
 
@@ -613,6 +619,9 @@
       // para que se entienda de un vistazo que hace el efecto.
       tl.repeat(-1).repeatDelay(0).timeScale(1.25);
       if (menos) tl.timeScale(0.6);
+      // Es la única timeline repeat:-1 de este motor: se pausa/reanuda
+      // fuera/dentro de vista o con la pestaña oculta (nunca se reinicia).
+      if (window.PerfShared) window.PerfShared.watch(host, { onEnter: () => tl.resume(), onExit: () => tl.pause() });
     } else {
       // menos movimiento: version corta, pero el efecto sigue ocurriendo
       if (menos) tl.timeScale(2);
@@ -643,12 +652,15 @@
   /* Compatibilidad: el disparador (efectos-eventos.js) llama a
      window.CosEfectos. Se expone el mismo nombre para no tener que
      tocarlo, ahora respaldado por GSAP. */
+  const pausarTodo = (v) => vivos.forEach((lista) => lista.forEach((r) => (v ? r.tl.pause() : r.tl.resume())));
+
   window.CosEfectos = {
     escenas: EF,
     reproducir: (host, clave) => reproducir(host, clave, 'evento'),
     montarPreviews,
     detenerTodo: (soloEventos) => [...vivos.keys()].forEach((h) => limpiar(h, soloEventos)),
     configurar() {},
+    pausar: pausarTodo,
   };
 
   window.CosEfectosGSAP = {
@@ -658,6 +670,7 @@
     montarPreviews,
     detenerTodo: (soloEventos) => [...vivos.keys()].forEach((h) => limpiar(h, soloEventos)),
     limpiar,
+    pausar: pausarTodo,
   };
 
   function iniciar() {
@@ -667,12 +680,17 @@
     }
     montarPreviews();
     let t;
-    new MutationObserver((muts) => {
+    const onBodyMutations = (muts) => {
       const rel = muts.some((m) => [...m.addedNodes, ...m.removedNodes]
         .some((x) => x.nodeType === 1 && !x.classList.contains('fx-svg')));
       if (!rel) return;
       clearTimeout(t); t = setTimeout(() => montarPreviews(), 200);
-    }).observe(document.body, { childList: true, subtree: true, attributeFilter: ['class'] });
+    };
+    // attributeFilter implica attributes:true por spec — se deja explicito
+    // para que la union de opciones de PerfShared.onMutations lo detecte bien.
+    const opciones = { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] };
+    if (window.PerfShared) window.PerfShared.onMutations(onBodyMutations, opciones);
+    else new MutationObserver(onBodyMutations).observe(document.body, opciones);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);

@@ -117,7 +117,7 @@
      propuesta o guardar el perfil: es la señal mas fiable de que el
      usuario acaba de hacer algo. */
   function observarAvisos() {
-    new MutationObserver((muts) => {
+    const cb = (muts) => {
       for (const m of muts) {
         for (const n of m.addedNodes) {
           if (n.nodeType !== 1) continue;
@@ -137,12 +137,15 @@
           return;
         }
       }
-    }).observe(document.body, { childList: true, subtree: true });
+    };
+    const opciones = { childList: true, subtree: true };
+    if (window.PerfShared) window.PerfShared.onMutations(cb, opciones);
+    else new MutationObserver(cb).observe(document.body, opciones);
   }
 
   /* CIVI ya detecta subidas de nivel y logros: se aprovecha eso. */
   function observarCelebraciones() {
-    new MutationObserver((muts) => {
+    const cb = (muts) => {
       for (const m of muts) {
         for (const n of m.addedNodes) {
           if (n.nodeType !== 1) continue;
@@ -153,7 +156,10 @@
           }
         }
       }
-    }).observe(document.body, { childList: true, subtree: true });
+    };
+    const opciones = { childList: true, subtree: true };
+    if (window.PerfShared) window.PerfShared.onMutations(cb, opciones);
+    else new MutationObserver(cb).observe(document.body, opciones);
   }
 
   /* ── REPETICION AMBIENTAL ─────────────────────────────────
@@ -188,6 +194,9 @@
       // primer pase escalonado (0,8 s entre avatares) y luego cada ciclo
       const arranque = 2500 + i * 800 + Math.random() * 1200;
       const lanzar = () => {
+        // El avatar salio del DOM (comentarios recargados/paginados): no se
+        // reprograma mas, para no acumular temporizadores para siempre.
+        if (!document.contains(el)) return;
         if (!document.hidden && visible(el)) window.CosEfectos.reproducir(el, clave);
         setTimeout(lanzar, CADA + Math.random() * VARIACION);
       };
@@ -249,7 +258,7 @@
     ambientarLista();
     // los comentarios llegan por AJAX: revisar cuando cambie el DOM
     let tl;
-    new MutationObserver((muts) => {
+    const onBodyMutations = (muts) => {
       // Ignorar los cambios que provoca el propio efecto (sus lienzos),
       // o el observador se retroalimentaria sin parar.
       const relevante = muts.some((m) =>
@@ -257,7 +266,10 @@
           n.nodeType === 1 && !n.classList.contains('fx-efecto')));
       if (!relevante) return;
       clearTimeout(tl); tl = setTimeout(ambientarLista, 400);
-    }).observe(document.body, { childList: true, subtree: true });                 // repeticion ambiental cada ~16-22 s
+    };
+    const opciones = { childList: true, subtree: true };                 // repeticion ambiental cada ~16-22 s
+    if (window.PerfShared) window.PerfShared.onMutations(onBodyMutations, opciones);
+    else new MutationObserver(onBodyMutations).observe(document.body, opciones);
     // se carga la configuracion en cuanto haya un momento libre
     if ('requestIdleCallback' in window) requestIdleCallback(cargarConfig);
     else setTimeout(cargarConfig, 1200);

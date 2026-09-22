@@ -22,7 +22,7 @@ class DesafioController extends Controller
             'detalle'  => $this->detalle($request),
             'aceptar'  => $this->aceptar($request),
             'sugerido' => $this->sugerido($request),
-            default    => $this->json(false, 'Acción no reconocida'),
+            default    => $this->json(false, __('civinsis.toast.comunes.accion_no_reconocida')),
         };
     }
 
@@ -30,7 +30,7 @@ class DesafioController extends Controller
     {
         $id = (int) $request->input('id');
         $d  = Desafio::with(['categoria', 'insignia'])->find($id);
-        if (!$d) return $this->json(false, 'Desafío no encontrado');
+        if (!$d) return $this->json(false, __('civinsis.toast.desafio.no_encontrado'));
 
         $progreso = Auth::check()
             ? UsuarioDesafio::where('usuario_id', Auth::id())->where('desafio_id', $id)->first()
@@ -75,18 +75,18 @@ class DesafioController extends Controller
             ->whereNotIn('id', $completados)->inRandomOrder()->first();
 
         if (!$d) $d = Desafio::with(['categoria', 'insignia'])->where('activo', true)->inRandomOrder()->first();
-        if (!$d) return $this->json(false, 'No hay desafíos disponibles');
+        if (!$d) return $this->json(false, __('civinsis.toast.desafio.no_hay_disponibles'));
 
         return $this->json(true, 'OK', ['desafio' => $this->formato($d)]);
     }
 
     private function aceptar(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión para aceptar un desafío');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.desafio.inicia_sesion_aceptar'));
 
         $id = (int) $request->input('desafio_id');
         $d  = Desafio::find($id);
-        if (!$d || !$d->activo) return $this->json(false, 'Desafío no encontrado');
+        if (!$d || !$d->activo) return $this->json(false, __('civinsis.toast.desafio.no_encontrado'));
 
         $progreso = UsuarioDesafio::firstOrCreate(
             ['usuario_id' => Auth::id(), 'desafio_id' => $id],
@@ -94,10 +94,10 @@ class DesafioController extends Controller
         );
 
         if ($progreso->completado) {
-            return $this->json(true, 'Ya completaste este desafío, pero puedes crear otra propuesta inspirada en él', ['desafio_id' => $id]);
+            return $this->json(true, __('civinsis.toast.desafio.ya_completado'), ['desafio_id' => $id]);
         }
 
-        return $this->json(true, 'Desafío aceptado. ¡Vamos a crear tu propuesta!', ['desafio_id' => $id]);
+        return $this->json(true, __('civinsis.toast.desafio.aceptado'), ['desafio_id' => $id]);
     }
 
     private function formato(Desafio $d, ?UsuarioDesafio $progreso = null): array

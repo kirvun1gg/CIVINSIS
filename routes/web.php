@@ -40,6 +40,7 @@ Route::get('/debates.php',    [PageController::class, 'debates']);
 Route::get('/debate.php',     [PageController::class, 'debate']);
 Route::get('/desafios.php',   [PageController::class, 'desafios']);
 Route::get('/ranking.php',    [PageController::class, 'ranking']);
+Route::get('/civi.php',       [PageController::class, 'civi']);
 Route::get('/inicio.php',     [PageController::class, 'inicio']);
 Route::get('/tendencias.php', [PageController::class, 'tendencias']);
 Route::get('/privacidad.php', [PageController::class, 'privacidad']);

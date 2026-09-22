@@ -7,6 +7,7 @@ use App\Models\Titulo;
 use App\Models\Cosmetico;
 use App\Models\Insignia;
 use App\Models\Mision;
+use App\Support\CatalogoTraducido;
 use Illuminate\Support\Facades\DB;
 
 class GamificacionService
@@ -163,22 +164,22 @@ class GamificacionService
     /** Texto legible del requisito de un cosmético. */
     public function textoRequisito(Cosmetico $c): string
     {
-        if (($c->oculto ?? false)) return 'Requisito oculto';
+        if (($c->oculto ?? false)) return __('civinsis.gamificacion.requisito_oculto');
         $v = (int) ($c->condicion_valor ?? 0);
         return match ($c->condicion_tipo ?? 'nivel') {
-            'xp'          => "{$v} XP acumulados",
-            'reputacion'  => "{$v} de reputación",
-            'propuestas'  => $v === 1 ? 'Crea tu primera propuesta' : "Crea {$v} propuestas",
-            'comentarios' => "Escribe {$v} comentarios",
-            'debates'     => "Participa en {$v} debates",
-            'votos'       => "Recibe {$v} votos en tus propuestas",
-            'votos_emitidos' => "Vota en {$v} propuestas",
-            'secciones'   => "Explora {$v} secciones de CIVINSIS",
-            'categorias'  => "Consulta propuestas de {$v} categorías",
-            'dias_activos' => "Participa en {$v} días distintos",
-            'coleccion'   => "Reúne {$v} cosméticos",
-            'secreto', 'secreto_vortice', 'secreto_legado' => 'Requisito oculto',
-            default       => 'Nivel ' . max($v, (int) $c->nivel_requerido),
+            'xp'          => __('civinsis.gamificacion.requisito_xp', ['v' => $v]),
+            'reputacion'  => __('civinsis.gamificacion.requisito_reputacion', ['v' => $v]),
+            'propuestas'  => $v === 1 ? __('civinsis.gamificacion.requisito_propuestas_una') : __('civinsis.gamificacion.requisito_propuestas', ['v' => $v]),
+            'comentarios' => __('civinsis.gamificacion.requisito_comentarios', ['v' => $v]),
+            'debates'     => __('civinsis.gamificacion.requisito_debates', ['v' => $v]),
+            'votos'       => __('civinsis.gamificacion.requisito_votos', ['v' => $v]),
+            'votos_emitidos' => __('civinsis.gamificacion.requisito_votos_emitidos', ['v' => $v]),
+            'secciones'   => __('civinsis.gamificacion.requisito_secciones', ['v' => $v]),
+            'categorias'  => __('civinsis.gamificacion.requisito_categorias', ['v' => $v]),
+            'dias_activos' => __('civinsis.gamificacion.requisito_dias_activos', ['v' => $v]),
+            'coleccion'   => __('civinsis.gamificacion.requisito_coleccion', ['v' => $v]),
+            'secreto', 'secreto_vortice', 'secreto_legado' => __('civinsis.gamificacion.requisito_secreto'),
+            default       => __('civinsis.gamificacion.requisito_nivel', ['v' => max($v, (int) $c->nivel_requerido)]),
         };
     }
 
@@ -318,9 +319,23 @@ class GamificacionService
         $this->desbloquearTitulos($user);
 
         $titulo=Titulo::where('clave',$user->titulo_equipado)->first();
-        $logros=DB::table('usuario_logros')->join('logros','logros.id','=','usuario_logros.logro_id')->where('usuario_logros.usuario_id',$user->id)->select('logros.*','usuario_logros.desbloqueado_at')->orderByDesc('usuario_logros.desbloqueado_at')->get();
-        $insignias=DB::table('usuario_insignias')->join('insignias','insignias.id','=','usuario_insignias.insignia_id')->where('usuario_insignias.usuario_id',$user->id)->select('insignias.*','usuario_insignias.equipada','usuario_insignias.desbloqueado_at')->get();
-        $titulos=DB::table('usuario_titulos')->join('titulos','titulos.id','=','usuario_titulos.titulo_id')->where('usuario_titulos.usuario_id',$user->id)->select('titulos.*','usuario_titulos.equipado','usuario_titulos.desbloqueado_at')->get();
+        $logros=DB::table('usuario_logros')->join('logros','logros.id','=','usuario_logros.logro_id')->where('usuario_logros.usuario_id',$user->id)->select('logros.*','usuario_logros.desbloqueado_at')->orderByDesc('usuario_logros.desbloqueado_at')->get()
+            ->map(function($l){
+                $l->nombre = CatalogoTraducido::campo('logros', $l->clave, 'nombre', $l->nombre);
+                $l->descripcion = CatalogoTraducido::campo('logros', $l->clave, 'descripcion', $l->descripcion);
+                return $l;
+            });
+        $insignias=DB::table('usuario_insignias')->join('insignias','insignias.id','=','usuario_insignias.insignia_id')->where('usuario_insignias.usuario_id',$user->id)->select('insignias.*','usuario_insignias.equipada','usuario_insignias.desbloqueado_at')->get()
+            ->map(function($i){
+                $i->nombre = CatalogoTraducido::campo('insignias', $i->clave, 'nombre', $i->nombre);
+                $i->descripcion = CatalogoTraducido::campo('insignias', $i->clave, 'descripcion', $i->descripcion);
+                return $i;
+            });
+        $titulos=DB::table('usuario_titulos')->join('titulos','titulos.id','=','usuario_titulos.titulo_id')->where('usuario_titulos.usuario_id',$user->id)->select('titulos.*','usuario_titulos.equipado','usuario_titulos.desbloqueado_at')->get()
+            ->map(function($t){
+                $t->nombre = CatalogoTraducido::campo('titulos', $t->clave, 'nombre', $t->nombre);
+                return $t;
+            });
         // Catálogo COMPLETO: los bloqueados también se muestran (apagados)
         $desbloq=DB::table('usuario_cosmeticos')->where('usuario_id',$user->id)->pluck('equipado','cosmetico_id');
         $prog=$this->progresoCondiciones($user);
@@ -329,6 +344,8 @@ class GamificacionService
             $a=$c->toArray();
             $a['desbloqueado']=$tiene;
             $a['equipado']=$tiene ? (bool)$desbloq[$c->id] : false;
+            $a['nombre'] = CatalogoTraducido::campo('cosmeticos', $c->clave, 'nombre', $c->nombre);
+            $a['descripcion'] = CatalogoTraducido::campo('cosmeticos', $c->clave, 'descripcion', $c->descripcion);
             $a['requisito']=$this->textoRequisito($c);
             $a['progreso_actual']=$prog[$c->condicion_tipo ?? 'nivel'] ?? 0;
             // Un cosmético oculto no revela su diseño hasta conseguirlo
@@ -336,16 +353,17 @@ class GamificacionService
             if ($a['misterioso']) {
                 $a['nombre'] = '???';
                 // la pista da una direccion sin revelar la condicion exacta
-                $a['descripcion'] = $c->pista ?: 'Aún no descubierto.';
+                $pista = CatalogoTraducido::campo('cosmeticos', $c->clave, 'pista', $c->pista);
+                $a['descripcion'] = $pista !== '' ? $pista : __('civinsis.gamificacion.aun_no_descubierto');
                 $a['valor'] = '';
-                $a['requisito'] = 'Desconocido';
+                $a['requisito'] = __('civinsis.gamificacion.requisito_desconocido');
             }
             return $a;
         });
         $hoy=now()->toDateString(); $sem=now()->startOfWeek()->toDateString();
         $misiones=Mision::where('activo',true)->get()->map(function($m) use($user,$hoy,$sem) {
             $p=DB::table('usuario_misiones')->where('usuario_id',$user->id)->where('mision_id',$m->id)->where('periodo',$m->tipo==='diaria'?$hoy:$sem)->first();
-            return ['id'=>$m->id,'nombre'=>$m->nombre,'descripcion'=>$m->descripcion,'tipo'=>$m->tipo,'cantidad'=>$m->cantidad,'xp'=>$m->xp_recompensa,'progreso'=>$p->progreso??0,'completada'=>(bool)($p->completada??false)];
+            return ['id'=>$m->id,'nombre'=>CatalogoTraducido::campo('misiones', $m->clave, 'nombre', $m->nombre),'descripcion'=>CatalogoTraducido::campo('misiones', $m->clave, 'descripcion', $m->descripcion),'tipo'=>$m->tipo,'cantidad'=>$m->cantidad,'xp'=>$m->xp_recompensa,'progreso'=>$p->progreso??0,'completada'=>(bool)($p->completada??false)];
         });
         return [
             'nivel'=>$user->nivel,'xp'=>$user->xp_total,
@@ -353,7 +371,7 @@ class GamificacionService
             'xp_siguiente_nivel'=>$this->xpParaSiguienteNivel($user->nivel),
             'porcentaje_nivel'=>$this->porcentajeNivel($user),
             'reputacion'=>$user->reputacion,'racha_dias'=>$user->racha_dias,
-            'titulo'=>$titulo?['nombre'=>$titulo->nombre,'color'=>$titulo->color,'rareza'=>$titulo->rareza]:null,
+            'titulo'=>$titulo?['nombre'=>CatalogoTraducido::campo('titulos', $titulo->clave, 'nombre', $titulo->nombre),'color'=>$titulo->color,'rareza'=>$titulo->rareza]:null,
             'marco_equipado'=>$user->marco_equipado,'fondo_equipado'=>$user->fondo_equipado,
             'marco_clase'=>$user->marco_clase,'fondo_clase'=>$user->fondo_clase,
             'efecto_equipado'=>$user->efecto_equipado,'efecto_clase'=>$user->efecto_clase,

@@ -40,6 +40,15 @@ class PageController extends Controller
         return view('ranking');
     }
 
+    public function civi()
+    {
+        if (!Auth::check()) {
+            return redirect('/auth.php');
+        }
+
+        return view('civi');
+    }
+
     public function inicio()
     {
         if (!Auth::check()) {

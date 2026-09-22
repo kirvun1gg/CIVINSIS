@@ -43,7 +43,7 @@ $categorias_footer = is_array($categorias) ? $categorias : $categorias->all();
             <?php foreach (array_slice($categorias_footer, 0, 6) as $cat): ?>
               <a href="dashboard.php?cat=<?= $cat['id'] ?>" class="footer-link">
                 <i class="<?= $cat['icono'] ?>" style="color:<?= $cat['color'] ?>;margin-right:.4rem"></i>
-                <?= htmlspecialchars($cat['nombre']) ?>
+                <?= htmlspecialchars($cat->translated('nombre')) ?>
               </a>
             <?php endforeach; ?>
           </div>
@@ -89,6 +89,14 @@ $civiI18n['inicio']     = __('civinsis.inicio');
 $civiI18n['progreso']   = __('civinsis.progreso');
 $civiI18n['recomienda'] = __('civinsis.recomienda');
 $civiI18n['toast']      = __('civinsis.toast');
+$civiI18n['civi_widget'] = __('civinsis.civi_widget');
+$civiI18n['civi_pagina'] = __('civinsis.civi_pagina');
+$civiI18n['perfil']      = __('civinsis.perfil');
+$civiI18n['admin']       = __('civinsis.admin');
+$civiI18n['comun']       = __('civinsis.comun');
+// Código de idioma actual (es/en/fr), para formatear fechas y números con
+// Intl/toLocaleString en el idioma correcto (antes venía fijo a 'es').
+$civiI18n['_locale']     = app()->getLocale();
 ?>
 <script>
 window.CIVI_I18N = <?= str_replace('</', '<\/', json_encode($civiI18n, JSON_UNESCAPED_UNICODE)) ?>;
@@ -98,9 +106,9 @@ window.CIVI_I18N = <?= str_replace('</', '<\/', json_encode($civiI18n, JSON_UNES
 <link rel="stylesheet" href="css/civinsis-extra.css">
 <link rel="stylesheet" href="css/cosmeticos.css">
   <link rel="stylesheet" href="css/marcos-gsap.css">
-  <link rel="stylesheet" href="css/fondos.css">
+  <script src="js/perf-viewport.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
-  <script src="js/fondos.js" defer></script>
+  <script src="js/fondos-gsap.js" defer></script>
   <link rel="stylesheet" href="css/efectos.css">
   <script src="js/efectos-gsap.js" defer></script>
   <script src="js/efectos-eventos.js" defer></script>

@@ -77,7 +77,8 @@
             p.setAttribute('d', d + ' Z');
           };
           draw();
-          tl.to(obj, { fase: obj.fase + TAU, duration: az(8, 12), ease: 'none', onUpdate: draw }, 0);
+          let _fc = 0; // redibuja el path cada 2 frames: ola lenta (8-12s), sin diferencia perceptible
+          tl.to(obj, { fase: obj.fase + TAU, duration: az(8, 12), ease: 'none', onUpdate: () => { if ((_fc++ & 1) === 0) draw(); } }, 0);
         }
         return tl;
       }
@@ -325,6 +326,7 @@
   function destruir(host) {
     const m = vivos.get(host);
     if (!m) return;
+    if (window.PerfShared) window.PerfShared.unwatch(host);
     m.tl.kill();
     gsap.killTweensOf(m.svg.querySelectorAll('*'));
     m.svg.remove();
@@ -359,7 +361,13 @@
 
     const tl = MK[clave].crear(g);
     tl.timeScale(lado < 50 ? 1.25 : 1);
-    if (menos) tl.progress(0.35).pause();
+    if (menos) {
+      tl.progress(0.35).pause();
+    } else if (window.PerfShared) {
+      // Pausa/reanuda con la timeline fuera/dentro de vista o con la pestaña
+      // oculta — .pause()/.resume() conserva el progreso, nunca se reinicia.
+      window.PerfShared.watch(host, { onEnter: () => tl.resume(), onExit: () => tl.pause() });
+    }
 
     vivos.set(host, { clave, tl, svg });
   }

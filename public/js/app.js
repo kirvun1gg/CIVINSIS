@@ -119,9 +119,15 @@ const Modal = {
     if (backdrop) {
       backdrop.classList.add('open');
       document.body.style.overflow = 'hidden';
-      backdrop.addEventListener('click', e => {
-        if (e.target === backdrop) this.close(id);
-      });
+      // El listener se liga una sola vez por backdrop (antes se agregaba
+      // uno nuevo en cada open(), y se iban acumulando si el mismo modal
+      // se abria mas de una vez en la sesion).
+      if (!backdrop.dataset.modalListo) {
+        backdrop.dataset.modalListo = '1';
+        backdrop.addEventListener('click', e => {
+          if (e.target === backdrop) this.close(id);
+        });
+      }
     }
   },
 
@@ -178,7 +184,10 @@ const Particles = {
         : `rgba(239,126,34,${Math.random()*.35+.12})`
     }));
 
+    let activo = true;
+    let corriendo = false;
     const tick = () => {
+      if (!activo) { corriendo = false; return; }
       ctx.clearRect(0, 0, W, H);
       // Conexiones
       for (let i = 0; i < pts.length; i++) {
@@ -207,7 +216,17 @@ const Particles = {
       });
       requestAnimationFrame(tick);
     };
-    tick();
+    const arrancar = () => { activo = true; if (!corriendo) { corriendo = true; tick(); } };
+    arrancar();
+    // Fuera de vista o con la pestaña oculta, el loop deja de reprogramarse
+    // solo (no se pierden ni reinician posiciones: sigue exactamente donde
+    // estaba al reanudar).
+    if (window.PerfShared) {
+      window.PerfShared.watch(canvas, {
+        onEnter: arrancar,
+        onExit: () => { activo = false; },
+      });
+    }
   },
 
   // Parallax suave de orbes con el mouse
@@ -1299,7 +1318,7 @@ function showLogoutModal() {
   // Título
   const title = document.createElement('h2');
   title.style.cssText = `font-family:var(--font-display);font-size:1.6rem;font-weight:800;color:var(--text);margin-bottom:.5rem;`;
-  title.textContent = '¡Hasta pronto!';
+  title.textContent = (window.CIVI_I18N && CIVI_I18N.logout_titulo) || '¡Hasta pronto!';
   card.appendChild(title);
 
   // Subtítulo con nombre
@@ -1307,8 +1326,9 @@ function showLogoutModal() {
   const sub = document.createElement('p');
   sub.style.cssText = `color:var(--text-muted);font-size:.95rem;margin-bottom:1.5rem;line-height:1.6;`;
   sub.innerHTML = nombre
-    ? `Nos vemos pronto, <strong style="color:var(--verde)">${nombre}</strong>.<br>Tu voz sigue marcando la diferencia. 🌿`
-    : `Tu voz sigue marcando la diferencia. 🌿<br>¡Gracias por ser parte de CIVINSIS!`;
+    ? ((window.CIVI_I18N && CIVI_I18N.logout_despedida_con_nombre) || 'Nos vemos pronto, {nombre}.<br>Tu voz sigue marcando la diferencia. 🌿')
+        .replace('{nombre}', `<strong style="color:var(--verde)">${nombre}</strong>`)
+    : ((window.CIVI_I18N && CIVI_I18N.logout_despedida_sin_nombre) || 'Tu voz sigue marcando la diferencia. 🌿<br>¡Gracias por ser parte de CIVINSIS!');
   card.appendChild(sub);
 
   // Barra de progreso
@@ -1320,7 +1340,7 @@ function showLogoutModal() {
 
   const barLabel = document.createElement('p');
   barLabel.style.cssText = `font-size:.75rem;color:var(--text-muted);`;
-  barLabel.textContent = 'Cerrando sesión...';
+  barLabel.textContent = (window.CIVI_I18N && CIVI_I18N.logout_cerrando) || 'Cerrando sesión...';
   card.appendChild(barLabel);
 
   overlay.appendChild(card);
@@ -1414,6 +1434,28 @@ const Idioma = {
   },
 };
 
+// ── Menú de la cuenta (Mi Perfil / Hablar con CIVI / Cerrar sesión) ────
+const NavUserMenu = {
+  init() {
+    const wrap = document.getElementById('navUserMenuWrap');
+    const btn = document.getElementById('navUserMenuBtn');
+    const dropdown = document.getElementById('navUserDropdown');
+    if (!wrap || !btn || !dropdown) return;
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const abierto = dropdown.classList.toggle('open');
+      btn.setAttribute('aria-expanded', abierto);
+    });
+    document.addEventListener('click', (e) => {
+      if (!wrap.contains(e.target)) {
+        dropdown.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  },
+};
+
 // ── Desplegable "Participar" del navbar (Propuestas/Debates/Desafíos) ──
 const NavParticipar = {
   init() {
@@ -1483,7 +1525,7 @@ const Notificaciones = {
     if (list) {
       list.innerHTML = res.notificaciones.length
         ? res.notificaciones.map(n => this.itemHTML(n)).join('')
-        : '<div class="notif-empty">No tienes notificaciones todavía.</div>';
+        : `<div class="notif-empty">${this._esc((window.CIVI_I18N && CIVI_I18N.notif_vacio) || 'No tienes notificaciones todavía.')}</div>`;
     }
 
     if (mostrarToasts) this.mostrarToastsNuevas(res.notificaciones);
@@ -1579,6 +1621,7 @@ document.addEventListener('DOMContentLoaded', () => {
   Notificaciones.init();
   Idioma.init();
   NavParticipar.init();
+  NavUserMenu.init();
 
   // Init detalle si aplica
   if (document.getElementById('detailContent')) ProposalDetail.init();

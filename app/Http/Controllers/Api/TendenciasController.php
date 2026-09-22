@@ -8,6 +8,7 @@ use App\Models\DebateRespuesta;
 use App\Models\Proposal;
 use App\Models\Titulo;
 use App\Support\ApiResponse;
+use App\Support\CatalogoTraducido;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -20,7 +21,7 @@ class TendenciasController extends Controller
         $accion = $request->input('accion', 'todo');
         return match ($accion) {
             'todo'  => $this->todo($request),
-            default => $this->json(false, 'Acción no reconocida'),
+            default => $this->json(false, __('civinsis.toast.comunes.accion_no_reconocida')),
         };
     }
 
@@ -121,7 +122,7 @@ class TendenciasController extends Controller
                 'nivel'      => $u->nivel,
                 'reputacion' => $u->reputacion,
                 'actividad'  => (int) $u->actividad,
-                'titulo'     => $titulo ? ['nombre' => $titulo->nombre, 'color' => $titulo->color, 'rareza' => $titulo->rareza] : null,
+                'titulo'     => $titulo ? ['nombre' => CatalogoTraducido::campo('titulos', $titulo->clave, 'nombre', $titulo->nombre), 'color' => $titulo->color, 'rareza' => $titulo->rareza] : null,
             ];
         })->values()->all();
     }

@@ -263,8 +263,10 @@
       };
       marcar();
       // el contenido llega por AJAX: volver a marcar cuando cambie el DOM
-      new MutationObserver(() => { clearTimeout(this._tRev); this._tRev = setTimeout(marcar, 120); })
-        .observe(document.body, { childList: true, subtree: true });
+      const cb = () => { clearTimeout(this._tRev); this._tRev = setTimeout(marcar, 120); };
+      const opciones = { childList: true, subtree: true };
+      if (window.PerfShared) window.PerfShared.onMutations(cb, opciones);
+      else new MutationObserver(cb).observe(document.body, opciones);
     },
 
     /* ═════════════════════════════════════════════════════
@@ -297,8 +299,12 @@
         });
       };
       nombrar();
-      new MutationObserver(() => { clearTimeout(this._tAria); this._tAria = setTimeout(nombrar, 200); })
-        .observe(document.body, { childList: true, subtree: true });
+      {
+        const cb = () => { clearTimeout(this._tAria); this._tAria = setTimeout(nombrar, 200); };
+        const opciones = { childList: true, subtree: true };
+        if (window.PerfShared) window.PerfShared.onMutations(cb, opciones);
+        else new MutationObserver(cb).observe(document.body, opciones);
+      }
 
       // 3) Convertir title="" en tooltip propio (los nativos son lentos y feos)
       document.querySelectorAll('[title]:not([data-tip])').forEach((el) => {
@@ -321,8 +327,10 @@
         });
       };
       lazy();
-      new MutationObserver(() => { clearTimeout(this._tLazy); this._tLazy = setTimeout(lazy, 250); })
-        .observe(document.body, { childList: true, subtree: true });
+      const cb = () => { clearTimeout(this._tLazy); this._tLazy = setTimeout(lazy, 250); };
+      const opciones = { childList: true, subtree: true };
+      if (window.PerfShared) window.PerfShared.onMutations(cb, opciones);
+      else new MutationObserver(cb).observe(document.body, opciones);
     },
 
     /* ═════════════════════════════════════════════════════
@@ -371,7 +379,7 @@
       this._mostrarPendiente();
 
       // Sonido sutil al confirmarse una acción (los toasts de éxito)
-      new MutationObserver((muts) => {
+      const cbSonido = (muts) => {
         for (const m of muts) {
           for (const n of m.addedNodes) {
             if (n.nodeType === 1 && n.classList?.contains('toast')) {
@@ -380,7 +388,10 @@
             }
           }
         }
-      }).observe(document.body, { childList: true, subtree: true });
+      };
+      const opcionesSonido = { childList: true, subtree: true };
+      if (window.PerfShared) window.PerfShared.onMutations(cbSonido, opcionesSonido);
+      else new MutationObserver(cbSonido).observe(document.body, opcionesSonido);
     },
   };
 

@@ -14,8 +14,11 @@ use App\Models\Mision;
 use App\Models\Proposal;
 use App\Models\Titulo;
 use App\Models\User;
+use App\Services\TranslationService;
 use App\Support\ApiResponse;
+use App\Support\CatalogoTraducido;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -37,19 +40,30 @@ class AdminController extends Controller
         'debate_respuesta' => [DebateRespuesta::class, 'destacada', 'censurado'],
     ];
 
-    /** Rarezas comunes a varias entidades. */
-    private const RAREZAS = ['comun' => 'Común', 'raro' => 'Raro', 'epico' => 'Épico', 'legendario' => 'Legendario'];
+    /** Rarezas comunes a varias entidades (traducidas: __() no se puede usar en una const). */
+    private function rarezas(): array
+    {
+        return [
+            'comun' => __('civinsis.admin.gam.rareza_comun'),
+            'raro' => __('civinsis.admin.gam.rareza_raro'),
+            'epico' => __('civinsis.admin.gam.rareza_epico'),
+            'legendario' => __('civinsis.admin.gam.rareza_legendario'),
+        ];
+    }
 
     /** Acciones que la plataforma dispara de verdad (XP_ACCIONES del servicio). */
-    private const ACCIONES_MISION = [
-        'crear_propuesta'  => 'Crear una propuesta',
-        'comentar'         => 'Comentar',
-        'votar'            => 'Votar',
-        'recibir_voto'     => 'Recibir un voto',
-        'crear_debate'     => 'Crear un debate',
-        'responder_debate' => 'Responder en un debate',
-        'racha_diaria'     => 'Mantener la racha',
-    ];
+    private function accionesMision(): array
+    {
+        return [
+            'crear_propuesta'  => __('civinsis.admin.gam.accion_crear_propuesta'),
+            'comentar'         => __('civinsis.admin.gam.accion_comentar'),
+            'votar'            => __('civinsis.admin.gam.accion_votar'),
+            'recibir_voto'     => __('civinsis.admin.gam.accion_recibir_voto'),
+            'crear_debate'     => __('civinsis.admin.gam.accion_crear_debate'),
+            'responder_debate' => __('civinsis.admin.gam.accion_responder_debate'),
+            'racha_diaria'     => __('civinsis.admin.gam.accion_racha_diaria'),
+        ];
+    }
 
     /**
      * Entidades de gamificación gestionables desde el panel.
@@ -59,80 +73,82 @@ class AdminController extends Controller
     {
         $t = fn ($n, $l, $extra = []) => array_merge(['name' => $n, 'label' => $l, 'tipo' => 'text'], $extra);
 
+        $g = fn (string $k) => __('civinsis.admin.gam.' . $k);
+
         return [
             'desafio' => [
-                'modelo' => Desafio::class, 'label' => 'Desafíos', 'singular' => 'desafío', 'icono' => 'fa-flag-checkered',
+                'modelo' => Desafio::class, 'label' => __('civinsis.admin.desafios_titulo'), 'singular' => $g('singular_desafio'), 'icono' => 'fa-flag-checkered',
                 'titulo' => 'titulo', 'orden' => 'orden',
                 'campos' => [
-                    $t('titulo', 'Título', ['req' => true]),
-                    $t('descripcion', 'Descripción', ['tipo' => 'textarea', 'req' => true]),
-                    $t('dificultad', 'Dificultad', ['tipo' => 'select', 'opciones' => ['facil' => 'Fácil', 'medio' => 'Medio', 'dificil' => 'Difícil']]),
-                    $t('categoria_id', 'Categoría', ['tipo' => 'select', 'fuente' => 'categorias']),
-                    $t('icono', 'Icono (Font Awesome)', ['ph' => 'fas fa-bullseye']),
-                    $t('xp_recompensa', 'XP de recompensa', ['tipo' => 'number']),
-                    $t('reputacion_recompensa', 'Reputación', ['tipo' => 'number']),
-                    $t('orden', 'Orden', ['tipo' => 'number']),
-                    $t('activo', 'Activo', ['tipo' => 'bool']),
+                    $t('titulo', __('civinsis.comun.col_titulo'), ['req' => true]),
+                    $t('descripcion', __('civinsis.admin.col_descripcion'), ['tipo' => 'textarea', 'req' => true]),
+                    $t('dificultad', $g('campo_dificultad'), ['tipo' => 'select', 'opciones' => ['facil' => $g('op_dificultad_facil'), 'medio' => $g('op_dificultad_medio'), 'dificil' => $g('op_dificultad_dificil')]]),
+                    $t('categoria_id', __('civinsis.comun.col_categoria'), ['tipo' => 'select', 'fuente' => 'categorias']),
+                    $t('icono', __('civinsis.admin.campo_icono'), ['ph' => 'fas fa-bullseye']),
+                    $t('xp_recompensa', $g('campo_xp_recompensa'), ['tipo' => 'number']),
+                    $t('reputacion_recompensa', $g('campo_reputacion'), ['tipo' => 'number']),
+                    $t('orden', $g('campo_orden'), ['tipo' => 'number']),
+                    $t('activo', $g('campo_activo'), ['tipo' => 'bool']),
                 ],
             ],
             'mision' => [
-                'modelo' => Mision::class, 'label' => 'Misiones', 'singular' => 'misión', 'icono' => 'fa-bullseye',
+                'modelo' => Mision::class, 'label' => __('civinsis.admin.gam.label_misiones'), 'singular' => $g('singular_mision'), 'icono' => 'fa-bullseye',
                 'titulo' => 'nombre',
                 'campos' => [
-                    $t('clave', 'Clave única', ['req' => true, 'ph' => 'diaria_comentar']),
-                    $t('nombre', 'Nombre', ['req' => true]),
-                    $t('descripcion', 'Descripción', ['tipo' => 'textarea', 'req' => true]),
-                    $t('tipo', 'Tipo', ['tipo' => 'select', 'opciones' => ['diaria' => 'Diaria', 'semanal' => 'Semanal', 'especial' => 'Especial']]),
-                    $t('accion', 'Acción que la completa', ['tipo' => 'select', 'opciones' => self::ACCIONES_MISION]),
-                    $t('cantidad', 'Cantidad necesaria', ['tipo' => 'number']),
-                    $t('xp_recompensa', 'XP de recompensa', ['tipo' => 'number']),
-                    $t('reputacion_recompensa', 'Reputación', ['tipo' => 'number']),
-                    $t('activo', 'Activa', ['tipo' => 'bool']),
+                    $t('clave', $g('campo_clave_unica'), ['req' => true, 'ph' => 'diaria_comentar']),
+                    $t('nombre', __('civinsis.admin.col_nombre'), ['req' => true]),
+                    $t('descripcion', __('civinsis.admin.col_descripcion'), ['tipo' => 'textarea', 'req' => true]),
+                    $t('tipo', $g('campo_tipo'), ['tipo' => 'select', 'opciones' => ['diaria' => $g('op_tipo_mision_diaria'), 'semanal' => $g('op_tipo_mision_semanal'), 'especial' => $g('op_tipo_mision_especial')]]),
+                    $t('accion', $g('campo_accion_completa'), ['tipo' => 'select', 'opciones' => $this->accionesMision()]),
+                    $t('cantidad', $g('campo_cantidad_necesaria'), ['tipo' => 'number']),
+                    $t('xp_recompensa', $g('campo_xp_recompensa'), ['tipo' => 'number']),
+                    $t('reputacion_recompensa', $g('campo_reputacion'), ['tipo' => 'number']),
+                    $t('activo', $g('campo_activa'), ['tipo' => 'bool']),
                 ],
             ],
             'insignia' => [
-                'modelo' => Insignia::class, 'label' => 'Insignias', 'singular' => 'insignia', 'icono' => 'fa-certificate',
+                'modelo' => Insignia::class, 'label' => __('civinsis.admin.gam.label_insignias'), 'singular' => $g('singular_insignia'), 'icono' => 'fa-certificate',
                 'titulo' => 'nombre',
                 'campos' => [
-                    $t('clave', 'Clave única', ['req' => true]),
-                    $t('nombre', 'Nombre', ['req' => true]),
-                    $t('descripcion', 'Descripción', ['tipo' => 'textarea', 'req' => true]),
-                    $t('icono', 'Icono (emoji o Font Awesome)', ['ph' => '🏅 o fas fa-medal']),
-                    $t('color', 'Color', ['tipo' => 'color']),
-                    $t('categoria', 'Categoría', ['tipo' => 'select', 'opciones' => ['rol' => 'Rol', 'logro' => 'Logro', 'evento' => 'Evento', 'especial' => 'Especial']]),
-                    $t('rareza', 'Rareza', ['tipo' => 'select', 'opciones' => self::RAREZAS]),
-                    $t('equipable', 'Equipable', ['tipo' => 'bool']),
-                    $t('activo', 'Activa', ['tipo' => 'bool']),
+                    $t('clave', $g('campo_clave_unica'), ['req' => true]),
+                    $t('nombre', __('civinsis.admin.col_nombre'), ['req' => true]),
+                    $t('descripcion', __('civinsis.admin.col_descripcion'), ['tipo' => 'textarea', 'req' => true]),
+                    $t('icono', $g('campo_icono_emoji_fa'), ['ph' => $g('ph_insignia_icono')]),
+                    $t('color', __('civinsis.admin.col_color'), ['tipo' => 'color']),
+                    $t('categoria', __('civinsis.comun.col_categoria'), ['tipo' => 'select', 'opciones' => ['rol' => $g('op_cat_insignia_rol'), 'logro' => $g('op_cat_insignia_logro'), 'evento' => $g('op_cat_insignia_evento'), 'especial' => $g('op_cat_insignia_especial')]]),
+                    $t('rareza', $g('campo_rareza'), ['tipo' => 'select', 'opciones' => $this->rarezas()]),
+                    $t('equipable', $g('campo_equipable'), ['tipo' => 'bool']),
+                    $t('activo', $g('campo_activa'), ['tipo' => 'bool']),
                 ],
             ],
             'titulo' => [
-                'modelo' => Titulo::class, 'label' => 'Títulos', 'singular' => 'título', 'icono' => 'fa-ranking-star',
+                'modelo' => Titulo::class, 'label' => __('civinsis.admin.gam.label_titulos'), 'singular' => $g('singular_titulo'), 'icono' => 'fa-ranking-star',
                 'titulo' => 'nombre',
                 'campos' => [
-                    $t('clave', 'Clave única', ['req' => true]),
-                    $t('nombre', 'Nombre', ['req' => true]),
-                    $t('color', 'Color', ['tipo' => 'color']),
-                    $t('rareza', 'Rareza', ['tipo' => 'select', 'opciones' => self::RAREZAS]),
-                    $t('condicion_tipo', 'Se obtiene por', ['tipo' => 'select', 'opciones' => ['nivel' => 'Alcanzar un nivel', 'logro' => 'Un logro', 'reputacion' => 'Reputación', 'manual' => 'Asignación manual']]),
-                    $t('condicion_valor', 'Valor de la condición', ['tipo' => 'number']),
-                    $t('xp_requerido', 'XP requerido', ['tipo' => 'number']),
-                    $t('activo', 'Activo', ['tipo' => 'bool']),
+                    $t('clave', $g('campo_clave_unica'), ['req' => true]),
+                    $t('nombre', __('civinsis.admin.col_nombre'), ['req' => true]),
+                    $t('color', __('civinsis.admin.col_color'), ['tipo' => 'color']),
+                    $t('rareza', $g('campo_rareza'), ['tipo' => 'select', 'opciones' => $this->rarezas()]),
+                    $t('condicion_tipo', $g('campo_condicion_tipo'), ['tipo' => 'select', 'opciones' => ['nivel' => $g('cond_nivel'), 'logro' => $g('cond_logro'), 'reputacion' => $g('campo_reputacion'), 'manual' => $g('cond_manual')]]),
+                    $t('condicion_valor', $g('campo_condicion_valor'), ['tipo' => 'number']),
+                    $t('xp_requerido', $g('campo_xp_requerido'), ['tipo' => 'number']),
+                    $t('activo', $g('campo_activo'), ['tipo' => 'bool']),
                 ],
             ],
             'cosmetico' => [
-                'modelo' => Cosmetico::class, 'label' => 'Cosméticos', 'singular' => 'cosmético', 'icono' => 'fa-palette',
+                'modelo' => Cosmetico::class, 'label' => __('civinsis.admin.gam.label_cosmeticos'), 'singular' => $g('singular_cosmetico'), 'icono' => 'fa-palette',
                 'titulo' => 'nombre',
                 'campos' => [
-                    $t('clave', 'Clave única', ['req' => true]),
-                    $t('nombre', 'Nombre', ['req' => true]),
-                    $t('descripcion', 'Descripción', ['tipo' => 'textarea']),
-                    $t('tipo', 'Tipo', ['tipo' => 'select', 'opciones' => ['marco_avatar' => 'Marco de avatar', 'fondo_perfil' => 'Fondo de perfil']]),
-                    $t('valor', 'Valor (clase CSS)', ['req' => true, 'ph' => 'marco-dorado']),
-                    $t('preview', 'Vista previa (CSS en línea)', ['ph' => 'background:linear-gradient(...)']),
-                    $t('rareza', 'Rareza', ['tipo' => 'select', 'opciones' => self::RAREZAS]),
-                    $t('nivel_requerido', 'Nivel requerido', ['tipo' => 'number']),
-                    $t('xp_requerido', 'XP requerido', ['tipo' => 'number']),
-                    $t('activo', 'Activo', ['tipo' => 'bool']),
+                    $t('clave', $g('campo_clave_unica'), ['req' => true]),
+                    $t('nombre', __('civinsis.admin.col_nombre'), ['req' => true]),
+                    $t('descripcion', __('civinsis.admin.col_descripcion'), ['tipo' => 'textarea']),
+                    $t('tipo', $g('campo_tipo'), ['tipo' => 'select', 'opciones' => ['marco_avatar' => $g('op_cosmetico_marco'), 'fondo_perfil' => $g('op_cosmetico_fondo')]]),
+                    $t('valor', $g('campo_valor_clase_css'), ['req' => true, 'ph' => 'marco-dorado']),
+                    $t('preview', $g('campo_preview_css'), ['ph' => 'background:linear-gradient(...)']),
+                    $t('rareza', $g('campo_rareza'), ['tipo' => 'select', 'opciones' => $this->rarezas()]),
+                    $t('nivel_requerido', $g('campo_nivel_requerido'), ['tipo' => 'number']),
+                    $t('xp_requerido', $g('campo_xp_requerido'), ['tipo' => 'number']),
+                    $t('activo', $g('campo_activo'), ['tipo' => 'bool']),
                 ],
             ],
         ];
@@ -140,7 +156,7 @@ class AdminController extends Controller
 
     public function handle(Request $request)
     {
-        if (!$this->esAdmin()) return $this->json(false, 'Sin permisos');
+        if (!$this->esAdmin()) return $this->json(false, __('civinsis.toast.comunes.sin_permisos'));
 
         $accion = $request->input('accion', '');
 
@@ -156,7 +172,7 @@ class AdminController extends Controller
             'gestion_listar'   => $this->gestionListar($request),
             'gestion_guardar'  => $this->gestionGuardar($request),
             'gestion_eliminar' => $this->gestionEliminar($request),
-            default         => $this->json(false, 'Acción no reconocida'),
+            default         => $this->json(false, __('civinsis.toast.comunes.accion_no_reconocida')),
         };
     }
 
@@ -208,9 +224,23 @@ class AdminController extends Controller
         // ── Actividad por categoría (para el gráfico) ──
         $porCategoria = DB::table('propuestas')
             ->join('categorias', 'categorias.id', '=', 'propuestas.categoria_id')
-            ->select('categorias.nombre', 'categorias.color', DB::raw('COUNT(*) as total'))
-            ->groupBy('categorias.nombre', 'categorias.color')
+            ->select('categorias.id', 'categorias.nombre', 'categorias.color', DB::raw('COUNT(*) as total'))
+            ->groupBy('categorias.id', 'categorias.nombre', 'categorias.color')
             ->orderByDesc('total')->limit(8)->get();
+
+        // Esta es una consulta agregada en crudo (no pasa por el modelo
+        // Categoria), así que 'nombre' llega en español sin traducir — se
+        // resuelve aparte con el mismo mecanismo (DeepL + caché) que usa
+        // el resto de la plataforma.
+        $localeStats = App::getLocale();
+        if ($localeStats !== 'es' && $porCategoria->isNotEmpty()) {
+            $catModels = Categoria::whereIn('id', $porCategoria->pluck('id'))->get()->keyBy('id');
+            app(TranslationService::class)->warmMany($catModels, ['nombre'], $localeStats);
+            $porCategoria->each(function ($row) use ($catModels) {
+                $cat = $catModels->get($row->id);
+                if ($cat) $row->nombre = $cat->translated('nombre');
+            });
+        }
 
         return $this->json(true, 'OK', [
             'usuarios' => [
@@ -256,11 +286,11 @@ class AdminController extends Controller
         $tipo = (string) $request->input('tipo', '');
         $id   = (int) $request->input('id');
 
-        if (!isset(self::TIPOS[$tipo])) return $this->json(false, 'Tipo no soportado');
+        if (!isset(self::TIPOS[$tipo])) return $this->json(false, __('civinsis.toast.admin.tipo_no_soportado'));
         [$modelo, $campoDestacar] = self::TIPOS[$tipo];
 
         $item = $modelo::find($id);
-        if (!$item) return $this->json(false, 'No se encontró el contenido');
+        if (!$item) return $this->json(false, __('civinsis.toast.admin.contenido_no_encontrado'));
 
         // Si llega "valor" lo respetamos; si no, alternamos.
         $valor = $request->has('valor')
@@ -270,7 +300,7 @@ class AdminController extends Controller
         $item->{$campoDestacar} = $valor;
         $item->save();
 
-        return $this->json(true, $valor ? 'Contenido destacado' : 'Se quitó el destacado', [
+        return $this->json(true, $valor ? __('civinsis.toast.admin.contenido_destacado') : __('civinsis.toast.admin.destacado_quitado'), [
             'destacado' => $valor,
         ]);
     }
@@ -284,11 +314,11 @@ class AdminController extends Controller
         $id    = (int) $request->input('id');
         $razon = trim((string) $request->input('razon', '')) ?: 'Ocultado por moderación';
 
-        if (!isset(self::TIPOS[$tipo])) return $this->json(false, 'Tipo no soportado');
+        if (!isset(self::TIPOS[$tipo])) return $this->json(false, __('civinsis.toast.admin.tipo_no_soportado'));
         [$modelo, , $campoOcultar] = self::TIPOS[$tipo];
 
         $item = $modelo::find($id);
-        if (!$item) return $this->json(false, 'No se encontró el contenido');
+        if (!$item) return $this->json(false, __('civinsis.toast.admin.contenido_no_encontrado'));
 
         $valor = $request->has('valor')
             ? filter_var($request->input('valor'), FILTER_VALIDATE_BOOLEAN)
@@ -308,7 +338,7 @@ class AdminController extends Controller
         if ($tipo === 'propuesta') $item->estado = $valor ? 'en_revision' : 'activa';
         $item->save();
 
-        return $this->json(true, $valor ? 'Contenido ocultado' : 'Contenido restaurado', [
+        return $this->json(true, $valor ? __('civinsis.toast.admin.contenido_ocultado') : __('civinsis.toast.admin.contenido_restaurado'), [
             'oculto' => $valor,
         ]);
     }
@@ -322,29 +352,29 @@ class AdminController extends Controller
         $razon = trim((string) $request->input('razon', '')) ?: 'Incumplimiento de las normas de la comunidad';
 
         $u = User::find($id);
-        if (!$u) return $this->json(false, 'Usuario no encontrado');
-        if ($u->id === Auth::id()) return $this->json(false, 'No puedes suspenderte a ti mismo');
-        if ($u->rol_nombre === 'admin') return $this->json(false, 'No puedes suspender a un administrador');
+        if (!$u) return $this->json(false, __('civinsis.toast.admin.usuario_no_encontrado'));
+        if ($u->id === Auth::id()) return $this->json(false, __('civinsis.toast.admin.no_puedes_suspenderte'));
+        if ($u->rol_nombre === 'admin') return $this->json(false, __('civinsis.toast.admin.no_puedes_suspender_admin'));
 
         $u->activo           = false;
         $u->razon_suspension = $razon;
         $u->suspendido_at    = now();
         $u->save();
 
-        return $this->json(true, 'Usuario suspendido');
+        return $this->json(true, __('civinsis.toast.admin.usuario_suspendido'));
     }
 
     private function reactivar(Request $request)
     {
         $u = User::find((int) $request->input('id'));
-        if (!$u) return $this->json(false, 'Usuario no encontrado');
+        if (!$u) return $this->json(false, __('civinsis.toast.admin.usuario_no_encontrado'));
 
         $u->activo           = true;
         $u->razon_suspension = null;
         $u->suspendido_at    = null;
         $u->save();
 
-        return $this->json(true, 'Usuario reactivado');
+        return $this->json(true, __('civinsis.toast.admin.usuario_reactivado'));
     }
 
     // ═════════════════════════════════════════════════════════════
@@ -397,12 +427,12 @@ class AdminController extends Controller
     private function spamEliminar(Request $request)
     {
         $ids = $request->input('ids', []);
-        if (!is_array($ids) || !$ids) return $this->json(false, 'No se indicó qué eliminar');
+        if (!is_array($ids) || !$ids) return $this->json(false, __('civinsis.toast.admin.no_indico_que_eliminar'));
 
         $ids = array_map('intval', $ids);
         $n = Comentario::whereIn('id', $ids)->delete();
 
-        return $this->json(true, "Se eliminaron {$n} comentarios", ['eliminados' => $n]);
+        return $this->json(true, __('civinsis.toast.admin.comentarios_eliminados', ['n' => $n]), ['eliminados' => $n]);
     }
 
     // ═════════════════════════════════════════════════════════════
@@ -420,7 +450,7 @@ class AdminController extends Controller
             foreach ($campos as $i => $c) {
                 if (($c['fuente'] ?? '') === 'categorias') {
                     $campos[$i]['opciones'] = Categoria::orderBy('nombre')->pluck('nombre', 'id')->all();
-                    $campos[$i]['vacio']    = 'Sin categoría';
+                    $campos[$i]['vacio']    = __('civinsis.admin.gam.sin_categoria');
                 }
             }
             $out[$clave] = [
@@ -439,19 +469,45 @@ class AdminController extends Controller
         return $this->entidades()[$clave] ?? null;
     }
 
+    /** Tabla del catálogo traducible (ver App\Support\CatalogoTraducido) por cada entidad gestionable aquí. */
+    private const CATALOGO_TABLA = [
+        'titulo'    => 'titulos',
+        'mision'    => 'misiones',
+        'insignia'  => 'insignias',
+        'cosmetico' => 'cosmeticos',
+        // 'desafio' no tiene columna 'clave' ni catálogo de traducción todavía.
+    ];
+
     private function gestionListar(Request $request)
     {
-        $e = $this->entidad((string) $request->input('entidad', ''));
-        if (!$e) return $this->json(false, 'Entidad no reconocida');
+        $claveEntidad = (string) $request->input('entidad', '');
+        $e = $this->entidad($claveEntidad);
+        if (!$e) return $this->json(false, __('civinsis.toast.admin.entidad_no_reconocida'));
 
         $q = $e['modelo']::query();
         if (!empty($e['orden'])) $q->orderBy($e['orden']);
         $items = $q->orderByDesc('id')->limit(200)->get();
 
         $campos = array_column($e['campos'], 'name');
-        $lista  = $items->map(function ($it) use ($campos) {
+        $tablaCatalogo = self::CATALOGO_TABLA[$claveEntidad] ?? null;
+
+        $lista  = $items->map(function ($it) use ($campos, $tablaCatalogo) {
             $fila = ['id' => $it->id];
             foreach ($campos as $c) $fila[$c] = $it->{$c};
+
+            // 'nombre'/'descripcion' se dejan tal cual (son el valor real que
+            // se edita); se agrega la versión traducida aparte, igual que en
+            // CategoriaController::listar(), para no arriesgar sobrescribir
+            // el original en español al guardar una edición.
+            if ($tablaCatalogo && !empty($fila['clave'])) {
+                if (array_key_exists('nombre', $fila)) {
+                    $fila['nombre_traducido'] = CatalogoTraducido::campo($tablaCatalogo, $fila['clave'], 'nombre', $fila['nombre']);
+                }
+                if (array_key_exists('descripcion', $fila)) {
+                    $fila['descripcion_traducido'] = CatalogoTraducido::campo($tablaCatalogo, $fila['clave'], 'descripcion', $fila['descripcion']);
+                }
+            }
+
             return $fila;
         });
 
@@ -462,14 +518,14 @@ class AdminController extends Controller
     {
         $clave = (string) $request->input('entidad', '');
         $e = $this->entidad($clave);
-        if (!$e) return $this->json(false, 'Entidad no reconocida');
+        if (!$e) return $this->json(false, __('civinsis.toast.admin.entidad_no_reconocida'));
 
         $id     = (int) $request->input('id');
         $datos  = $request->input('datos', []);
-        if (!is_array($datos)) return $this->json(false, 'Datos inválidos');
+        if (!is_array($datos)) return $this->json(false, __('civinsis.toast.comunes.datos_invalidos'));
 
         $item = $id ? $e['modelo']::find($id) : new $e['modelo']();
-        if ($id && !$item) return $this->json(false, 'No se encontró el registro');
+        if ($id && !$item) return $this->json(false, __('civinsis.toast.admin.registro_no_encontrado'));
 
         foreach ($e['campos'] as $c) {
             $n = $c['name'];
@@ -483,7 +539,7 @@ class AdminController extends Controller
 
             // Campos obligatorios: no permitir vaciarlos
             if (!empty($c['req']) && ($v === '' || $v === null)) {
-                return $this->json(false, "El campo «{$c['label']}» es obligatorio");
+                return $this->json(false, __('civinsis.toast.admin.campo_obligatorio', ['campo' => $c['label']]));
             }
             $item->{$n} = $v;
         }
@@ -492,21 +548,21 @@ class AdminController extends Controller
         if (in_array('clave', array_column($e['campos'], 'name')) && $item->clave) {
             $dup = $e['modelo']::where('clave', $item->clave)
                 ->when($item->id, fn ($q) => $q->where('id', '!=', $item->id))->exists();
-            if ($dup) return $this->json(false, 'Ya existe otro registro con esa clave');
+            if ($dup) return $this->json(false, __('civinsis.toast.admin.clave_duplicada'));
         }
 
         $item->save();
 
-        return $this->json(true, $id ? 'Cambios guardados' : 'Creado correctamente', ['id' => $item->id]);
+        return $this->json(true, $id ? __('civinsis.toast.admin.cambios_guardados') : __('civinsis.toast.admin.creado_correctamente'), ['id' => $item->id]);
     }
 
     private function gestionEliminar(Request $request)
     {
         $e = $this->entidad((string) $request->input('entidad', ''));
-        if (!$e) return $this->json(false, 'Entidad no reconocida');
+        if (!$e) return $this->json(false, __('civinsis.toast.admin.entidad_no_reconocida'));
 
         $item = $e['modelo']::find((int) $request->input('id'));
-        if (!$item) return $this->json(false, 'No se encontró el registro');
+        if (!$item) return $this->json(false, __('civinsis.toast.admin.registro_no_encontrado'));
 
         // Si ya lo tienen usuarios, desactivar en vez de borrar (evita romper su perfil)
         $pivotes = [
@@ -526,10 +582,10 @@ class AdminController extends Controller
         if ($tabla && $col && DB::table($tabla)->where($col, $item->id)->exists()) {
             $item->activo = false;
             $item->save();
-            return $this->json(true, 'Ya lo tienen usuarios: se desactivó en vez de eliminarlo', ['desactivado' => true]);
+            return $this->json(true, __('civinsis.toast.admin.desactivado_en_vez_de_eliminar'), ['desactivado' => true]);
         }
 
         $item->delete();
-        return $this->json(true, 'Eliminado correctamente', ['desactivado' => false]);
+        return $this->json(true, __('civinsis.toast.admin.eliminado_correctamente'), ['desactivado' => false]);
     }
 }

@@ -20,13 +20,13 @@ class NotificacionController extends Controller
             'listar'            => $this->listar($request),
             'marcar_leida'      => $this->marcarLeida($request),
             'marcar_todas'      => $this->marcarTodas($request),
-            default             => $this->json(false, 'Acción no reconocida'),
+            default             => $this->json(false, __('civinsis.toast.comunes.accion_no_reconocida')),
         };
     }
 
     private function listar(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'No autenticado');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.no_autenticado'));
 
         $limit = min(50, max(1, (int) $request->input('limit', 20)));
 
@@ -37,7 +37,7 @@ class NotificacionController extends Controller
                 'tipo'     => $n->tipo,
                 'icono'    => $n->icono,
                 'color'    => $n->color,
-                'mensaje'  => $n->mensaje,
+                'mensaje'  => $n->mensajeTraducido(),
                 'enlace'   => $n->enlace,
                 'leida'    => $n->leida,
                 'fecha'    => optional($n->created_at)->diffForHumans(),
@@ -54,11 +54,11 @@ class NotificacionController extends Controller
 
     private function marcarLeida(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'No autenticado');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.no_autenticado'));
 
         $id = (int) $request->input('id');
         $n  = Notificacion::where('id', $id)->where('usuario_id', Auth::id())->first();
-        if (!$n) return $this->json(false, 'Notificación no encontrada');
+        if (!$n) return $this->json(false, __('civinsis.toast.notificacion.no_encontrada'));
 
         $n->leida = true;
         $n->save();
@@ -68,10 +68,10 @@ class NotificacionController extends Controller
 
     private function marcarTodas(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'No autenticado');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.no_autenticado'));
 
         Notificacion::where('usuario_id', Auth::id())->where('leida', false)->update(['leida' => true]);
 
-        return $this->json(true, 'Todas las notificaciones marcadas como leídas');
+        return $this->json(true, __('civinsis.toast.notificacion.todas_marcadas_leidas'));
     }
 }

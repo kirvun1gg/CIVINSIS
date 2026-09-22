@@ -22,7 +22,7 @@ class ContactoController extends Controller
             'marcar_leido' => $this->marcarLeido($request),
             'responder'    => $this->responder($request),
             'eliminar'     => $this->eliminar($request),
-            default        => $this->json(false, 'Acción no reconocida'),
+            default        => $this->json(false, __('civinsis.toast.comunes.accion_no_reconocida')),
         };
     }
 
@@ -34,8 +34,8 @@ class ContactoController extends Controller
         $mensaje = trim((string) $request->input('mensaje'));
 
         if ($nombre === '' || $email === '' || $asunto === '' || $mensaje === '')
-            return $this->json(false, 'Todos los campos son obligatorios');
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return $this->json(false, 'Email inválido');
+            return $this->json(false, __('civinsis.toast.contacto.todos_campos_obligatorios'));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return $this->json(false, __('civinsis.toast.comunes.email_invalido'));
 
         ContactoMensaje::create([
             'nombre'     => $nombre,
@@ -45,7 +45,7 @@ class ContactoController extends Controller
             'usuario_id' => Auth::id(),
         ]);
 
-        return $this->json(true, '¡Mensaje enviado! Te responderemos pronto.');
+        return $this->json(true, __('civinsis.toast.contacto.mensaje_enviado'));
     }
 
     private function adminOnly(): bool
@@ -56,7 +56,7 @@ class ContactoController extends Controller
 
     private function listar(Request $request)
     {
-        if (!$this->adminOnly()) return $this->json(false, 'Sin permisos');
+        if (!$this->adminOnly()) return $this->json(false, __('civinsis.toast.comunes.sin_permisos'));
         $query = ContactoMensaje::orderByDesc('fecha_creacion');
         if ($request->filled('leido')) $query->where('leido', (int) $request->input('leido'));
         $msgs = $query->get()->map(function ($m) {
@@ -69,23 +69,23 @@ class ContactoController extends Controller
 
     private function marcarLeido(Request $request)
     {
-        if (!$this->adminOnly()) return $this->json(false, 'Sin permisos');
+        if (!$this->adminOnly()) return $this->json(false, __('civinsis.toast.comunes.sin_permisos'));
         ContactoMensaje::where('id', (int) $request->input('id'))->update(['leido' => true]);
-        return $this->json(true, 'Marcado como leído');
+        return $this->json(true, __('civinsis.toast.admin.marcado_leido'));
     }
 
     private function responder(Request $request)
     {
-        if (!$this->adminOnly()) return $this->json(false, 'Sin permisos');
+        if (!$this->adminOnly()) return $this->json(false, __('civinsis.toast.comunes.sin_permisos'));
         ContactoMensaje::where('id', (int) $request->input('id'))
             ->update(['respuesta' => (string) $request->input('respuesta'), 'leido' => true]);
-        return $this->json(true, 'Respuesta guardada');
+        return $this->json(true, __('civinsis.toast.admin.respuesta_guardada'));
     }
 
     private function eliminar(Request $request)
     {
-        if (!$this->adminOnly()) return $this->json(false, 'Sin permisos');
+        if (!$this->adminOnly()) return $this->json(false, __('civinsis.toast.comunes.sin_permisos'));
         ContactoMensaje::where('id', (int) $request->input('id'))->delete();
-        return $this->json(true, 'Mensaje eliminado');
+        return $this->json(true, __('civinsis.toast.admin.mensaje_eliminado'));
     }
 }

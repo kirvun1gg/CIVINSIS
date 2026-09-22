@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\GamificacionService;
 use App\Support\ApiResponse;
+use App\Support\CatalogoTraducido;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -22,12 +23,12 @@ class GamificacionController extends Controller
     private function explorar(Request $request)
     {
         $u = auth_user();
-        if (!$u) return $this->json(false, 'No autenticado');
+        if (!$u) return $this->json(false, __('civinsis.toast.comunes.no_autenticado'));
 
         $tipo  = $request->input('tipo');       // seccion | categoria
         $valor = trim((string) $request->input('valor'));
         if (!in_array($tipo, ['seccion', 'categoria'], true) || $valor === '') {
-            return $this->json(false, 'Datos incompletos');
+            return $this->json(false, __('civinsis.toast.comunes.datos_incompletos'));
         }
 
         $svc = new \App\Services\GamificacionService();
@@ -50,13 +51,13 @@ class GamificacionController extends Controller
             'logros'         => $this->logros(),
             'ranking'        => $this->ranking($request),
             'historial_xp'   => $this->historialXP(),
-            default          => $this->json(false, 'Acción no válida'),
+            default          => $this->json(false, __('civinsis.toast.comunes.accion_no_valida')),
         };
     }
 
     private function perfil()
     {
-        if (!Auth::check()) return $this->json(false, 'No autenticado');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.no_autenticado'));
         $data = $this->gam->perfilCompleto(auth_user());
         return $this->json(true, 'OK', $data);
     }
@@ -64,17 +65,17 @@ class GamificacionController extends Controller
     private function perfilPublico(Request $request)
     {
         $id = (int) $request->input('id');
-        if (!$id) return $this->json(false, 'ID inválido');
+        if (!$id) return $this->json(false, __('civinsis.toast.comunes.id_invalido'));
 
         $user = \App\Models\User::find($id);
-        if (!$user) return $this->json(false, 'Usuario no encontrado');
+        if (!$user) return $this->json(false, __('civinsis.toast.admin.usuario_no_encontrado'));
 
         // El dueño del perfil siempre puede verlo; cualquier otra persona
         // solo si lo dejó público (antes esto nunca se comprobaba, así que
         // un perfil "privado" era visible para cualquiera igual).
         $esPropio = Auth::check() && Auth::id() === $user->id;
         if (!$user->perfil_publico && !$esPropio) {
-            return $this->json(false, 'Este perfil es privado', ['privado' => true]);
+            return $this->json(false, __('civinsis.toast.gamificacion.perfil_privado'), ['privado' => true]);
         }
 
         // Datos completos de gamificación
@@ -106,17 +107,17 @@ class GamificacionController extends Controller
 
     private function equipar(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'No autenticado');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.no_autenticado'));
         $tipo  = $request->input('tipo');   // titulo|marco|fondo|insignia
         $clave = $request->input('clave');
-        if (!$tipo || !$clave) return $this->json(false, 'Datos incompletos');
+        if (!$tipo || !$clave) return $this->json(false, __('civinsis.toast.comunes.datos_incompletos'));
         $ok = $this->gam->equiparItem(auth_user(), $tipo, $clave);
-        return $this->json($ok, $ok ? 'Ítem equipado' : 'No puedes equipar ese ítem');
+        return $this->json($ok, $ok ? __('civinsis.toast.gamificacion.item_equipado') : __('civinsis.toast.perfil.error_equipar_item'));
     }
 
     private function misiones()
     {
-        if (!Auth::check()) return $this->json(false, 'No autenticado');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.no_autenticado'));
         $user = auth_user();
         $hoy  = now()->toDateString();
         $sem  = now()->startOfWeek()->toDateString();
@@ -136,7 +137,13 @@ class GamificacionController extends Controller
         $desbloqueados = Auth::check()
             ? DB::table('usuario_logros')->where('usuario_id', Auth::id())->pluck('logro_id')->toArray()
             : [];
-        $resultado = $todos->map(fn($l) => array_merge((array)$l, ['desbloqueado' => in_array($l->id, $desbloqueados)]));
+        $resultado = $todos->map(function($l) use ($desbloqueados) {
+            $a = (array) $l;
+            $a['nombre'] = CatalogoTraducido::campo('logros', $l->clave, 'nombre', $l->nombre);
+            $a['descripcion'] = CatalogoTraducido::campo('logros', $l->clave, 'descripcion', $l->descripcion);
+            $a['desbloqueado'] = in_array($l->id, $desbloqueados);
+            return $a;
+        });
         return $this->json(true, 'OK', ['logros' => $resultado]);
     }
 
@@ -157,7 +164,7 @@ class GamificacionController extends Controller
                     'id'=>$u->id,'nombre'=>$u->nombre.' '.($u->apellido??''),
                     'avatar'=>$u->avatar,'nivel'=>$u->nivel,'xp'=>$u->xp_total,
                     'reputacion'=>$u->reputacion,'marco'=>$u->marco_equipado,
-                    'titulo'=>$titulo?['nombre'=>$titulo->nombre,'color'=>$titulo->color]:null,
+                    'titulo'=>$titulo?['nombre'=>CatalogoTraducido::campo('titulos', $titulo->clave, 'nombre', $titulo->nombre),'color'=>$titulo->color]:null,
                 ];
             });
         return $this->json(true, 'OK', ['ranking' => $ranking]);
@@ -165,7 +172,7 @@ class GamificacionController extends Controller
 
     private function historialXP()
     {
-        if (!Auth::check()) return $this->json(false, 'No autenticado');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.no_autenticado'));
         $historial = DB::table('xp_historial')
             ->where('usuario_id', Auth::id())
             ->orderByDesc('created_at')

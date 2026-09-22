@@ -11,6 +11,7 @@ use App\Models\Titulo;
 use App\Services\GamificacionService;
 use App\Services\TranslationService;
 use App\Support\ApiResponse;
+use App\Support\CatalogoTraducido;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
@@ -35,7 +36,7 @@ class DebateController extends Controller
             'destacar'        => $this->destacar($request),
             'cerrar'          => $this->cerrar($request),
             'resumen_ia'      => $this->resumenIA($request),
-            default           => $this->json(false, 'Acción no reconocida'),
+            default           => $this->json(false, __('civinsis.toast.comunes.accion_no_reconocida')),
         };
     }
 
@@ -85,7 +86,7 @@ class DebateController extends Controller
     {
         $id = (int) $request->input('id');
         $d  = Debate::with(['categoria', 'autor'])->find($id);
-        if (!$d || $d->censurado) return $this->json(false, 'Debate no encontrado');
+        if (!$d || $d->censurado) return $this->json(false, __('civinsis.toast.debates.no_encontrado'));
 
         return $this->json(true, 'OK', ['debate' => $this->formato($d)]);
     }
@@ -95,19 +96,19 @@ class DebateController extends Controller
     // ─────────────────────────────────────────────────────────
     private function crear(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión para crear un debate');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.debates.inicia_sesion_crear'));
 
         $titulo      = trim((string) $request->input('titulo'));
         $descripcion = trim((string) $request->input('descripcion'));
         $categoriaId = (int) $request->input('categoria_id');
 
         if ($titulo === '' || mb_strlen($titulo) < 10) {
-            return $this->json(false, 'La pregunta del debate debe tener al menos 10 caracteres');
+            return $this->json(false, __('civinsis.toast.debates.pregunta_muy_corta'));
         }
         if ($descripcion === '') {
-            return $this->json(false, 'Agrega una descripción para dar contexto al debate');
+            return $this->json(false, __('civinsis.toast.debates.agrega_descripcion'));
         }
-        if (!$categoriaId) return $this->json(false, 'Selecciona una categoría');
+        if (!$categoriaId) return $this->json(false, __('civinsis.toast.debates.selecciona_categoria'));
 
         $d = Debate::create([
             'titulo'       => $titulo,
@@ -125,20 +126,20 @@ class DebateController extends Controller
             $gam->otorgarReputacion(auth_user(), 'Iniciaste un debate', 4, null, $d->id);
         } catch (\Throwable $e) { Log::error('Gam error (debate): ' . $e->getMessage()); }
 
-        return $this->json(true, '¡Debate publicado! Ya pueden empezar a opinar.', ['id' => $d->id]);
+        return $this->json(true, __('civinsis.toast.debates.publicado'), ['id' => $d->id]);
     }
 
     private function cerrar(Request $request)
     {
-        if (!Auth::check() || !auth_user()->esAdmin()) return $this->json(false, 'No autorizado');
+        if (!Auth::check() || !auth_user()->esAdmin()) return $this->json(false, __('civinsis.toast.debates.no_autorizado'));
 
         $d = Debate::find((int) $request->input('id'));
-        if (!$d) return $this->json(false, 'Debate no encontrado');
+        if (!$d) return $this->json(false, __('civinsis.toast.debates.no_encontrado'));
 
         $d->estado = $d->estado === 'activo' ? 'cerrado' : 'activo';
         $d->save();
 
-        return $this->json(true, $d->estado === 'cerrado' ? 'Debate cerrado' : 'Debate reabierto', ['estado' => $d->estado]);
+        return $this->json(true, $d->estado === 'cerrado' ? __('civinsis.toast.debates.cerrado') : __('civinsis.toast.debates.reabierto'), ['estado' => $d->estado]);
     }
 
     // ─────────────────────────────────────────────────────────
@@ -148,7 +149,7 @@ class DebateController extends Controller
     {
         $debateId = (int) $request->input('debate_id');
         $orden    = trim((string) $request->input('orden', 'relevantes'));
-        if (!$debateId) return $this->json(false, 'ID inválido');
+        if (!$debateId) return $this->json(false, __('civinsis.toast.comunes.id_invalido'));
 
         $q = DebateRespuesta::with(['usuario', 'cita.usuario'])
             ->where('debate_id', $debateId)
@@ -172,19 +173,19 @@ class DebateController extends Controller
 
     private function responder(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión para participar');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.debates.inicia_sesion_participar'));
 
         $debateId  = (int) $request->input('debate_id');
         $contenido = trim((string) $request->input('contenido'));
         $parentId  = $request->input('parent_id') ? (int) $request->input('parent_id') : null;
         $citaId    = $request->input('cita_id') ? (int) $request->input('cita_id') : null;
 
-        if (!$debateId || $contenido === '') return $this->json(false, 'La respuesta no puede estar vacía');
-        if (mb_strlen($contenido) > 1500) return $this->json(false, 'La respuesta es demasiado larga (máximo 1500 caracteres)');
+        if (!$debateId || $contenido === '') return $this->json(false, __('civinsis.toast.debates.respuesta_vacia'));
+        if (mb_strlen($contenido) > 1500) return $this->json(false, __('civinsis.toast.debates.respuesta_muy_larga'));
 
         $debate = Debate::find($debateId);
-        if (!$debate) return $this->json(false, 'Debate no encontrado');
-        if ($debate->estado === 'cerrado') return $this->json(false, 'Este debate está cerrado y ya no acepta respuestas');
+        if (!$debate) return $this->json(false, __('civinsis.toast.debates.no_encontrado'));
+        if ($debate->estado === 'cerrado') return $this->json(false, __('civinsis.toast.debates.debate_cerrado_no_acepta'));
 
         $r = DebateRespuesta::create([
             'debate_id'  => $debateId,
@@ -208,16 +209,16 @@ class DebateController extends Controller
             $gam->otorgarReputacion(auth_user(), 'Participaste en un debate', 2, null, $r->id);
         } catch (\Throwable $e) { Log::error('Gam error (respuesta debate): ' . $e->getMessage()); }
 
-        return $this->json(true, 'Respuesta publicada', ['respuesta' => $this->formatoRespuesta($r)]);
+        return $this->json(true, __('civinsis.toast.debates.respuesta_publicada'), ['respuesta' => $this->formatoRespuesta($r)]);
     }
 
     private function votarRespuesta(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'Debes iniciar sesión para votar');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.debates.debes_iniciar_sesion_votar'));
 
         $id = (int) $request->input('respuesta_id');
         $r  = DebateRespuesta::find($id);
-        if (!$r) return $this->json(false, 'Respuesta no encontrada');
+        if (!$r) return $this->json(false, __('civinsis.toast.debates.respuesta_no_encontrada'));
 
         $voto = DebateVotoRespuesta::where('respuesta_id', $id)->where('usuario_id', Auth::id())->first();
 
@@ -225,7 +226,7 @@ class DebateController extends Controller
             $voto->delete();
             $r->votos = max(0, $r->votos - 1);
             $r->save();
-            return $this->json(true, 'Voto retirado', ['votos' => $r->votos, 'votado' => false]);
+            return $this->json(true, __('civinsis.toast.debates.voto_retirado'), ['votos' => $r->votos, 'votado' => false]);
         }
 
         DebateVotoRespuesta::create(['respuesta_id' => $id, 'usuario_id' => Auth::id()]);
@@ -242,20 +243,20 @@ class DebateController extends Controller
             } catch (\Throwable $e) {}
         }
 
-        return $this->json(true, 'Voto registrado', ['votos' => $r->votos, 'votado' => true]);
+        return $this->json(true, __('civinsis.toast.debates.voto_registrado'), ['votos' => $r->votos, 'votado' => true]);
     }
 
     private function destacar(Request $request)
     {
-        if (!Auth::check() || !auth_user()->esAdmin()) return $this->json(false, 'No autorizado');
+        if (!Auth::check() || !auth_user()->esAdmin()) return $this->json(false, __('civinsis.toast.debates.no_autorizado'));
 
         $r = DebateRespuesta::find((int) $request->input('respuesta_id'));
-        if (!$r) return $this->json(false, 'Respuesta no encontrada');
+        if (!$r) return $this->json(false, __('civinsis.toast.debates.respuesta_no_encontrada'));
 
         $r->destacada = !$r->destacada;
         $r->save();
 
-        return $this->json(true, $r->destacada ? 'Respuesta destacada' : 'Ya no está destacada', ['destacada' => $r->destacada]);
+        return $this->json(true, $r->destacada ? __('civinsis.toast.debates.respuesta_destacada') : __('civinsis.toast.debates.ya_no_destacada'), ['destacada' => $r->destacada]);
     }
 
     // ─────────────────────────────────────────────────────────
@@ -265,11 +266,11 @@ class DebateController extends Controller
     {
         $id = (int) $request->input('debate_id');
         $d  = Debate::find($id);
-        if (!$d) return $this->json(false, 'Debate no encontrado');
+        if (!$d) return $this->json(false, __('civinsis.toast.debates.no_encontrado'));
 
         $total = $d->respuestas()->count();
         if ($total < 5) {
-            return $this->json(false, 'Necesitas al menos 5 respuestas para generar un resumen', ['minimo' => 5, 'actual' => $total]);
+            return $this->json(false, __('civinsis.toast.debates.necesitas_5_respuestas'), ['minimo' => 5, 'actual' => $total]);
         }
 
         // Reutiliza el resumen cacheado si no hay respuestas nuevas desde que se generó
@@ -283,7 +284,7 @@ class DebateController extends Controller
 
         $key = config('services.groq.key');
         if (empty($key)) {
-            return $this->json(false, 'El resumen con IA no está disponible en este momento');
+            return $this->json(false, __('civinsis.toast.debates.resumen_no_disponible'));
         }
 
         try {
@@ -314,10 +315,10 @@ TXT;
                 'max_tokens'  => 300,
             ]);
 
-            if (!$resp->successful()) return $this->json(false, 'No se pudo generar el resumen, intenta más tarde');
+            if (!$resp->successful()) return $this->json(false, __('civinsis.toast.debates.no_se_pudo_generar_resumen'));
 
             $texto = trim((string) $resp->json('choices.0.message.content'));
-            if ($texto === '') return $this->json(false, 'No se pudo generar el resumen, intenta más tarde');
+            if ($texto === '') return $this->json(false, __('civinsis.toast.debates.no_se_pudo_generar_resumen'));
 
             $d->resumen_ia          = $texto;
             $d->resumen_generado_at = now();
@@ -326,7 +327,7 @@ TXT;
             return $this->json(true, 'OK', ['resumen' => $texto, 'cacheado' => false]);
         } catch (\Throwable $e) {
             Log::error('Error generando resumen IA de debate: ' . $e->getMessage());
-            return $this->json(false, 'No se pudo generar el resumen, intenta más tarde');
+            return $this->json(false, __('civinsis.toast.debates.no_se_pudo_generar_resumen'));
         }
     }
 
@@ -435,7 +436,7 @@ TXT;
     {
         if (!$u || !$u->titulo_equipado) return null;
         $t = Titulo::where('clave', $u->titulo_equipado)->first();
-        return $t ? ['nombre' => $t->nombre, 'color' => $t->color, 'rareza' => $t->rareza] : null;
+        return $t ? ['nombre' => CatalogoTraducido::campo('titulos', $t->clave, 'nombre', $t->nombre), 'color' => $t->color, 'rareza' => $t->rareza] : null;
     }
 
     /** Moderación automática con IA, replica el patrón de ProposalController. */

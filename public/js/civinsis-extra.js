@@ -72,14 +72,29 @@
      #4 · WIDGET DE IA "CIVI"
   --------------------------------------------------------- */
 
+  function tWidget() { return (window.CIVI_I18N && CIVI_I18N.civi_widget) || {}; }
+
   function buildWidget() {
     if (document.getElementById('civiFab')) return;
+    if (document.body && document.body.dataset.hideCiviFab === '1') return; // ya estamos en civi.php
+
+    const t = tWidget();
+    const chips = (t.chips && t.chips.length) ? t.chips : [
+      { label: '🎯 Mi objetivo',           msg: '¿Cuál es mi objetivo ahora en CIVINSIS?' },
+      { label: '✨ Recomiéndame',           msg: '¿Qué me recomiendas leer o hacer ahora en la plataforma?' },
+      { label: '📈 ¿Cómo voy?',             msg: '¿Cómo voy con mi progreso?' },
+      { label: '📝 Ayuda con mi propuesta', msg: 'Ayúdame a escribir una propuesta' },
+      { label: '💬 Mejorar un comentario',  msg: '¿Cómo hago un comentario más constructivo?' },
+      { label: '🏛️ Aprender ciudadanía',    msg: 'Explícame un concepto de ciudadanía con un ejemplo sencillo' },
+    ];
 
     const fab = document.createElement('button');
     fab.id = 'civiFab';
     fab.className = 'civi-fab';
-    fab.setAttribute('aria-label', 'Abrir CIVI, tu entrenador cívico');
+    fab.setAttribute('aria-label', t.aria_abrir || 'Abrir CIVI, tu entrenador cívico');
     fab.innerHTML = '<span class="civi-pulse"></span><i class="fas fa-robot"></i>';
+
+    const logueado = !!(document.body && document.body.dataset.usuarioId);
 
     const panel = document.createElement('div');
     panel.id = 'civiPanel';
@@ -88,23 +103,19 @@
       <div class="civi-head">
         <div class="civi-ava"><i class="fas fa-robot"></i></div>
         <div>
-          <h4>CIVI</h4>
-          <small>Tu entrenador cívico</small>
+          <h4>${t.nombre || 'CIVI'}</h4>
+          <small>${t.subtitulo || 'Tu entrenador cívico'}</small>
         </div>
-        <button class="civi-close" id="civiClose" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+        ${logueado ? `<a class="civi-close" href="civi.php" aria-label="${t.aria_pagina_completa || 'Abrir chat completo con CIVI'}"><i class="fas fa-expand"></i></a>` : ''}
+        <button class="civi-close" id="civiClose" aria-label="${t.aria_cerrar || 'Cerrar'}"><i class="fas fa-times"></i></button>
       </div>
       <div class="civi-body" id="civiBody"></div>
       <div class="civi-chips" id="civiChips">
-        <button class="civi-chip" data-msg="¿Cuál es mi objetivo ahora en CIVINSIS?">🎯 Mi objetivo</button>
-        <button class="civi-chip" data-msg="¿Qué me recomiendas leer o hacer ahora en la plataforma?">✨ Recomiéndame</button>
-        <button class="civi-chip" data-msg="¿Cómo voy con mi progreso?">📈 ¿Cómo voy?</button>
-        <button class="civi-chip" data-msg="Ayúdame a escribir una propuesta">📝 Ayuda con mi propuesta</button>
-        <button class="civi-chip" data-msg="¿Cómo hago un comentario más constructivo?">💬 Mejorar un comentario</button>
-        <button class="civi-chip" data-msg="Explícame un concepto de ciudadanía con un ejemplo sencillo">🏛️ Aprender ciudadanía</button>
+        ${chips.map(c => `<button class="civi-chip" data-msg="${c.msg.replace(/"/g, '&quot;')}">${c.label}</button>`).join('')}
       </div>
       <div class="civi-input">
-        <input id="civiInput" type="text" placeholder="Pregúntale a CIVI..." autocomplete="off">
-        <button id="civiSend" aria-label="Enviar"><i class="fas fa-paper-plane"></i></button>
+        <input id="civiInput" type="text" placeholder="${t.placeholder || 'Pregúntale a CIVI...'}" autocomplete="off">
+        <button id="civiSend" aria-label="${t.aria_enviar || 'Enviar'}"><i class="fas fa-paper-plane"></i></button>
       </div>`;
 
     document.body.appendChild(fab);
@@ -129,7 +140,7 @@
       panel.classList.add('open');
       if (!saludado) {
         saludado = true;
-        addMsg('¡Hola! Soy CIVI, tu entrenador cívico. Puedo darte ideas, ayudarte a mejorar una propuesta o explicarte conceptos de participación. ¿En qué te ayudo?', 'bot');
+        addMsg(tWidget().saludo || '¡Hola! Soy CIVI, tu entrenador cívico. Puedo darte ideas, ayudarte a mejorar una propuesta o explicarte conceptos de participación. ¿En qué te ayudo?', 'bot');
       }
       setTimeout(() => input.focus(), 100);
     }
@@ -144,7 +155,7 @@
 
       const typing = document.createElement('div');
       typing.className = 'civi-typing';
-      typing.innerHTML = '<i class="fas fa-ellipsis fa-fade"></i> CIVI está escribiendo…';
+      typing.innerHTML = '<i class="fas fa-ellipsis fa-fade"></i> ' + (tWidget().escribiendo || 'CIVI está escribiendo…');
       body.appendChild(typing);
       body.scrollTop = body.scrollHeight;
 
@@ -157,12 +168,12 @@
         typing.remove();
         const resp = (d && d.success && d.respuesta)
           ? d.respuesta
-          : 'Ahora mismo no puedo responder. Inténtalo de nuevo en un momento.';
+          : (tWidget().error_respuesta || 'Ahora mismo no puedo responder. Inténtalo de nuevo en un momento.');
         addMsg(resp, 'bot');
         historial.push({ role: 'assistant', content: resp });
       } catch (e) {
         typing.remove();
-        addMsg('Hubo un problema de conexión. Inténtalo de nuevo.', 'bot');
+        addMsg(tWidget().error_conexion || 'Hubo un problema de conexión. Inténtalo de nuevo.', 'bot');
       }
     }
 
@@ -333,12 +344,11 @@
         clearTimeout(this._stackT);
         this._stackT = setTimeout(() => this.stackLayout(), 60);
       };
-      // los toasts se crean y se destruyen dinámicamente en cualquier parte
-      new MutationObserver(relayout).observe(document.body, { childList: true, subtree: true });
-      // abrir/cerrar el chat cambia la clase del panel
-      new MutationObserver(relayout).observe(document.body, {
-        attributes: true, subtree: true, attributeFilter: ['class'],
-      });
+      // los toasts se crean/destruyen dinamicamente y abrir/cerrar el chat
+      // cambia la clase del panel — un solo observer cubre ambos casos.
+      const opciones = { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] };
+      if (window.PerfShared) window.PerfShared.onMutations(relayout, opciones);
+      else new MutationObserver(relayout).observe(document.body, opciones);
       window.addEventListener('resize', relayout);
     },
 
@@ -376,7 +386,7 @@
       } catch (e) { /* seguimos */ }
       // 3) respaldo: aliento breve
       this.suggest({ id: 'ask_ok_' + Date.now(), sticky: true,
-        texto: 'Todo en orden por ahora. Sigue participando y estaré atento a cómo ayudarte. 👀' });
+        texto: (window.CIVI_I18N && CIVI_I18N.civi_todo_bien) || 'Todo en orden por ahora. Sigue participando y estaré atento a cómo ayudarte. 👀' });
     },
 
     // Percepción a nivel de página: pregunta al cerebro si hay algo que decir
@@ -386,7 +396,7 @@
         localStorage.setItem('civi_welcomed', '1');
         this.suggest({
           id: 'welcome', sticky: true,
-          texto: '¡Hola! Soy CIVI, tu entrenador cívico. Estaré atento y apareceré cuando detecte algo en lo que pueda ayudarte. 😊',
+          texto: (window.CIVI_I18N && CIVI_I18N.civi_welcome) || '¡Hola! Soy CIVI, tu entrenador cívico. Estaré atento y apareceré cuando detecte algo en lo que pueda ayudarte. 😊',
         });
         return; // no encimar con otro nudge en la primera visita
       }
@@ -454,7 +464,7 @@
 
     // Entrenador de crecimiento: CIVI observa tus acciones y celebra el momento justo
     watchAcciones() {
-      const obs = new MutationObserver((muts) => {
+      const cb = (muts) => {
         for (const m of muts) {
           for (const node of m.addedNodes) {
             if (node.nodeType === 1 && node.classList && node.classList.contains('toast')
@@ -465,8 +475,10 @@
             }
           }
         }
-      });
-      obs.observe(document.body, { subtree: true, childList: true });
+      };
+      const opciones = { subtree: true, childList: true };
+      if (window.PerfShared) window.PerfShared.onMutations(cb, opciones);
+      else new MutationObserver(cb).observe(document.body, opciones);
     },
 
     async checkGrowth() {
@@ -502,18 +514,20 @@
         }
         // 3) A un paso de subir de nivel
         if (d.xp_faltante > 0 && d.xp_faltante <= 25) {
+          const txtXp = (window.CIVI_I18N && CIVI_I18N.civi_xp_cerca) || '¡Estás a solo {xp} XP del nivel {nivel}! Un aporte más y lo logras.';
           this.suggest({ id: 'casi_lvl_' + d.nivel, once: true,
-            texto: `¡Estás a solo ${d.xp_faltante} XP del nivel ${d.nivel + 1}! Un aporte más y lo logras.`,
-            cta_texto: 'Participar', cta_url: 'dashboard.php' });
+            texto: txtXp.replace('{xp}', d.xp_faltante).replace('{nivel}', d.nivel + 1),
+            cta_texto: (window.CIVI_I18N && CIVI_I18N.civi_participar) || 'Participar', cta_url: 'dashboard.php' });
           return;
         }
         // 4) Misión casi completa
         if (d.mision_cerca && d.mision_cerca.cantidad > 0) {
           const falta = d.mision_cerca.cantidad - d.mision_cerca.progreso;
           if (falta > 0 && falta <= 1) {
+            const txtMision = (window.CIVI_I18N && CIVI_I18N.civi_mision_cerca) || 'Te falta muy poco para completar «{mision}». ¡Ya casi!';
             this.suggest({ id: 'mis_' + d.mision_cerca.nombre, once: true,
-              texto: `Te falta muy poco para completar «${d.mision_cerca.nombre}». ¡Ya casi!`,
-              cta_texto: 'Ver misiones', cta_url: 'progreso.php' });
+              texto: txtMision.replace('{mision}', d.mision_cerca.nombre),
+              cta_texto: (window.CIVI_I18N && CIVI_I18N.civi_ver_misiones) || 'Ver misiones', cta_url: 'progreso.php' });
           }
         }
       } catch (e) { /* silencioso */ }
@@ -545,8 +559,8 @@
           el.dataset.civiTono = '1';
           this.suggest({
             id: 'tono_' + Date.now(), sticky: true,
-            texto: 'Este comentario podría sonar ofensivo. Puedes reformularlo, o publicarlo así — pero un moderador lo revisará antes de darlo por válido.',
-            cta_texto: 'Reformular con CIVI',
+            texto: (window.CIVI_I18N && CIVI_I18N.civi_tono_alerta) || 'Este comentario podría sonar ofensivo. Puedes reformularlo, o publicarlo así — pero un moderador lo revisará antes de darlo por válido.',
+            cta_texto: (window.CIVI_I18N && CIVI_I18N.civi_reformular_cta) || 'Reformular con CIVI',
             cta_fn: async () => {
               const original = el.value;
               try {

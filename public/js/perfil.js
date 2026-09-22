@@ -29,6 +29,22 @@ function toggleCiviSection() {
   }
 }
 
+// ── Limpieza de previews de cosméticos antes de reemplazar una grilla ──
+// Los motores GSAP (marcos-gsap.js/efectos-gsap.js/fondos-gsap.js) guardan
+// sus timelines vivas en un Map keyeado por elemento. Si el host se borra
+// del DOM vía innerHTML sin pasar antes por destruir()/limpiar(), la
+// timeline (repeat:-1) sigue animando para siempre, invisible. Llamar los
+// 3 motores sin filtrar por tipo es seguro: cada uno ignora al instante un
+// host que no está en su propio registro.
+function limpiarPreviewsCosmeticos(contenedor) {
+  if (!contenedor) return;
+  contenedor.querySelectorAll('.pf-cos-drawer-item-preview, .cos-preview').forEach((host) => {
+    if (window.CosMarcos) window.CosMarcos.destruir(host);
+    if (window.FondosGSAP) window.FondosGSAP.destruir(host);
+    if (window.CosEfectosGSAP) window.CosEfectosGSAP.limpiar(host);
+  });
+}
+
 // ── Drawer de Cosméticos ───────────────────────────────────
 const CosDrawer = {
   open(tipo = 'marco_avatar') {
@@ -52,11 +68,13 @@ const CosDrawer = {
     document.querySelectorAll('.pf-cos-drawer-filter-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.drawerFilter === tipo);
     });
-    
-    if (!Gam.data) return;
-    
-    const lista = (Gam.data.cosmeticos||[]).filter(c => c.tipo === tipo);
+
     const grid = document.getElementById('cosDrawerGrid');
+    limpiarPreviewsCosmeticos(grid);
+
+    if (!Gam.data) return;
+
+    const lista = (Gam.data.cosmeticos||[]).filter(c => c.tipo === tipo);
     
     if (!lista.length) {
       grid.innerHTML = '<div class="pf-cos-drawer-empty"><i class="fas fa-box-open"></i><p>No tienes cosméticos de este tipo.</p></div>';
@@ -229,8 +247,8 @@ async function loadProfileData() {
       const esPublico = (u.perfil_publico !== false);
       document.getElementById('editPerfilPublico').checked = esPublico;
       document.getElementById('profileVisibilityBadge').innerHTML = esPublico
-        ? '<i class="fas fa-globe"></i> Perfil público'
-        : '<i class="fas fa-lock"></i> Perfil privado';
+        ? '<i class="fas fa-globe"></i> ' + ((window.CIVI_I18N && CIVI_I18N.perfil && CIVI_I18N.perfil.perfil_publico) || 'Perfil público')
+        : '<i class="fas fa-lock"></i> ' + ((window.CIVI_I18N && CIVI_I18N.perfil && CIVI_I18N.perfil.perfil_privado_badge) || 'Perfil privado');
 
       // Tema y Colores
       setTema(u.tema_perfil || 'verde');
@@ -861,6 +879,7 @@ const Gam = {
     // CosDrawer lateral); esta función solo sobrevive porque Gam.equipar()
     // la sigue llamando al equipar insignias/títulos, así que no debe fallar.
     if (!el) return;
+    limpiarPreviewsCosmeticos(el);
     if (!lista.length) { el.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem">Todavía no hay cosméticos de este tipo.</p>'; return; }
 
     const accion = { marco_avatar:'marco', fondo_perfil:'fondo', efecto_avatar:'efecto' }[tipo];
@@ -901,7 +920,10 @@ const Gam = {
 
   montarPreviews() {
     requestAnimationFrame(() => {
-      if (window.CosFondos) { window.CosFondos.escanear(); window.CosFondos.remedir(); }
+      // Antes decía window.CosFondos (no existe — el motor se llama
+      // FondosGSAP), así que los fondos del selector solo se montaban "de
+      // casualidad" vía el MutationObserver interno de fondos-gsap.js.
+      if (window.FondosGSAP) window.FondosGSAP.escanear();
       if (window.CosMarcos) window.CosMarcos.escanear();
       if (window.CosEfectos) window.CosEfectos.montarPreviews();
     });

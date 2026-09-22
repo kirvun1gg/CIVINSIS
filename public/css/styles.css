@@ -38,7 +38,7 @@
   --grad-card:      linear-gradient(145deg, rgba(54,192,161,.05), rgba(239,126,34,.05));
   --bg:           #f3f7f5;
   --bg-card:      #ffffff;
-  --bg-nav:       rgba(255,255,255,.93);
+  --bg-nav:       rgba(255,255,255,.22);
   --surface:      #eaf0ed;
   --border:       rgba(0,0,0,.07);
   --text:         #0f1c19;
@@ -53,13 +53,13 @@
   --radius-lg: 20px;
   --radius-xl: 32px;
   --trans: all .3s cubic-bezier(.4, 0, .2, 1);
-  --nav-height: 86px;
+  --nav-height: 76px;
 }
 
 [data-theme="dark"] {
   --bg:         #0c1612;
   --bg-card:    #131f1a;
-  --bg-nav:     rgba(10,20,15,.96);
+  --bg-nav:     rgba(10,20,15,.24);
   --surface:    #1a2922;
   --border:     rgba(255,255,255,.06);
   --text:       #e8f4f0;
@@ -140,44 +140,62 @@ input, textarea, select { font-family: inherit; }
 .badge-muted  { background: var(--surface); color: var(--text-muted); }
 
 /* ══════════════════════════════════════════════════════════
-   NAVBAR — Rediseñado completamente
+   NAVBAR — Bloque único con efecto vidrio (glassmorphism)
+   Una sola franja flotante con blur + saturación, esquinas
+   inferiores redondeadas y un degradado de desenfoque que se
+   desvanece hacia el contenido (como featurebase.app).
    ══════════════════════════════════════════════════════════ */
 .navbar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
   height: var(--nav-height);
+  /* Arriba del todo: completamente transparente, sin blur — solo se ve
+     el navbar "de verdad" (los botones/pastillas siguen con su propio
+     fondo, eso no cambia). El vidrio difuminado aparece con .scrolled. */
   background: transparent;
-  border-bottom: none;
-  transition: top .35s ease;
-  pointer-events: none; /* solo las islas internas capturan clicks */
-  padding-top: 14px; /* despega las islas del borde superior */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  box-shadow: none;
+  transition: background .4s ease, backdrop-filter .4s ease, border-color .4s ease, box-shadow .4s ease;
 }
-.navbar.scrolled { padding-top: 8px; }
-.navbar.scrolled .nav-logo,
-.navbar.scrolled .nav-links,
-.navbar.scrolled .nav-actions { box-shadow: var(--shadow-lg); }
+/* Al bajar un poco de scroll entra el efecto vidrio: fondo translúcido +
+   blur fuerte (el blur es lo que mantiene el texto legible encima de
+   cualquier contenido, ya que --bg-nav es translúcido de verdad). */
+.navbar.scrolled {
+  background: var(--bg-nav);
+  backdrop-filter: blur(28px) saturate(1.8);
+  -webkit-backdrop-filter: blur(28px) saturate(1.8);
+  border-bottom-color: var(--border);
+  box-shadow: var(--shadow);
+}
+
+/* Estela de desenfoque bajo el bloque: el contenido se difumina de forma
+   progresiva al llegar al navbar, en vez de cortar en seco. Solo tiene
+   sentido una vez que el navbar ya tiene su propio fondo (.scrolled). */
+.navbar::after {
+  content: '';
+  position: absolute; top: 100%; left: 0; right: 0; height: 44px;
+  background: linear-gradient(to bottom, var(--bg-nav), transparent);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.55), transparent);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,.55), transparent);
+  opacity: 0;
+  transition: opacity .4s ease;
+  pointer-events: none;
+}
+.navbar.scrolled::after { opacity: 1; }
 
 .nav-inner {
   display: flex; align-items: center; justify-content: space-between;
-  height: var(--nav-height); gap: .75rem;
-  max-width: 1240px; margin: 0 auto; padding: 0 1.25rem;
-}
-.nav-inner > * { pointer-events: auto; }
-
-/* Cada zona del navbar es una "isla" flotante con vidrio + sombra */
-.nav-logo,
-.nav-links,
-.nav-actions {
-  background: var(--bg-nav);
-  backdrop-filter: blur(20px) saturate(1.8);
-  -webkit-backdrop-filter: blur(20px) saturate(1.8);
-  border: 1px solid var(--border);
-  border-radius: 100px;
-  box-shadow: var(--shadow);
+  height: 100%; gap: .75rem;
+  max-width: 1240px; margin: 0 auto; padding: 0 1.5rem;
 }
 
 .navbar .container { padding-left: 1.25rem; }
 
-/* ISLA IZQUIERDA · Logo */
+/* Zona izquierda · Logo */
 .nav-logo {
   display: flex; align-items: center; gap: .55rem;
   font-family: var(--font-display); font-size: 1.25rem; font-weight: 800;
@@ -221,10 +239,10 @@ input, textarea, select { font-family: inherit; }
 .nav-logo:hover .nav-logo-text-inner,
 .nav-logo:focus-visible .nav-logo-text-inner { transform: translateX(0); }
 
-/* ISLA CENTRAL · Links agrupados en cápsula */
+/* Zona central · Links (se centran solos gracias al margin:auto) */
 .nav-links {
   display: flex; align-items: center; gap: .15rem;
-  padding: .35rem .5rem; margin: 0 auto;
+  margin: 0 auto;
 }
 .nav-link {
   position: relative;
@@ -277,10 +295,9 @@ input, textarea, select { font-family: inherit; }
   box-shadow: 0 0 0 3px var(--verde-alpha2), 0 6px 18px rgba(54,192,161,.32);
 }
 
-/* ISLA DERECHA · Acciones */
+/* Zona derecha · Acciones */
 .nav-actions {
   display: flex; align-items: center; gap: .4rem; flex-shrink: 0;
-  padding: .35rem .5rem;
 }
 
 /* Dark mode toggle */
@@ -372,6 +389,23 @@ input, textarea, select { font-family: inherit; }
   color: #fff; font-weight: 700; font-size: .7rem; flex-shrink: 0;
 }
 .nav-user-name { font-size: .8rem; font-weight: 600; color: var(--text-2); }
+
+/* Menú de la cuenta (Mi Perfil / Hablar con CIVI / Cerrar sesión) */
+.nav-user-menu-wrap { position: relative; }
+.nav-user-caret { font-size: .6rem; color: var(--text-muted); transition: transform .25s ease; margin-left: .1rem; }
+.nav-user-pill[aria-expanded="true"] .nav-user-caret { transform: rotate(180deg); }
+.nav-user-dropdown {
+  position: absolute; top: calc(100% + 10px); right: 0;
+  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow-lg); min-width: 210px; padding: .4rem;
+  display: none; flex-direction: column; gap: .15rem; z-index: 200;
+}
+.nav-user-dropdown.open { display: flex; }
+.nav-user-dropdown .nav-dropdown-item { width: 100%; background: none; border: none; font: inherit; text-align: left; cursor: pointer; }
+.nav-user-dropdown-divider { height: 1px; background: var(--border); margin: .3rem .3rem; }
+.nav-dropdown-item-danger { color: #e74c3c; }
+.nav-dropdown-item-danger i { color: #e74c3c; }
+.nav-dropdown-item-danger:hover { background: rgba(231,76,60,.1); }
 
 /* Hamburger mejorado */
 .hamburger {
@@ -1307,7 +1341,7 @@ textarea.form-control { resize: vertical; min-height: 100px; overflow-wrap: anyw
      queda solo el ícono, que ya funciona como enlace al inicio. */
   .nav-logo-text { display: none; }
   .nav-inner { padding: 0 .75rem; gap: .4rem; }
-  .nav-actions { gap: .25rem; padding: .3rem; }
+  .nav-actions { gap: .25rem; }
 }
 
 /* ══════════════════════════════════════════════════════════

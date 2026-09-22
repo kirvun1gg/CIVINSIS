@@ -362,11 +362,13 @@
         // los nodos derivan un poco; las lineas siguen su posicion
         nodos.forEach((p, i) => {
           const objetivo = { x: p.x, y: p.y };
+          let _fc = 0; // recalcula posiciones cada 2 frames: deriva lenta (9-16s), la mitad de escrituras SVG sin diferencia perceptible
           tl.add(gsap.timeline({ repeat: -1, yoyo: true, delay: az(0, 4) })
             .to(objetivo, {
               x: p.x + az(-12, 12), y: p.y + az(-10, 10),
               duration: az(9, 16), ease: 'sine.inOut',
               onUpdate() {
+                if ((_fc++ & 1) !== 0) return;
                 puntos[i].setAttribute('cx', objetivo.x);
                 puntos[i].setAttribute('cy', objetivo.y);
                 enl.forEach((k, j) => {
@@ -422,47 +424,356 @@
     // ── 9 · DUAL (marco) ───────────────────────────────────
     // Dos grupos opuestos que se aproximan, se intensifican al
     // encontrarse y vuelven a separarse. Sin explosion.
-    'marco-dual': {
+    
+
+    // ── 9 · NOCHE ESTELAR ──────────────────────────────────
+    // Cielo tranquilo: tres profundidades de estrellas con
+    // parpadeo propio, sin sincronizarse entre si.
+    'fondo-noche': {
       capa: 'atras',
+      fondo: 'linear-gradient(160deg,#0a1420 0%,#101d2e 60%,#0a1420 100%)',
       construir(host, w, h) {
         const zona = capa(host, 0);
         const tl = gsap.timeline();
-        const cx = w / 2, cy = h / 2;
-        const R = Math.min(w, h) * 0.5;
-
-        [[-1, '74,158,255'], [1, '168,85,247']].forEach(([lado, color]) => {
-          const grupo = el('div', 'du-g', 'position:absolute;inset:0;will-change:transform,opacity;');
-          zona.appendChild(grupo);
-
-          for (let i = 0; i < 5; i++) {
-            const r = az(1.6, 3.2);
-            const p = el('div', 'du-p', `position:absolute;border-radius:50%;
-              width:${r * 2}px;height:${r * 2}px;
-              background:radial-gradient(circle,rgb(${color}),rgba(${color},0));
-              left:${cx + lado * R * az(0.85, 1.25)}px;
-              top:${cy + az(-R * 0.7, R * 0.7)}px;`);
-            grupo.appendChild(p);
+        const capas = [
+          { n: Math.round(w * h / 5200), r: [0.6, 1.1], op: [0.2, 0.55] },
+          { n: Math.round(w * h / 11000), r: [0.9, 1.5], op: [0.35, 0.8] },
+          { n: Math.round(w * h / 26000), r: [1.2, 2], op: [0.5, 1] },
+        ];
+        capas.forEach((c) => {
+          for (let i = 0; i < c.n; i++) {
+            const r = az(c.r[0], c.r[1]);
+            const s = el('div', 'no-e', `position:absolute;border-radius:50%;
+              width:${r * 2}px;height:${r * 2}px;background:#eaf2ff;
+              left:${az(0, 100)}%;top:${az(0, 100)}%;will-change:opacity,transform;`);
+            zona.appendChild(s);
+            tl.add(gsap.timeline({ repeat: -1, yoyo: true, delay: az(0, 6) })
+              .to(s, { opacity: az(c.op[0], c.op[1]), duration: az(2.5, 6),
+                       ease: 'sine.inOut' }), 0);
           }
+        });
+        // nubes muy tenues, casi imperceptibles
+        const nube = el('div', 'no-n', `position:absolute;left:65%;top:28%;
+          width:60%;height:50%;border-radius:50%;
+          background:radial-gradient(circle,rgba(40,70,110,.22),transparent 70%);
+          filter:blur(14px);will-change:opacity;`);
+        zona.appendChild(nube);
+        tl.add(gsap.timeline({ repeat: -1, yoyo: true })
+          .to(nube, { opacity: 0.5, duration: 12, ease: 'sine.inOut' }), 0);
+        return tl;
+      },
+    },
 
-          const ciclo = 7;
-          tl.add(gsap.timeline({ repeat: -1, yoyo: true })
-            // se aproximan al centro y ganan intensidad
-            .to(grupo, { x: -lado * R * 0.55, duration: ciclo * 0.5, ease: 'sine.inOut' })
-            .to(grupo, { opacity: 1, scale: 1.12, duration: ciclo * 0.5, ease: 'sine.inOut' }, 0)
-            .fromTo(grupo, { opacity: 0.45, scale: 0.95 },
-                    { opacity: 0.45, scale: 0.95, duration: 0.01 }, 0), 0);
+    // ── 10 · HORIZONTE ─────────────────────────────────────
+    // Amanecer abstracto que respira, con motas que se elevan
+    // desde la linea de tierra.
+    'fondo-horizonte': {
+      capa: 'atras',
+      fondo: 'linear-gradient(180deg,#0b1a24 0%,#142c33 70%,#1d3b3a 100%)',
+      construir(host, w, h) {
+        const zona = capa(host, 0);
+        const tl = gsap.timeline();
+        const hz = h * 0.72;
+
+        const resplandor = el('div', 'ho-r', `position:absolute;
+          left:50%;top:${hz}px;width:${w * 1.1}px;height:${w * 0.55}px;
+          transform:translate(-50%,-30%);border-radius:50%;
+          background:radial-gradient(circle,rgba(255,190,110,.4),rgba(255,140,80,.12) 55%,transparent 75%);
+          will-change:opacity,transform;`);
+        zona.appendChild(resplandor);
+        tl.add(gsap.timeline({ repeat: -1, yoyo: true })
+          .to(resplandor, { opacity: 0.6, scale: 1.08, duration: 6, ease: 'sine.inOut' }), 0);
+
+        zona.appendChild(el('div', 'ho-l', `position:absolute;left:0;top:${hz}px;
+          width:100%;height:1px;
+          background:linear-gradient(90deg,transparent,rgba(255,205,140,.5),transparent);`));
+
+        const n = Math.min(16, Math.max(8, Math.round(w / 40)));
+        for (let i = 0; i < n; i++) {
+          const x0 = az(0, w);
+          const m = el('div', 'ho-m', `position:absolute;border-radius:50%;
+            width:${az(2, 4)}px;height:${az(2, 4)}px;background:#ffd9a8;
+            will-change:transform,opacity;`);
+          zona.appendChild(m);
+          gsap.set(m, { x: x0, y: hz + 10, opacity: 0 });
+          const dur = az(6, 12);
+          tl.add(gsap.timeline({ repeat: -1, delay: az(0, dur) })
+            .to(m, { opacity: az(0.4, 0.85), duration: dur * 0.15 })
+            .to(m, { y: hz * az(0.28, 0.55), duration: dur, ease: 'sine.out' }, 0)
+            .to(m, { opacity: 0, duration: dur * 0.3 }, dur * 0.7)
+            .set(m, { y: hz + 10, x: az(0, w) }), 0);
+        }
+        return tl;
+      },
+    },
+
+    // ── 11 · PERSPECTIVA ───────────────────────────────────
+    // Cubo de aristas girando en 3D con proyeccion isometrica
+    // simple; el brillo de cada vertice depende de su profundidad.
+    'fondo-perspectiva': {
+      capa: 'atras',
+      fondo: 'linear-gradient(150deg,#0e1626 0%,#152238 100%)',
+      construir(host, w, h) {
+        const zona = capa(host, 0);
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(svgNS, 'svg');
+        svg.setAttribute('width', '100%'); svg.setAttribute('height', '100%');
+        svg.style.cssText = 'position:absolute;inset:0;overflow:visible';
+        zona.appendChild(svg);
+
+        const cx = w / 2, cy = h / 2, esc = Math.min(w, h) * 0.3;
+        const V = [[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]];
+        const A = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+        const lineas = A.map(() => {
+          const l = document.createElementNS(svgNS, 'line');
+          l.setAttribute('stroke', '#7fbfff'); l.setAttribute('stroke-width', '1');
+          svg.appendChild(l); return l;
+        });
+        const nodos = V.map(() => {
+          const c = document.createElementNS(svgNS, 'circle');
+          c.setAttribute('r', '2'); c.setAttribute('fill', '#aad4ff');
+          svg.appendChild(c); return c;
         });
 
-        // destello suave en el punto de encuentro
-        const chispa = el('div', 'du-f', `position:absolute;left:50%;top:50%;
-          width:${R * 0.7}px;height:${R * 0.7}px;transform:translate(-50%,-50%);
-          border-radius:50%;background:radial-gradient(circle,rgba(220,200,255,.5),rgba(220,200,255,0) 70%);
-          opacity:0;will-change:opacity,transform;`);
-        zona.appendChild(chispa);
-        tl.add(gsap.timeline({ repeat: -1, repeatDelay: 3.5 })
-          .to(chispa, { opacity: 1, scale: 1.3, duration: 1.2, ease: 'sine.inOut' }, 3.5)
-          .to(chispa, { opacity: 0, scale: 0.8, duration: 1.2, ease: 'sine.in' }), 0);
+        const estado = { a: 0, b: 0 };
+        let _fc = 0; // recalcula la proyeccion 3D cada 2 frames: rotacion muy lenta (34s), la mitad de escrituras SVG sin diferencia perceptible
+        const tl = gsap.timeline({ repeat: -1 });
+        tl.to(estado, {
+          a: Math.PI * 2, b: Math.PI * 2, duration: 34, ease: 'none',
+          onUpdate() {
+            if ((_fc++ & 1) !== 0) return;
+            const P = V.map(([x, y, z]) => {
+              let X = x * Math.cos(estado.a) - z * Math.sin(estado.a);
+              let Z = x * Math.sin(estado.a) + z * Math.cos(estado.a);
+              let Y = y * Math.cos(estado.b) - Z * Math.sin(estado.b);
+              Z = y * Math.sin(estado.b) + Z * Math.cos(estado.b);
+              const k = 2.6 / (2.6 + Z);
+              return [cx + X * esc * k, cy + Y * esc * k, k];
+            });
+            A.forEach(([i, j], idx) => {
+              const l = lineas[idx], prof = (P[i][2] + P[j][2]) / 2;
+              l.setAttribute('x1', P[i][0]); l.setAttribute('y1', P[i][1]);
+              l.setAttribute('x2', P[j][0]); l.setAttribute('y2', P[j][1]);
+              l.setAttribute('stroke-opacity', (0.15 + prof * 0.35).toFixed(2));
+              l.setAttribute('stroke-width', (prof * 1.4).toFixed(2));
+            });
+            P.forEach((p, idx) => {
+              nodos[idx].setAttribute('cx', p[0]); nodos[idx].setAttribute('cy', p[1]);
+              nodos[idx].setAttribute('r', (p[2] * 2.2).toFixed(2));
+              nodos[idx].setAttribute('fill-opacity', (p[2] * 0.7).toFixed(2));
+            });
+          },
+        });
+        return tl;
+      },
+    },
 
+    // ── 12 · SINERGIA ──────────────────────────────────────
+    // Piezas que se separan, se acercan, se funden brevemente
+    // (con halo compartido) y se expanden de nuevo. Ciclo continuo.
+    'fondo-sinergia': {
+      capa: 'atras',
+      fondo: 'linear-gradient(135deg,#0b1f1a 0%,#10302a 100%)',
+      construir(host, w, h) {
+        const zona = capa(host, 0);
+        const cx = w / 2, cy = h / 2, radio = Math.min(w, h);
+        const halo = el('div', 'si-h', `position:absolute;left:50%;top:50%;
+          width:${radio * 0.5}px;height:${radio * 0.5}px;transform:translate(-50%,-50%);
+          border-radius:50%;background:radial-gradient(circle,rgba(120,240,200,.35),transparent 70%);
+          opacity:0;will-change:opacity,transform;`);
+        zona.appendChild(halo);
+
+        const n = 7;
+        const piezas = [];
+        for (let i = 0; i < n; i++) {
+          const r = 3 + (i % 3) * 1.4;
+          const p = el('div', 'si-p', `position:absolute;border-radius:50%;
+            width:${r * 2}px;height:${r * 2}px;border:1.6px solid #78f0c8;
+            will-change:transform,opacity;`);
+          zona.appendChild(p);
+          piezas.push({ el: p, a: (i / n) * Math.PI * 2, dBase: 0.34 + (i % 3) * 0.05 });
+        }
+
+        const estado = { c: 0 };
+        const tl = gsap.timeline({ repeat: -1, yoyo: true, repeatDelay: 1.2 });
+        tl.to(estado, {
+          c: 1, duration: 4.4, ease: 'power2.inOut',
+          onUpdate() {
+            const k = estado.c;
+            piezas.forEach((p) => {
+              const d = p.dBase * (1 - k * 0.86) * radio;
+              const ang = p.a + estado.c * 0.9;
+              const x = cx + Math.cos(ang) * d, y = cy + Math.sin(ang) * d * 0.72;
+              gsap.set(p.el, { x: x - p.el.offsetWidth / 2, y: y - p.el.offsetHeight / 2,
+                opacity: 0.35 + k * 0.5, scale: 1 + k * 0.4 });
+            });
+            gsap.set(halo, { opacity: Math.max(0, (k - 0.55) / 0.45) * 0.9,
+              scale: 0.7 + Math.max(0, (k - 0.55) / 0.45) * 0.7 });
+          },
+        });
+        return tl;
+      },
+    },
+
+    // ── 13 · INSPIRACION ───────────────────────────────────
+    // Particulas ambientales que de vez en cuando convergen en un
+    // punto y encienden un destello, sin patron fijo.
+    'fondo-inspiracion': {
+      capa: 'atras',
+      fondo: 'linear-gradient(140deg,#141024 0%,#1e1636 100%)',
+      construir(host, w, h) {
+        const zona = capa(host, 0);
+        const tl = gsap.timeline();
+        const n = Math.min(28, Math.max(14, Math.round(w * h / 6000)));
+        const parts = [];
+        for (let i = 0; i < n; i++) {
+          const r = az(0.7, 1.6);
+          const p = el('div', 'in-p', `position:absolute;border-radius:50%;
+            width:${r * 2}px;height:${r * 2}px;background:#d9c9ff;opacity:.6;
+            will-change:transform,opacity;`);
+          zona.appendChild(p);
+          const x0 = az(0, w), y0 = az(0, h);
+          gsap.set(p, { x: x0, y: y0 });
+          parts.push({ el: p, x: x0, y: y0 });
+          tl.add(gsap.timeline({ repeat: -1, yoyo: true, delay: az(0, 5) })
+            .to(p, { x: `+=${az(-30, 30)}`, y: `+=${az(-30, 30)}`,
+                     duration: az(8, 16), ease: 'sine.inOut' }), 0);
+        }
+        const destello = el('div', 'in-d', `position:absolute;border-radius:50%;
+          width:90px;height:90px;transform:translate(-50%,-50%);
+          background:radial-gradient(circle,rgba(255,245,210,.9),transparent 70%);
+          opacity:0;will-change:opacity,transform;`);
+        zona.appendChild(destello);
+
+        tl.add(gsap.timeline({ repeat: -1, repeatRefresh: true, repeatDelay: 0 })
+          .to({}, { duration: 'random(3, 7)' })
+          .call(() => {
+            const fx = az(w * 0.2, w * 0.8), fy = az(h * 0.2, h * 0.8);
+            gsap.set(destello, { left: fx, top: fy });
+            gsap.timeline()
+              .to(destello, { opacity: 0.8, duration: 0.6, ease: 'sine.out' })
+              .to(destello, { opacity: 0, duration: 1, ease: 'sine.in' }, 0.6);
+          }), 0);
+        return tl;
+      },
+    },
+
+    // ── 14 · HORIZONTE INFINITO ────────────────────────────
+    // Rejilla en perspectiva que avanza hacia un punto de fuga:
+    // lineas transversales que se aceleran al acercarse.
+    'fondo-horizonte-infinito': {
+      capa: 'atras',
+      fondo: 'linear-gradient(150deg,#0a0d1e 0%,#131a35 100%)',
+      construir(host, w, h) {
+        const zona = capa(host, 0);
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(svgNS, 'svg');
+        svg.setAttribute('width', '100%'); svg.setAttribute('height', '100%');
+        svg.style.cssText = 'position:absolute;inset:0;overflow:visible';
+        zona.appendChild(svg);
+
+        const hz = h * 0.45, fugaX = w / 2;
+        const halo = el('div', 'hi-h', `position:absolute;left:${fugaX}px;top:${hz}px;
+          width:${w * 0.5}px;height:${w * 0.5}px;transform:translate(-50%,-50%);
+          border-radius:50%;background:radial-gradient(circle,rgba(130,190,255,.34),transparent 70%);
+          will-change:opacity;`);
+        zona.appendChild(halo);
+
+        for (let i = -9; i <= 9; i++) {
+          const l = document.createElementNS(svgNS, 'line');
+          l.setAttribute('x1', fugaX); l.setAttribute('y1', hz);
+          l.setAttribute('x2', fugaX + i * w * 0.22); l.setAttribute('y2', h);
+          l.setAttribute('stroke', '#78bfff');
+          l.setAttribute('stroke-opacity', Math.max(0.05, 0.24 - Math.abs(i) * 0.018));
+          svg.appendChild(l);
+        }
+
+        const n = 9;
+        const trans = [];
+        for (let i = 0; i < n; i++) {
+          const l = document.createElementNS(svgNS, 'line');
+          l.setAttribute('stroke', '#96d2ff');
+          svg.appendChild(l); trans.push(l);
+        }
+
+        const tl = gsap.timeline({ repeat: -1 });
+        let _fc = 0; // recalcula las 9 lineas transversales cada 2 frames: sin diferencia perceptible, la mitad de escrituras SVG
+        tl.to({}, {
+          duration: 6, ease: 'none', repeat: -1,
+          onUpdate: function onUpdate() {
+            if ((_fc++ & 1) !== 0) return;
+            const t0 = this.progress();
+            trans.forEach((l, i) => {
+              const k = (t0 + i / n) % 1;
+              const kk = k * k;
+              const y = hz + (h - hz) * kk;
+              l.setAttribute('x1', 0); l.setAttribute('x2', w);
+              l.setAttribute('y1', y); l.setAttribute('y2', y);
+              l.setAttribute('stroke-opacity', (0.32 * k).toFixed(2));
+              l.setAttribute('stroke-width', (0.6 + k * 1.4).toFixed(2));
+            });
+          },
+        }, 0);
+        tl.to(halo, { opacity: 0.7, duration: 4, ease: 'sine.inOut', repeat: -1, yoyo: true }, 0);
+        return tl;
+      },
+    },
+
+    // ── 15 · LEGADO VIVO ───────────────────────────────────
+    // Una señal genera una onda expansiva; al llegar a cierto radio
+    // inspira una nueva señal en otro punto. Cadena viva, nunca mas
+    // de unas pocas ondas a la vez.
+    'fondo-legado-vivo': {
+      capa: 'atras',
+      fondo: 'linear-gradient(140deg,#14110c 0%,#241c0f 100%)',
+      construir(host, w, h) {
+        const zona = capa(host, 0);
+        const activas = [];
+        const maxOndas = 7;
+
+        function nuevaOnda(x, y, gen) {
+          if (activas.length >= maxOndas) return;
+          const grande = Math.min(w, h) * 0.42;
+          const wrap = el('div', 'lv-o', `position:absolute;left:${x}px;top:${y}px;
+            width:0;height:0;transform:translate(-50%,-50%);will-change:transform,opacity;`);
+          const anillo = el('div', '', `position:absolute;inset:0;border-radius:50%;
+            border:1.4px solid rgba(255,205,120,.55);`);
+          const punto = el('div', '', `position:absolute;left:50%;top:50%;
+            width:4px;height:4px;transform:translate(-50%,-50%);border-radius:50%;
+            background:#ffe6a8;`);
+          wrap.appendChild(anillo); wrap.appendChild(punto);
+          zona.appendChild(wrap);
+          activas.push(wrap);
+
+          const obj = { r: 0 };
+          let _fc = 0; // recalcula el tamaño del anillo cada 2 frames (no cada uno): imperceptible en un crecimiento de 3-5s, la mitad de escrituras de layout
+          gsap.timeline({
+            onComplete() {
+              wrap.remove();
+              const idx = activas.indexOf(wrap); if (idx >= 0) activas.splice(idx, 1);
+            },
+          }).to(obj, {
+            r: grande, duration: 3.4 + gen * 0.6, ease: 'sine.out',
+            onUpdate() {
+              if ((_fc++ & 1) === 0) {
+                anillo.style.width = anillo.style.height = obj.r * 2 + 'px';
+                anillo.style.left = -obj.r + 'px'; anillo.style.top = -obj.r + 'px';
+              }
+              const a = Math.max(0, 1 - obj.r / grande);
+              wrap.style.opacity = a;
+              punto.style.opacity = a;
+              if (obj.r > grande * 0.55 && !wrap.dataset.hijo && gen < 2 && activas.length < maxOndas) {
+                wrap.dataset.hijo = '1';
+                const ang = Math.random() * Math.PI * 2;
+                nuevaOnda(x + Math.cos(ang) * obj.r, y + Math.sin(ang) * obj.r, gen + 1);
+              }
+            },
+          });
+        }
+
+        const tl = gsap.timeline({ repeat: -1, repeatRefresh: true });
+        tl.to({}, { duration: 'random(1.2, 2.6)' })
+          .call(() => nuevaOnda(az(w * 0.2, w * 0.8), az(h * 0.2, h * 0.8), 0));
         return tl;
       },
     },
@@ -476,6 +787,7 @@
   function destruir(host) {
     const m = montados.get(host);
     if (!m) return;
+    if (window.PerfShared) window.PerfShared.unwatch(host);
     // limpieza completa: timeline, tweens hijos y elementos creados
     if (m.tl) { m.tl.kill(); }
     gsap.killTweensOf(host.querySelectorAll('.fx-capa *'));
@@ -507,10 +819,15 @@
     }
 
     const tl = mod.construir(host, w, h);
+    if (window.PerfShared) {
+      // Pausar la timeline padre pausa automaticamente las sub-timelines
+      // anidadas via tl.add(...) — no hace falta tratamiento especial.
+      window.PerfShared.watch(host, { onEnter: () => tl.resume(), onExit: () => tl.pause() });
+    }
     montados.set(host, { clave, tl });
   }
 
-  const SEL = '.profile-hero, .public-hero, .cos-preview.es-fondo, .profile-avatar, .comment-avatar';
+  const SEL = '.pf-hero, .cos-preview.es-fondo, .profile-avatar, .comment-avatar';
 
   function escanear(raiz) {
     (raiz || document).querySelectorAll(SEL).forEach(montar);
@@ -520,6 +837,7 @@
     modulos: M, montar, escanear, destruir,
     /** Detiene y limpia TODO: usado al cambiar de cosmetico. */
     limpiarTodo() { [...montados.keys()].forEach(destruir); },
+    pausarTodo(v) { montados.forEach((m) => { if (m.tl) (v ? m.tl.pause() : m.tl.resume()); }); },
   };
 
   function iniciar() {
@@ -529,13 +847,23 @@
     }
     escanear();
     let t;
-    new MutationObserver((muts) => {
-      const relevante = muts.some((m) =>
-        [...m.addedNodes, ...m.removedNodes].some((n) =>
-          n.nodeType === 1 && !n.classList.contains('fx-capa')));
+    const onBodyMutations = (muts) => {
+      const relevante = muts.some((m) => {
+        // un cambio de CLASE (equipar/retirar un cosmetico) es relevante
+        // por si mismo: sin esto, el observer nunca reaccionaba a
+        // hero.classList.add('fondo-x') porque solo miraba childList.
+        if (m.type === 'attributes') {
+          return m.target.nodeType === 1 && !m.target.classList.contains('fx-capa');
+        }
+        return [...m.addedNodes, ...m.removedNodes].some((n) =>
+          n.nodeType === 1 && !n.classList.contains('fx-capa'));
+      });
       if (!relevante) return;
       clearTimeout(t); t = setTimeout(() => escanear(), 220);
-    }).observe(document.body, { childList: true, subtree: true, attributeFilter: ['class'] });
+    };
+    const opciones = { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] };
+    if (window.PerfShared) window.PerfShared.onMutations(onBodyMutations, opciones);
+    else new MutationObserver(onBodyMutations).observe(document.body, opciones);
 
     let t2;
     window.addEventListener('resize', () => {

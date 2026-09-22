@@ -20,6 +20,9 @@ $navLinksParticipar = [
   ['href'=>'debates.php','icon'=>'fa-comments','label'=>__('civinsis.nav.debates'),'key'=>'debates'],
   ['href'=>'desafios.php','icon'=>'fa-flag-checkered','label'=>__('civinsis.nav.desafios'),'key'=>'desafios'],
 ];
+// civi.php vive en el menú de la cuenta (junto a "Mi Perfil"/"Cerrar
+// sesión"), no en esta barra: es una herramienta personal del usuario, no
+// una sección de contenido como ranking/faq/contacto.
 $navLinksResto = [
   ['href'=>'ranking.php','icon'=>'fa-ranking-star','label'=>__('civinsis.nav.ranking'),'key'=>'ranking'],
   ['href'=>'faq.php','icon'=>'fa-question-circle','label'=>__('civinsis.nav.faq'),'key'=>'faq'],
@@ -111,13 +114,28 @@ $idiomaActual       = app()->getLocale();
         <i class="fas fa-moon" aria-hidden="true"></i>
       </button>
       <?php if (!empty($usuarioLogueado)): ?>
-        <a href="perfil.php" class="nav-user-pill">
-          <div class="nav-user-avatar" id="navUserAvatar">
-            <?php if ($navAvatar): ?><img src="<?= htmlspecialchars($navAvatar) ?>" alt="Avatar"><?php else: ?><?= $navIniciales ?><?php endif; ?>
+        <div class="nav-user-menu-wrap" id="navUserMenuWrap">
+          <button class="nav-user-pill" id="navUserMenuBtn" type="button"
+            aria-haspopup="true" aria-expanded="false" aria-label="<?= __('civinsis.nav.mi_cuenta') ?>">
+            <div class="nav-user-avatar" id="navUserAvatar">
+              <?php if ($navAvatar): ?><img src="<?= htmlspecialchars($navAvatar) ?>" alt="Avatar"><?php else: ?><?= $navIniciales ?><?php endif; ?>
+            </div>
+            <span class="nav-user-name"><?= htmlspecialchars($usuarioNombre) ?></span>
+            <i class="fas fa-chevron-down nav-user-caret" aria-hidden="true"></i>
+          </button>
+          <div class="nav-user-dropdown" id="navUserDropdown">
+            <a href="perfil.php" class="nav-dropdown-item <?= ($activeNav === 'perfil') ? 'active' : '' ?>">
+              <i class="fas fa-user"></i> <?= __('civinsis.nav.mi_perfil') ?>
+            </a>
+            <a href="civi.php" class="nav-dropdown-item <?= ($activeNav === 'civi') ? 'active' : '' ?>">
+              <i class="fas fa-robot"></i> <?= __('civinsis.nav.civi') ?>
+            </a>
+            <div class="nav-user-dropdown-divider"></div>
+            <button class="nav-dropdown-item nav-dropdown-item-danger" type="button" onclick="logout()">
+              <i class="fas fa-sign-out-alt"></i> <?= __('civinsis.nav.cerrar_sesion') ?>
+            </button>
           </div>
-          <span class="nav-user-name"><?= htmlspecialchars($usuarioNombre) ?></span>
-        </a>
-        <button class="btn btn-outline btn-sm" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <?= __('civinsis.nav.salir') ?></button>
+        </div>
       <?php else: ?>
         <a href="auth.php" class="btn btn-outline btn-sm"><i class="fas fa-sign-in-alt"></i> <?= __('civinsis.nav.ingresar') ?></a>
         <a href="auth.php?tab=registro" class="btn btn-primary btn-sm"><i class="fas fa-user-plus"></i> <?= __('civinsis.nav.registrarse') ?></a>
@@ -160,6 +178,7 @@ $idiomaActual       = app()->getLocale();
     <div class="mobile-drawer-footer">
       <?php if (!empty($usuarioLogueado)): ?>
         <a href="perfil.php" class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:.5rem"><i class="fas fa-user"></i> <?= __('civinsis.nav.mi_perfil') ?></a>
+        <a href="civi.php" class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:.5rem"><i class="fas fa-robot"></i> <?= __('civinsis.nav.civi') ?></a>
         <button onclick="logout()" class="btn btn-ghost" style="width:100%;justify-content:center"><i class="fas fa-sign-out-alt"></i> <?= __('civinsis.nav.cerrar_sesion') ?></button>
       <?php else: ?>
         <a href="auth.php" class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:.5rem"><i class="fas fa-sign-in-alt"></i> <?= __('civinsis.nav.ingresar') ?></a>

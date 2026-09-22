@@ -29,13 +29,13 @@ class ActividadController extends Controller
         $accion = $request->input('accion', 'panel');
         return match ($accion) {
             'panel' => $this->panel($request),
-            default => $this->json(false, 'Acción no reconocida'),
+            default => $this->json(false, __('civinsis.toast.comunes.accion_no_reconocida')),
         };
     }
 
     private function panel(Request $request)
     {
-        if (!Auth::check()) return $this->json(false, 'No autenticado');
+        if (!Auth::check()) return $this->json(false, __('civinsis.toast.comunes.no_autenticado'));
         $user = auth_user();
 
         return $this->json(true, 'OK', [

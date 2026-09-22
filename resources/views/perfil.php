@@ -22,11 +22,10 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
   <link rel="stylesheet" href="css/gamificacion.css">
   <link rel="stylesheet" href="css/cosmeticos.css">
   <link rel="stylesheet" href="css/marcos-gsap.css">
-  <link rel="stylesheet" href="css/fondos.css">
   <link rel="stylesheet" href="css/efectos.css">
   <link rel="stylesheet" href="css/perfil.css?v=2">
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
-  <script src="js/fondos.js" defer></script>
+  <script src="js/fondos-gsap.js" defer></script>
   <script src="js/efectos-gsap.js" defer></script>
   <script src="js/efectos-eventos.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/MotionPathPlugin.min.js" defer></script>

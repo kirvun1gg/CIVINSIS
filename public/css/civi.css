@@ -1,0 +1,158 @@
+/* ============================================================
+   CIVINSIS · Página exclusiva de chat con CIVI
+   Reutiliza las clases .civi-msg / .civi-typing / .civi-input del
+   widget flotante (public/css/civinsis-extra.css) para que el estilo
+   de los mensajes sea idéntico en ambos lugares.
+   ============================================================ */
+
+.civi-page {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  height: calc(100vh - var(--nav-height));
+  max-height: calc(100vh - var(--nav-height));
+  overflow: hidden;
+}
+
+/* ── Sidebar: historial de conversaciones ─────────────────── */
+.civi-side {
+  border-right: 1px solid var(--border);
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.civi-side-head { padding: 1rem 1rem .5rem; }
+
+.civi-nueva-btn {
+  width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .7rem 1rem;
+  border: none; border-radius: var(--radius);
+  background: var(--grad-primary); color: #fff;
+  font-family: var(--font-body); font-weight: 700; font-size: .88rem;
+  cursor: pointer; transition: var(--trans);
+}
+.civi-nueva-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-color); }
+
+.civi-side-label {
+  padding: .5rem 1.15rem .35rem;
+  font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.civi-side-list { flex: 1; overflow-y: auto; padding: 0 .6rem .8rem; }
+
+.civi-side-loading, .civi-side-empty {
+  padding: 1.25rem .6rem; text-align: center; color: var(--text-muted); font-size: .85rem;
+}
+
+.civi-side-item {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .65rem .7rem; margin-bottom: .2rem;
+  border-radius: var(--radius); cursor: pointer;
+  border: 1px solid transparent;
+  transition: var(--trans);
+  position: relative;
+}
+.civi-side-item:hover { background: var(--bg); }
+.civi-side-item.active { background: var(--verde-alpha); border-color: var(--verde-alpha2); }
+
+.civi-side-item-info { flex: 1; min-width: 0; }
+.civi-side-item-titulo {
+  font-size: .85rem; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.civi-side-item-fecha { font-size: .72rem; color: var(--text-muted); }
+
+.civi-side-item-titulo-input {
+  width: 100%; font: inherit; font-size: .85rem; font-weight: 600; color: var(--text);
+  background: var(--bg-card); border: 1px solid var(--verde-400); border-radius: 6px;
+  padding: .15rem .4rem; outline: none;
+}
+
+.civi-side-item-actions { display: flex; align-items: center; gap: .1rem; flex-shrink: 0; opacity: 0; transition: var(--trans); }
+.civi-side-item:hover .civi-side-item-actions,
+.civi-side-item.editando .civi-side-item-actions { opacity: 1; }
+
+.civi-side-item-edit, .civi-side-item-del {
+  flex-shrink: 0;
+  width: 26px; height: 26px; border-radius: 50%;
+  border: none; background: transparent; color: var(--text-muted);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: var(--trans);
+}
+.civi-side-item-edit:hover { background: var(--verde-alpha); color: var(--verde-600); }
+.civi-side-item-del:hover { background: rgba(231,76,60,.12); color: #e74c3c; }
+
+/* ── Panel principal ───────────────────────────────────────── */
+.civi-main { display: flex; flex-direction: column; min-height: 0; background: var(--bg); }
+
+.civi-main-head {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .9rem 1.25rem; border-bottom: 1px solid var(--border);
+  background: var(--bg-card); flex-shrink: 0;
+}
+.civi-main-head-ava {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--grad-primary); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;
+}
+.civi-main-head h1 { font-family: var(--font-display); font-size: 1rem; margin: 0; }
+.civi-main-head small { color: var(--text-muted); font-size: .78rem; }
+
+.civi-side-toggle {
+  display: none; border: none; background: transparent; color: var(--text);
+  width: 34px; height: 34px; border-radius: var(--radius); cursor: pointer; font-size: 1rem;
+}
+
+.civi-main-body { flex: 1; overflow-y: auto; padding: 1.5rem; min-height: 0; }
+
+.civi-vacio {
+  height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; color: var(--text-muted); max-width: 420px; margin: 0 auto;
+}
+.civi-vacio-ava {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--grad-soft); color: var(--verde);
+  display: flex; align-items: center; justify-content: center; font-size: 1.7rem; margin-bottom: 1rem;
+}
+.civi-vacio h2 { font-family: var(--font-display); color: var(--text); font-size: 1.2rem; margin: 0 0 .4rem; }
+.civi-vacio p { font-size: .88rem; margin: 0; }
+
+.civi-msgs {
+  display: flex; flex-direction: column; gap: .9rem;
+  max-width: 760px; margin: 0 auto;
+}
+/* Los mensajes en sí (.civi-msg.bot/.user) y el indicador de "escribiendo"
+   (.civi-typing) reutilizan las reglas de civinsis-extra.css — aquí solo
+   se agranda un poco el tamaño de fuente respecto al widget flotante. */
+.civi-msgs .civi-msg { font-size: .92rem; max-width: 75%; }
+
+.civi-main-input {
+  display: flex; gap: .6rem; padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border); background: var(--bg-card); flex-shrink: 0;
+}
+.civi-main-input input {
+  flex: 1; border: 1px solid var(--border); border-radius: 999px;
+  padding: .75rem 1.1rem; font-size: .92rem; background: var(--bg); color: var(--text); outline: none;
+}
+.civi-main-input input:focus { border-color: var(--verde); }
+.civi-main-input button {
+  border: none; background: var(--grad-primary); color: #fff;
+  width: 46px; height: 46px; border-radius: 50%; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+.civi-main-input button:disabled { opacity: .55; cursor: not-allowed; }
+
+@media (max-width: 860px) {
+  .civi-page { grid-template-columns: 1fr; position: relative; }
+  .civi-side {
+    position: fixed; top: var(--nav-height); left: 0; bottom: 0; width: 280px; z-index: 40;
+    transform: translateX(-100%); transition: var(--trans);
+    box-shadow: var(--shadow-lg);
+  }
+  .civi-side.open { transform: translateX(0); }
+  .civi-side-toggle { display: flex; align-items: center; justify-content: center; }
+  .civi-msgs .civi-msg { max-width: 88%; }
+}

@@ -734,7 +734,11 @@ return [
         'censurar_title' => "Confirm censorship and penalize the author's reputation",
         'alertas_error_cargar' => 'Error loading alerts.',
         'aprobar_confirm' => 'Publish this content anyway? It will be restored/published despite the AI alert.',
-        'censurar_confirm' => 'Censor this content? It will be hidden from users and marked as removed by moderation.',
+        'aprobar_titulo_modal' => 'Restore content',
+        'aprobar_boton' => 'Yes, restore',
+        'censurar_confirm' => "Censor this content? It will be hidden from users and marked as removed by moderation. The author's reputation will also be docked.",
+        'censurar_titulo_modal' => 'Confirm censorship',
+        'censurar_boton' => 'Yes, censor',
 
         // Gamification management schema (challenges, missions, badges, titles, cosmetics)
         'gam' => [

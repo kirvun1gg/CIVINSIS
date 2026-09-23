@@ -833,8 +833,37 @@ async function marcarAlertaRevisada(id) {
   } catch(e) { showToast(tComunAdmin().error_conexion || 'Error de conexión', 'error'); }
 }
 
+// ── Modal de confirmación genérico (estilo CIVINSIS, reemplaza confirm()) ──
+function closeConfirmModal() { document.getElementById('confirmModal').classList.remove('open'); }
+
+function showConfirmModal({ icon, iconColor, title, message, confirmText, confirmColor, onConfirm }) {
+  const iconEl = document.getElementById('confirmModalIcon');
+  iconEl.className = 'fas ' + icon;
+  iconEl.style.color = iconColor;
+  document.getElementById('confirmModalTitleText').textContent = title;
+  document.getElementById('confirmModalMessage').textContent = message;
+
+  const btn = document.getElementById('confirmModalBtn');
+  btn.textContent = confirmText;
+  btn.style.background = confirmColor;
+  btn.style.borderColor = confirmColor;
+  btn.onclick = () => { closeConfirmModal(); onConfirm(); };
+
+  document.getElementById('confirmModal').classList.add('open');
+}
+
 async function aprobarAlerta(id) {
-  if (!confirm(tA().aprobar_confirm || '¿Publicar este contenido de todas formas? Se restaurará/publicará pese a la alerta de la IA.')) return;
+  showConfirmModal({
+    icon: 'fa-unlock', iconColor: '#4a9eff',
+    title: tA().aprobar_titulo_modal || 'Restaurar contenido',
+    message: tA().aprobar_confirm || '¿Publicar este contenido de todas formas? Se restaurará/publicará pese a la alerta de la IA.',
+    confirmText: tA().aprobar_boton || 'Sí, restaurar',
+    confirmColor: '#4a9eff',
+    onConfirm: () => ejecutarAprobarAlerta(id),
+  });
+}
+
+async function ejecutarAprobarAlerta(id) {
   try {
     const r = await fetch('php/ia.php', {
       method: 'POST',
@@ -852,7 +881,17 @@ async function aprobarAlerta(id) {
 }
 
 async function censurarAlerta(id) {
-  if (!confirm(tA().censurar_confirm || '¿Censurar este contenido? Se ocultará a los usuarios y quedará como retirado por moderación.')) return;
+  showConfirmModal({
+    icon: 'fa-ban', iconColor: '#e74c3c',
+    title: tA().censurar_titulo_modal || 'Confirmar censura',
+    message: tA().censurar_confirm || '¿Censurar este contenido? Se ocultará a los usuarios y quedará como retirado por moderación.',
+    confirmText: tA().censurar_boton || 'Sí, censurar',
+    confirmColor: '#e74c3c',
+    onConfirm: () => ejecutarCensurarAlerta(id),
+  });
+}
+
+async function ejecutarCensurarAlerta(id) {
   try {
     const r = await fetch('php/ia.php', {
       method: 'POST',

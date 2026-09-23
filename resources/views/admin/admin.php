@@ -337,6 +337,23 @@ $esAdmin   = ($usuarioRol === 'admin');
   </div>
 </div>
 
+<!-- Modal de confirmación genérico (aprobar/censurar alertas, etc.) -->
+<div class="modal-backdrop" id="confirmModal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <h3 class="modal-title" id="confirmModalTitle"><i class="fas fa-triangle-exclamation" id="confirmModalIcon"></i> <span id="confirmModalTitleText"></span></h3>
+      <button class="modal-close" onclick="closeConfirmModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p id="confirmModalMessage" style="color:var(--text-2);line-height:1.6;margin:0"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeConfirmModal()"><?= __('civinsis.comun.cancelar') ?></button>
+      <button class="btn btn-primary btn-sm" id="confirmModalBtn"></button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="catModal">
   <div class="modal">
     <div class="modal-header">

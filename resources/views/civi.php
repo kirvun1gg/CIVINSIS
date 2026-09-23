@@ -13,7 +13,7 @@ $usuarioId       = $usuarioId ?? null;
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/civi.css">
+  <link rel="stylesheet" href="css/civi.css?v=2">
 </head>
 <body data-usuario-id="<?= $usuarioLogueado ? (int)$usuarioId : '' ?>" data-hide-civi-fab="1">
 
@@ -66,6 +66,6 @@ $usuarioId       = $usuarioId ?? null;
 
 <div class="toast-container"></div>
 <script src="js/app.js"></script>
-<script src="js/civi.js"></script>
+<script src="js/civi.js?v=2"></script>
 </body>
 </html>

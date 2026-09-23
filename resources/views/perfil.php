@@ -692,8 +692,13 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
       </h3>
       <p class="pf-card-subtitle"><?= __('civinsis.perfil.cambiar_contrasena_desc') ?></p>
 
+      <div class="pf-info-box" id="googlePasswordNotice" style="display:none">
+        <i class="fab fa-google"></i>
+        <span><?= __('civinsis.perfil.cuenta_google_nota') ?></span>
+      </div>
+
       <form id="changePassForm">
-        <div class="form-group" style="margin-bottom:1.25rem">
+        <div class="form-group" id="currentPasswordGroup" style="margin-bottom:1.25rem">
           <label class="form-label"><?= __('civinsis.perfil.contrasena_actual') ?></label>
           <div class="pf-input-group">
             <input type="password" class="form-control" id="passActual" name="pass_actual" required placeholder="<?= __('civinsis.perfil.contrasena_actual_placeholder') ?>">
@@ -739,8 +744,8 @@ $esAdmin   = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
           </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">
-          <i class="fas fa-shield-halved"></i> <?= __('civinsis.perfil.actualizar_contrasena') ?>
+        <button type="submit" class="btn btn-primary" id="changePassSubmitBtn">
+          <i class="fas fa-shield-halved"></i> <span id="changePassSubmitLabel"><?= __('civinsis.perfil.actualizar_contrasena') ?></span>
         </button>
       </form>
     </div>

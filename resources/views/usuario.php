@@ -32,7 +32,15 @@ $perfilId = $perfilId ?? intval(request('id'));
 <!-- Hero de perfil público -->
 <section class="pf-hero" id="publicHero">
   <div class="container pf-hero-inner">
-    <div class="pf-header-card">
+
+    <!-- Estado "perfil privado" — oculto salvo que usuario.js lo active -->
+    <div class="pf-private-state" id="pubPrivateState" style="display:none">
+      <div class="pf-private-icon"><i class="fas fa-lock"></i></div>
+      <h1 class="pf-private-title"><?= __('civinsis.usuario.perfil_privado_titulo') ?></h1>
+      <p class="pf-private-desc"><?= __('civinsis.usuario.perfil_privado_desc') ?></p>
+    </div>
+
+    <div class="pf-header-card" id="pubHeaderCard">
 
       <div class="pf-header-main">
         <div class="pf-avatar-cluster">
@@ -95,7 +103,7 @@ $perfilId = $perfilId ?? intval(request('id'));
 </section>
 
 <!-- Contenido del perfil público -->
-<div class="container pf-content-area" style="max-width:960px">
+<div class="container pf-content-area" id="pubContentArea" style="max-width:960px">
 
   <!-- Widget de nivel y ciudadanía -->
   <div class="nivel-widget" id="pubNivelWidget" style="margin-bottom:1.5rem">

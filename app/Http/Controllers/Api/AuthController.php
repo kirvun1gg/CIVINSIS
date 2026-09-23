@@ -178,12 +178,16 @@ class AuthController extends Controller
         $u = auth_user();
         if (!$u) return $this->json(false, __('civinsis.toast.comunes.no_autenticado'));
 
-        $actual = (string) $request->input('pass_actual');
-        $nueva  = (string) $request->input('pass_nueva');
+        $actual   = (string) $request->input('pass_actual');
+        $nueva    = (string) $request->input('pass_nueva');
+        $esGoogle = !empty($u->google_id);
 
-        if ($actual === '' || $nueva === '') return $this->json(false, __('civinsis.toast.auth.completa_campos'));
+        // Las cuentas vinculadas con Google reciben una contraseña aleatoria
+        // que el usuario nunca conoce (ver GoogleAuthController::callback), así
+        // que no tiene sentido pedirle que confirme una contraseña "actual".
+        if ($nueva === '' || (!$esGoogle && $actual === '')) return $this->json(false, __('civinsis.toast.auth.completa_campos'));
         if (strlen($nueva) < 8) return $this->json(false, __('civinsis.toast.perfil.password_nueva_min_caracteres'));
-        if (!Hash::check($actual, $u->password)) return $this->json(false, __('civinsis.toast.perfil.password_actual_incorrecta'));
+        if (!$esGoogle && !Hash::check($actual, $u->password)) return $this->json(false, __('civinsis.toast.perfil.password_actual_incorrecta'));
 
         $u->update(['password' => Hash::make($nueva)]);
         return $this->json(true, __('civinsis.toast.perfil.password_actualizada_correctamente'));

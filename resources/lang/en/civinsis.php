@@ -191,6 +191,8 @@ return [
         'sin_insignias'    => 'No badges yet.',
         'logros_ciudadania'=> 'Citizenship achievements',
         'logros_desc'      => 'Civic milestones reached in debates and proposals.',
+        'perfil_privado_titulo' => 'This profile is private',
+        'perfil_privado_desc'   => 'Its owner chose to keep their information, stats and badges visible only to themselves.',
     ],
 
     'comunidad' => [
@@ -572,6 +574,18 @@ return [
         'verify_campo_codigo_placeholder' => 'E.g.: A1B2C3',
         'verify_boton' => 'Verify',
         'verify_volver' => 'Back to login',
+        'forgot_titulo' => 'Forgot your password?',
+        'forgot_subtitulo' => "No worries. Enter your email address and we'll send you a link to reset it.",
+        'forgot_boton' => 'Send reset link',
+        'forgot_volver' => 'Back to login',
+        'reset_titulo' => 'Create a new password',
+        'reset_subtitulo' => "Almost done. Choose a new, secure password for your account.",
+        'reset_campo_nueva' => 'New password',
+        'reset_campo_nueva_placeholder' => 'At least 8 characters',
+        'reset_campo_confirmar' => 'Confirm password',
+        'reset_campo_confirmar_placeholder' => 'Repeat the new password',
+        'reset_boton' => 'Reset password',
+        'reset_volver' => 'Back to login',
     ],
 
     'admin' => [
@@ -984,6 +998,8 @@ return [
         'confirmar_contrasena' => 'Confirm new password *',
         'confirmar_contrasena_placeholder' => 'Repeat the new password',
         'actualizar_contrasena' => 'Update password',
+        'establecer_contrasena' => 'Set password',
+        'cuenta_google_nota' => "Your account signed in with Google, so it doesn't have a password to confirm. Set one below so you can also log in with your email and password.",
 
         'vista_previa_titulo' => 'Live preview',
         'mis_cosmeticos' => 'My cosmetics',

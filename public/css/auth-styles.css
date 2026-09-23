@@ -425,6 +425,15 @@ html.light-mode .tabs { background:rgba(0,0,0,.07); }
 }
 .auth-error-box p + p { margin-top:4px; }
 
+/* Caja de éxito/estado (ej. "enlace de recuperación enviado") */
+.auth-status-box {
+  background:rgba(54,192,161,.09); border:1px solid rgba(54,192,161,.3);
+  border-radius:12px; padding:12px 16px; margin-bottom:16px;
+  display:flex; align-items:flex-start; gap:9px;
+}
+.auth-status-box i { color:var(--c-teal); font-size:.9rem; margin-top:1px; }
+.auth-status-box p { color:var(--txt-b); font-size:.82rem; margin:0; line-height:1.5; }
+
 /* Input grande y centrado para códigos de verificación */
 .verify-code-field {
   text-align:center; letter-spacing:8px; text-transform:uppercase;
@@ -455,6 +464,11 @@ html.light-mode .tabs { background:rgba(0,0,0,.07); }
   appearance:none;
 }
 .field::placeholder { color:var(--txt-mute); opacity:1; }
+.field[readonly] {
+  color:var(--txt-mute); cursor:default;
+  background:rgba(255,255,255,.02);
+}
+.field[readonly]:focus { box-shadow:none; border-color:var(--input-border); }
 .field:focus {
   border-color:var(--c-teal);
   background:var(--input-focus);

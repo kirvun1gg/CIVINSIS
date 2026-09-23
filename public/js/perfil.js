@@ -280,11 +280,35 @@ async function loadProfileData() {
       }
 
       aplicarCosmeticos(u);
+
+      // Cuentas vinculadas con Google reciben una contraseña aleatoria que
+      // el usuario nunca ve (GoogleAuthController::callback), así que no
+      // tiene "contraseña actual" que pueda confirmar: ocultamos ese campo
+      // y avisamos que lo que va a hacer es establecer una nueva, no cambiarla.
+      _esCuentaGoogle = !!u.google_id;
+      const passActualGroup = document.getElementById('currentPasswordGroup');
+      const passActualInput = document.getElementById('passActual');
+      const googleNotice    = document.getElementById('googlePasswordNotice');
+      const submitLabel     = document.getElementById('changePassSubmitLabel');
+      const tp = tPerfilTextos();
+      if (_esCuentaGoogle) {
+        if (passActualGroup) passActualGroup.style.display = 'none';
+        if (passActualInput) passActualInput.required = false;
+        if (googleNotice) googleNotice.style.display = 'flex';
+        if (submitLabel) submitLabel.textContent = tp.establecer_contrasena || 'Establecer contraseña';
+      } else {
+        if (passActualGroup) passActualGroup.style.display = '';
+        if (passActualInput) passActualInput.required = true;
+        if (googleNotice) googleNotice.style.display = 'none';
+        if (submitLabel) submitLabel.textContent = tp.actualizar_contrasena || 'Actualizar contraseña';
+      }
     }
   } catch (e) {
     console.error('Error al cargar perfil:', e);
   }
 }
+let _esCuentaGoogle = false;
+function tPerfilTextos() { return (window.CIVI_I18N && CIVI_I18N.perfil) || {}; }
 loadProfileData();
 
 // ── Helpers de Redes Sociales ─────────────────────────────
@@ -647,9 +671,14 @@ document.getElementById('changePassForm').addEventListener('submit', async funct
   if (nueva !== confirm) { showToast(tComun().contrasenas_no_coinciden || 'Las contraseñas no coinciden', 'error'); return; }
   if (nueva.length < 8)  { showToast(tPerfil().password_min_caracteres || 'La contraseña debe tener al menos 8 caracteres', 'error'); return; }
 
-  const btn = this.querySelector('[type=submit]');
+  const btn = document.getElementById('changePassSubmitBtn');
+  const tp  = tPerfilTextos();
+  const idleLabel = _esCuentaGoogle
+    ? (tp.establecer_contrasena || 'Establecer contraseña')
+    : (tp.actualizar_contrasena || 'Actualizar contraseña');
+
   btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualizando...';
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (tComun().procesando || 'Actualizando...');
 
   try {
     const r = await fetch('php/auth.php', {
@@ -657,7 +686,7 @@ document.getElementById('changePassForm').addEventListener('submit', async funct
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         accion: 'cambiar_password',
-        pass_actual: document.getElementById('passActual').value,
+        pass_actual: _esCuentaGoogle ? '' : document.getElementById('passActual').value,
         pass_nueva: nueva
       })
     });
@@ -674,7 +703,7 @@ document.getElementById('changePassForm').addEventListener('submit', async funct
   }
 
   btn.disabled = false;
-  btn.innerHTML = '<i class="fas fa-shield-halved"></i> Actualizar contraseña';
+  btn.innerHTML = '<i class="fas fa-shield-halved"></i> <span id="changePassSubmitLabel">' + idleLabel + '</span>';
 });
 
 // ── Análisis de CIVI (Coach con IA) ───────────────────────

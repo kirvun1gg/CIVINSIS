@@ -97,6 +97,49 @@
   background: linear-gradient(90deg, var(--verde), var(--naranja), #3b82f6);
 }
 
+/* ── Estado "perfil privado" (usuario.php) ──────────────────── */
+.pf-private-state {
+  background: var(--pf-glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--pf-glass-border);
+  border-radius: var(--pf-radius-lg);
+  box-shadow: var(--pf-glass-shadow);
+  padding: 4rem 2rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.pf-private-icon {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--pf-pill-bg);
+  color: var(--pf-accent);
+  font-size: 1.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.pf-private-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: var(--text);
+}
+
+.pf-private-desc {
+  max-width: 420px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
 /* Layout principal de la cabecera */
 .pf-header-main {
   display: flex;
@@ -1173,6 +1216,27 @@
 
 .pf-check-item i {
   font-size: 0.85rem;
+}
+
+.pf-info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.25rem;
+  background: rgba(54, 192, 161, 0.08);
+  border: 1px solid rgba(54, 192, 161, 0.3);
+  border-radius: var(--pf-radius-sm);
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.pf-info-box i {
+  color: var(--pf-accent);
+  font-size: 0.95rem;
+  margin-top: 0.1rem;
+  flex-shrink: 0;
 }
 
 /* ════════════════════════════════════════════════════════════

@@ -191,6 +191,8 @@ return [
         'sin_insignias'    => 'Aucun badge pour le moment.',
         'logros_ciudadania'=> 'Réalisations citoyennes',
         'logros_desc'      => 'Étapes civiques franchies dans les débats et les propositions.',
+        'perfil_privado_titulo' => 'Ce profil est privé',
+        'perfil_privado_desc'   => "Son propriétaire a choisi de garder ses informations, statistiques et badges visibles uniquement pour lui-même.",
     ],
 
     'comunidad' => [
@@ -572,6 +574,18 @@ return [
         'verify_campo_codigo_placeholder' => 'Ex : A1B2C3',
         'verify_boton' => 'Vérifier',
         'verify_volver' => 'Retour à la connexion',
+        'forgot_titulo' => 'Mot de passe oublié ?',
+        'forgot_subtitulo' => 'Pas de souci. Entrez votre adresse e-mail et nous vous enverrons un lien pour le réinitialiser.',
+        'forgot_boton' => 'Envoyer le lien de récupération',
+        'forgot_volver' => 'Retour à la connexion',
+        'reset_titulo' => 'Créez un nouveau mot de passe',
+        'reset_subtitulo' => 'Presque terminé. Choisissez un nouveau mot de passe sécurisé pour votre compte.',
+        'reset_campo_nueva' => 'Nouveau mot de passe',
+        'reset_campo_nueva_placeholder' => 'Minimum 8 caractères',
+        'reset_campo_confirmar' => 'Confirmer le mot de passe',
+        'reset_campo_confirmar_placeholder' => 'Répétez le nouveau mot de passe',
+        'reset_boton' => 'Réinitialiser le mot de passe',
+        'reset_volver' => 'Retour à la connexion',
     ],
 
     'admin' => [
@@ -984,6 +998,8 @@ return [
         'confirmar_contrasena' => 'Confirmer le nouveau mot de passe *',
         'confirmar_contrasena_placeholder' => 'Répétez le nouveau mot de passe',
         'actualizar_contrasena' => 'Mettre à jour le mot de passe',
+        'establecer_contrasena' => 'Définir le mot de passe',
+        'cuenta_google_nota' => "Votre compte s'est connecté avec Google, il n'a donc pas de mot de passe à confirmer. Définissez-en un ci-dessous pour pouvoir aussi vous connecter avec votre e-mail et mot de passe.",
 
         'vista_previa_titulo' => 'Aperçu en direct',
         'mis_cosmeticos' => 'Mes cosmétiques',

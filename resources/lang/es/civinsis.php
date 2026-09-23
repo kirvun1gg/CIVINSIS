@@ -191,6 +191,8 @@ return [
         'sin_insignias'    => 'Sin insignias aún.',
         'logros_ciudadania'=> 'Logros de ciudadanía',
         'logros_desc'      => 'Hitos cívicos alcanzados en debates y propuestas.',
+        'perfil_privado_titulo' => 'Este perfil es privado',
+        'perfil_privado_desc'   => 'Su dueño decidió que solo él pueda ver su información, estadísticas e insignias.',
     ],
 
     'comunidad' => [
@@ -572,6 +574,18 @@ return [
         'verify_campo_codigo_placeholder' => 'Ej: A1B2C3',
         'verify_boton' => 'Verificar',
         'verify_volver' => 'Volver al inicio de sesión',
+        'forgot_titulo' => '¿Olvidaste tu contraseña?',
+        'forgot_subtitulo' => 'No te preocupes. Ingresa tu correo electrónico y te enviaremos un enlace para restablecerla.',
+        'forgot_boton' => 'Enviar enlace de recuperación',
+        'forgot_volver' => 'Volver al inicio de sesión',
+        'reset_titulo' => 'Crea una nueva contraseña',
+        'reset_subtitulo' => 'Ya casi terminas. Elige una contraseña nueva y segura para tu cuenta.',
+        'reset_campo_nueva' => 'Nueva contraseña',
+        'reset_campo_nueva_placeholder' => 'Mínimo 8 caracteres',
+        'reset_campo_confirmar' => 'Confirmar contraseña',
+        'reset_campo_confirmar_placeholder' => 'Repite la nueva contraseña',
+        'reset_boton' => 'Restablecer contraseña',
+        'reset_volver' => 'Volver al inicio de sesión',
     ],
 
     'admin' => [
@@ -984,6 +998,8 @@ return [
         'confirmar_contrasena' => 'Confirmar nueva contraseña *',
         'confirmar_contrasena_placeholder' => 'Repite la nueva contraseña',
         'actualizar_contrasena' => 'Actualizar contraseña',
+        'establecer_contrasena' => 'Establecer contraseña',
+        'cuenta_google_nota' => 'Tu cuenta inició sesión con Google, así que no tiene una contraseña que debas confirmar. Define una a continuación para también poder iniciar sesión con tu correo y contraseña.',
 
         'vista_previa_titulo' => 'Vista previa en vivo',
         'mis_cosmeticos' => 'Mis cosméticos',

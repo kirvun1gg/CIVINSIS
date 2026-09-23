@@ -1,13 +1,37 @@
 const PERFIL_ID = Number(document.body.dataset.perfilId);
 
+function showPrivateState(esPrivado) {
+  const headerCard  = document.getElementById('pubHeaderCard');
+  const contentArea = document.getElementById('pubContentArea');
+  const box         = document.getElementById('pubPrivateState');
+  if (headerCard)  headerCard.style.display  = 'none';
+  if (contentArea) contentArea.style.display = 'none';
+  if (!box) return;
+
+  box.style.display = 'flex';
+  const icon  = box.querySelector('.pf-private-icon i');
+  const title = box.querySelector('.pf-private-title');
+  const desc  = box.querySelector('.pf-private-desc');
+  const t = (window.CIVI_I18N && CIVI_I18N.toast) || {};
+
+  if (esPrivado) {
+    if (icon)  icon.className  = 'fas fa-lock';
+    if (title) title.textContent = (t.gamificacion && t.gamificacion.perfil_privado) || 'Este perfil es privado';
+    // La descripción de "por qué" ya viene traducida desde el servidor.
+  } else {
+    if (icon)  icon.className  = 'fas fa-user-slash';
+    if (title) title.textContent = (t.admin && t.admin.usuario_no_encontrado) || 'Usuario no encontrado';
+    if (desc)  desc.textContent = '';
+  }
+  document.title = 'CIVINSIS';
+}
+
 (async function loadPublicProfile() {
   try {
     const r = await fetch('php/gamificacion.php?accion=perfil_publico&id=' + PERFIL_ID);
     const d = await r.json();
     if (!d.success) {
-      document.getElementById('pubName').textContent = d.privado
-        ? (CIVI_I18N.usuario_perfil_privado || 'Este perfil es privado')
-        : 'Usuario no encontrado';
+      showPrivateState(!!d.privado);
       return;
     }
 

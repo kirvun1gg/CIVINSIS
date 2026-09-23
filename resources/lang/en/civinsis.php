@@ -734,11 +734,18 @@ return [
         'censurar_title' => "Confirm censorship and penalize the author's reputation",
         'alertas_error_cargar' => 'Error loading alerts.',
         'aprobar_confirm' => 'Publish this content anyway? It will be restored/published despite the AI alert.',
+        'aprobar_confirm_din' => 'Are you sure you want to restore and publish {item}? It will be visible again despite the AI alert.',
         'aprobar_titulo_modal' => 'Restore content',
         'aprobar_boton' => 'Yes, restore',
         'censurar_confirm' => "Censor this content? It will be hidden from users and marked as removed by moderation. The author's reputation will also be docked.",
+        'censurar_confirm_din' => "Are you sure you want to censor {item}? It will be hidden from users and the poster's reputation will be docked.",
         'censurar_titulo_modal' => 'Confirm censorship',
         'censurar_boton' => 'Yes, censor',
+        'tipo_este_comentario' => 'this comment',
+        'tipo_esta_propuesta' => 'this proposal',
+        'tipo_este_debate' => 'this debate',
+        'tipo_esta_respuesta' => 'this reply',
+        'tipo_este_contenido' => 'this content',
 
         // Gamification management schema (challenges, missions, badges, titles, cosmetics)
         'gam' => [

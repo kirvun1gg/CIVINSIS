@@ -734,11 +734,18 @@ return [
         'censurar_title' => 'Confirmar censura y penalizar reputación del autor',
         'alertas_error_cargar' => 'Error al cargar alertas.',
         'aprobar_confirm' => '¿Publicar este contenido de todas formas? Se restaurará/publicará pese a la alerta de la IA.',
+        'aprobar_confirm_din' => '¿Estás seguro de que quieres restaurar y publicar {item}? Volverá a verse pese a la alerta de la IA.',
         'aprobar_titulo_modal' => 'Restaurar contenido',
         'aprobar_boton' => 'Sí, restaurar',
         'censurar_confirm' => '¿Censurar este contenido? Se ocultará a los usuarios y quedará como retirado por moderación. Además, se le descontará reputación al autor.',
+        'censurar_confirm_din' => '¿Estás seguro de que quieres censurar {item}? Se ocultará a los usuarios y se penalizará la reputación de quien lo publicó.',
         'censurar_titulo_modal' => 'Confirmar censura',
         'censurar_boton' => 'Sí, censurar',
+        'tipo_este_comentario' => 'este comentario',
+        'tipo_esta_propuesta' => 'esta propuesta',
+        'tipo_este_debate' => 'este debate',
+        'tipo_esta_respuesta' => 'esta respuesta',
+        'tipo_este_contenido' => 'este contenido',
 
         // Esquema de gestión de gamificación (desafíos, misiones, insignias, títulos, cosméticos)
         'gam' => [

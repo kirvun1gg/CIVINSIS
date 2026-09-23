@@ -734,11 +734,18 @@ return [
         'censurar_title' => "Confirmer la censure et pénaliser la réputation de l'auteur",
         'alertas_error_cargar' => 'Erreur lors du chargement des alertes.',
         'aprobar_confirm' => "Publier ce contenu quand même ? Il sera restauré/publié malgré l'alerte de l'IA.",
+        'aprobar_confirm_din' => 'Voulez-vous vraiment restaurer et publier {item} ? Il redeviendra visible malgré l\'alerte de l\'IA.',
         'aprobar_titulo_modal' => 'Restaurer le contenu',
         'aprobar_boton' => 'Oui, restaurer',
         'censurar_confirm' => "Censurer ce contenu ? Il sera masqué aux utilisateurs et marqué comme retiré par modération. La réputation de l'auteur sera également réduite.",
+        'censurar_confirm_din' => "Voulez-vous vraiment censurer {item} ? Il sera masqué aux utilisateurs et la réputation de son auteur sera réduite.",
         'censurar_titulo_modal' => 'Confirmer la censure',
         'censurar_boton' => 'Oui, censurer',
+        'tipo_este_comentario' => 'ce commentaire',
+        'tipo_esta_propuesta' => 'cette proposition',
+        'tipo_este_debate' => 'ce débat',
+        'tipo_esta_respuesta' => 'cette réponse',
+        'tipo_este_contenido' => 'ce contenu',
 
         // Schéma de gestion de la gamification (défis, missions, badges, titres, cosmétiques)
         'gam' => [

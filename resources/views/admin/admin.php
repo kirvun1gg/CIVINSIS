@@ -20,7 +20,7 @@ $esAdmin   = ($usuarioRol === 'admin');
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/gamificacion.css">
-  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/admin.css?v=2">
 </head>
 <body>
 
@@ -339,17 +339,18 @@ $esAdmin   = ($usuarioRol === 'admin');
 
 <!-- Modal de confirmación genérico (aprobar/censurar alertas, etc.) -->
 <div class="modal-backdrop" id="confirmModal">
-  <div class="modal" style="max-width:440px">
-    <div class="modal-header">
-      <h3 class="modal-title" id="confirmModalTitle"><i class="fas fa-triangle-exclamation" id="confirmModalIcon"></i> <span id="confirmModalTitleText"></span></h3>
-      <button class="modal-close" onclick="closeConfirmModal()"><i class="fas fa-times"></i></button>
+  <div class="confirm-modal">
+    <button class="confirm-modal-close" onclick="closeConfirmModal()" aria-label="<?= __('civinsis.comun.cerrar') ?>"><i class="fas fa-times"></i></button>
+    <div class="confirm-modal-icon-ring" id="confirmModalIconRing">
+      <div class="confirm-modal-icon-wrap" id="confirmModalIconWrap">
+        <i class="fas fa-triangle-exclamation" id="confirmModalIcon"></i>
+      </div>
     </div>
-    <div class="modal-body">
-      <p id="confirmModalMessage" style="color:var(--text-2);line-height:1.6;margin:0"></p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline btn-sm" onclick="closeConfirmModal()"><?= __('civinsis.comun.cancelar') ?></button>
-      <button class="btn btn-primary btn-sm" id="confirmModalBtn"></button>
+    <h3 class="confirm-modal-title" id="confirmModalTitleText"></h3>
+    <p class="confirm-modal-message" id="confirmModalMessage"></p>
+    <div class="confirm-modal-actions">
+      <button class="confirm-modal-btn confirm-modal-btn-ghost" onclick="closeConfirmModal()"><?= __('civinsis.comun.cancelar') ?></button>
+      <button class="confirm-modal-btn confirm-modal-btn-confirm" id="confirmModalBtn"></button>
     </div>
   </div>
 </div>
@@ -391,7 +392,7 @@ $esAdmin   = ($usuarioRol === 'admin');
 
 <div class="toast-container"></div>
 <script src="js/app.js"></script>
-<script src="js/admin.js"></script>
+<script src="js/admin.js?v=2"></script>
 <?php echo view('layouts.footer')->render(); ?>
 </body>
 </html>

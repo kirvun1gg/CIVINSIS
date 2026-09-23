@@ -804,8 +804,8 @@ async function loadAlertas(soloPendientes = false) {
                 ? `<a href="${a.link}" target="_blank" class="admin-action-btn edit" title="${escHtml(tA().ver_contenido || 'Ver contenido')}"><i class="fas fa-eye"></i></a>`
                 : `<span class="admin-action-btn" style="opacity:.35;cursor:not-allowed" title="${escHtml(tA().contenido_eliminado || 'El contenido ya no existe')}"><i class="fas fa-eye-slash"></i></span>`}
               ${!a.revisado ? `<button onclick="marcarAlertaRevisada(${a.id})" class="admin-action-btn" style="background:#94a3b822;color:#64748b" title="${escHtml(tA().descartar_alerta_title || 'Descartar alerta (dejar como está, sin restaurar ni penalizar)')}"><i class="fas fa-check"></i></button>` : ''}
-              ${!a.revisado ? `<button onclick="aprobarAlerta(${a.id})" class="admin-action-btn" style="background:#4a9eff22;color:#4a9eff" title="${escHtml(tA().aprobar_restaurar_title || 'Aprobar / restaurar contenido (la IA se equivocó)')}"><i class="fas fa-unlock"></i></button>` : ''}
-              ${!a.revisado ? `<button onclick="censurarAlerta(${a.id})" class="admin-action-btn" style="background:#e74c3c22;color:#e74c3c" title="${escHtml(tA().censurar_title || 'Confirmar censura y penalizar reputación del autor')}"><i class="fas fa-ban"></i></button>` : ''}
+              ${!a.revisado ? `<button onclick="aprobarAlerta(${a.id}, '${a.tipo}')" class="admin-action-btn" style="background:#4a9eff22;color:#4a9eff" title="${escHtml(tA().aprobar_restaurar_title || 'Aprobar / restaurar contenido (la IA se equivocó)')}"><i class="fas fa-unlock"></i></button>` : ''}
+              ${!a.revisado ? `<button onclick="censurarAlerta(${a.id}, '${a.tipo}')" class="admin-action-btn" style="background:#e74c3c22;color:#e74c3c" title="${escHtml(tA().censurar_title || 'Confirmar censura y penalizar reputación del autor')}"><i class="fas fa-ban"></i></button>` : ''}
             </div>
           </div>
         </div>
@@ -836,27 +836,37 @@ async function marcarAlertaRevisada(id) {
 // ── Modal de confirmación genérico (estilo CIVINSIS, reemplaza confirm()) ──
 function closeConfirmModal() { document.getElementById('confirmModal').classList.remove('open'); }
 
-function showConfirmModal({ icon, iconColor, title, message, confirmText, confirmColor, onConfirm }) {
-  const iconEl = document.getElementById('confirmModalIcon');
-  iconEl.className = 'fas ' + icon;
-  iconEl.style.color = iconColor;
+function showConfirmModal({ icon, confirmColor, title, message, confirmText, onConfirm }) {
+  document.querySelector('#confirmModal .confirm-modal').style.setProperty('--confirm-color', confirmColor);
+  document.getElementById('confirmModalIcon').className = 'fas ' + icon;
   document.getElementById('confirmModalTitleText').textContent = title;
   document.getElementById('confirmModalMessage').textContent = message;
 
   const btn = document.getElementById('confirmModalBtn');
   btn.textContent = confirmText;
-  btn.style.background = confirmColor;
-  btn.style.borderColor = confirmColor;
   btn.onclick = () => { closeConfirmModal(); onConfirm(); };
 
   document.getElementById('confirmModal').classList.add('open');
 }
 
-async function aprobarAlerta(id) {
+// Texto del tipo de contenido con su artículo ("este comentario", "esta propuesta"...)
+// para que el mensaje del modal diga exactamente qué se va a moderar.
+function etiquetaTipoAlerta(tipo) {
+  const mapa = {
+    comentario:       tA().tipo_este_comentario || 'este comentario',
+    propuesta:        tA().tipo_esta_propuesta  || 'esta propuesta',
+    debate:           tA().tipo_este_debate     || 'este debate',
+    debate_respuesta: tA().tipo_esta_respuesta  || 'esta respuesta',
+  };
+  return mapa[tipo] || (tA().tipo_este_contenido || 'este contenido');
+}
+
+async function aprobarAlerta(id, tipo) {
+  const item = etiquetaTipoAlerta(tipo);
   showConfirmModal({
-    icon: 'fa-unlock', iconColor: '#4a9eff',
+    icon: 'fa-unlock',
     title: tA().aprobar_titulo_modal || 'Restaurar contenido',
-    message: tA().aprobar_confirm || '¿Publicar este contenido de todas formas? Se restaurará/publicará pese a la alerta de la IA.',
+    message: (tA().aprobar_confirm_din || '¿Estás seguro de que quieres restaurar y publicar {item}? Volverá a verse pese a la alerta de la IA.').replace('{item}', item),
     confirmText: tA().aprobar_boton || 'Sí, restaurar',
     confirmColor: '#4a9eff',
     onConfirm: () => ejecutarAprobarAlerta(id),
@@ -880,11 +890,12 @@ async function ejecutarAprobarAlerta(id) {
   } catch(e) { showToast(tComunAdmin().error_conexion || 'Error de conexión', 'error'); }
 }
 
-async function censurarAlerta(id) {
+async function censurarAlerta(id, tipo) {
+  const item = etiquetaTipoAlerta(tipo);
   showConfirmModal({
-    icon: 'fa-ban', iconColor: '#e74c3c',
+    icon: 'fa-lock',
     title: tA().censurar_titulo_modal || 'Confirmar censura',
-    message: tA().censurar_confirm || '¿Censurar este contenido? Se ocultará a los usuarios y quedará como retirado por moderación.',
+    message: (tA().censurar_confirm_din || '¿Estás seguro de que quieres censurar {item}? Se ocultará a los usuarios y se penalizará la reputación de quien lo publicó.').replace('{item}', item),
     confirmText: tA().censurar_boton || 'Sí, censurar',
     confirmColor: '#e74c3c',
     onConfirm: () => ejecutarCensurarAlerta(id),

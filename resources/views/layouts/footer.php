@@ -19,7 +19,7 @@ $categorias_footer = is_array($categorias) ? $categorias : $categorias->all();
             <a href="#" class="social-link" title="Twitter/X"><i class="fab fa-x-twitter"></i></a>
             <a href="#" class="social-link" title="Instagram"><i class="fab fa-instagram"></i></a>
             <a href="#" class="social-link" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-            <a href="#" class="social-link" title="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="https://www.youtube.com/channel/UC1VCuNIQoH7EcplW4DdFBHw" class="social-link" title="YouTube"><i class="fab fa-youtube"></i></a>
             <a href="#" class="social-link" title="TikTok"><i class="fab fa-tiktok"></i></a>
           </div>
         </div>
@@ -91,6 +91,7 @@ $civiI18n['recomienda'] = __('civinsis.recomienda');
 $civiI18n['toast']      = __('civinsis.toast');
 $civiI18n['civi_widget'] = __('civinsis.civi_widget');
 $civiI18n['civi_pagina'] = __('civinsis.civi_pagina');
+$civiI18n['estado']      = __('civinsis.estado');
 $civiI18n['perfil']      = __('civinsis.perfil');
 $civiI18n['admin']       = __('civinsis.admin');
 $civiI18n['comun']       = __('civinsis.comun');

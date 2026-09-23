@@ -473,11 +473,14 @@
   box-shadow: 0 0 0 2px var(--naranja-400), var(--shadow-lg);
   animation: destacadaPulse 2.6s ease-in-out infinite;
 }
-.proposal-card.is-destacada::after {
-  content: "★ Destacada"; position: absolute; top: 10px; right: 10px; z-index: 4;
+/* Badge "Destacada" — generado en HTML (app.js::cardHTML) para poder
+   traducirse vía CIVI_I18N; un ::after con content no se puede traducir. */
+.card-badge-destacada {
+  position: absolute; top: 10px; right: 10px; z-index: 4;
   font-size: .65rem; font-weight: 700; color: #fff; padding: .2rem .5rem;
   border-radius: 999px; background: var(--naranja-500);
   box-shadow: 0 0 12px rgba(239,126,34,.5);
+  display: inline-flex; align-items: center; gap: .3rem;
 }
 @keyframes destacadaPulse {
   0%, 100% { box-shadow: 0 0 0 2px var(--naranja-400), var(--shadow-lg); }

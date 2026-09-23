@@ -1321,6 +1321,7 @@ return [
         'descripcion_completa' => 'Descripción completa',
         'anonimo' => 'Anónimo',
         'usuario_perfil_privado' => 'Este perfil es privado',
+        'badge_destacada' => 'Destacada',
         'saludo_manana' => 'Buenos días',
         'saludo_tarde'  => 'Buenas tardes',
         'saludo_noche'  => 'Buenas noches',
@@ -1702,6 +1703,14 @@ return [
             'insuficientes_comentarios'    => 'Todavía no hay suficientes comentarios de la comunidad para esta decisión',
             'listo_paso_a_fase'            => '¡Listo! Tu propuesta pasó a la fase «:fase»',
         ],
+    ],
+
+    // Estado de una propuesta (chip en la tarjeta) — ver public/js/app.js::cardHTML()
+    'estado' => [
+        'activa'      => 'Activa',
+        'en_revision' => 'En revisión',
+        'aprobada'    => 'Aprobada',
+        'rechazada'   => 'Rechazada',
     ],
 
     'roles' => [

@@ -1,15 +1,26 @@
 // FAQ Tabs
 const tabBtns = document.querySelectorAll('.faq-tab');
 const groups  = document.querySelectorAll('.faq-category-group');
+
+// Quita el display inline que la búsqueda deja en cada pregunta, para que
+// vuelvan a seguir la visibilidad normal del grupo/pestaña (si no se hace,
+// una pregunta que no coincidió con la última búsqueda queda oculta para
+// siempre, aunque se borre o se cambie la búsqueda, o se cambie de pestaña).
+function resetItemsDisplay() {
+  document.querySelectorAll('.faq-item').forEach(item => { item.style.display = ''; });
+}
+
 tabBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     tabBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     const tab = btn.dataset.tab;
+    resetItemsDisplay();
     groups.forEach(g => {
       g.style.display = g.dataset.cat === tab ? 'block' : 'none';
     });
     document.getElementById('faqSearch').value = '';
+    document.getElementById('faqSearchClear').style.display = 'none';
     document.getElementById('faqNoResults').style.display = 'none';
   });
 });
@@ -21,6 +32,7 @@ searchInput.addEventListener('input', function() {
   const q = this.value.trim().toLowerCase();
   clearBtn.style.display = q ? 'flex' : 'none';
   if (!q) {
+    resetItemsDisplay();
     tabBtns.forEach(b => b.classList.remove('active'));
     tabBtns[0].classList.add('active');
     groups.forEach((g,i) => g.style.display = i===0 ? 'block' : 'none');

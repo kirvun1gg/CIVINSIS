@@ -554,17 +554,23 @@ const Proposals = {
     } else if (diseno === 'pastel') {
       cardExtraClass = ' card-design-pastel';
     }
-    if (p.destacada == 1 || p.destacada === true) cardExtraClass += ' is-destacada';
+    let destacadaBadge = '';
+    if (p.destacada == 1 || p.destacada === true) {
+      cardExtraClass += ' is-destacada';
+      destacadaBadge = '<span class="card-badge-destacada"><i class="fas fa-star"></i> ' + (CIVI_I18N.badge_destacada || 'Destacada') + '</span>';
+    }
 
     let imageHtml = (p.imagen && p.imagen.length > 10 && p.imagen.indexOf('data:') === 0)
       ? '<div class="card-image"><img src="' + p.imagen + '" alt="" loading="lazy"></div>'
       : '';
 
-    let estado = (p.estado || 'activa').replace('_', ' ');
+    let estadoKey = p.estado || 'activa';
+    let estado = (CIVI_I18N.estado && CIVI_I18N.estado[estadoKey]) || estadoKey.replace('_', ' ');
 
     let catFx = (p.efecto_categoria === false || p.efecto_categoria == 0) ? '' : (p.categoria_efecto || 'default');
     if (p.color_acento) { cardExtraStyle += 'border-color:' + p.color_acento + ';box-shadow:inset 4px 0 0 ' + p.color_acento + ';'; }
     let html = '<article class="proposal-card reveal' + cardExtraClass + '" data-id="' + p.id + '" data-cat-effect="' + catFx + '" style="cursor:pointer;' + cardExtraStyle + '">';
+    html += destacadaBadge;
     html += imageHtml;
     html += '<div class="card-header">';
     html += '<div class="card-cat"><i class="' + p.categoria_icono + '" style="color:' + p.categoria_color + '"></i>' + p.categoria + '</div>';

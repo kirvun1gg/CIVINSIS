@@ -1299,6 +1299,7 @@ return [
         'descripcion_completa' => 'Full description',
         'anonimo' => 'Anonymous',
         'usuario_perfil_privado' => 'This profile is private',
+        'badge_destacada' => 'Featured',
         'saludo_manana' => 'Good morning',
         'saludo_tarde'  => 'Good afternoon',
         'saludo_noche'  => 'Good evening',
@@ -1670,6 +1671,13 @@ return [
             'insuficientes_comentarios'    => 'There aren\'t enough community comments yet for this decision',
             'listo_paso_a_fase'            => 'Done! Your proposal moved to the ":fase" stage',
         ],
+    ],
+
+    'estado' => [
+        'activa'      => 'Active',
+        'en_revision' => 'Under review',
+        'aprobada'    => 'Approved',
+        'rechazada'   => 'Rejected',
     ],
 
     'roles' => [

@@ -1299,6 +1299,7 @@ return [
         'descripcion_completa' => 'Description complète',
         'anonimo' => 'Anonyme',
         'usuario_perfil_privado' => 'Ce profil est privé',
+        'badge_destacada' => 'Mise en avant',
         'saludo_manana' => 'Bonjour',
         'saludo_tarde'  => 'Bon après-midi',
         'saludo_noche'  => 'Bonsoir',
@@ -1670,6 +1671,13 @@ return [
             'insuficientes_comentarios'    => "Il n'y a pas encore assez de commentaires de la communauté pour cette décision",
             'listo_paso_a_fase'            => 'Terminé ! Votre proposition est passée à l\'étape « :fase »',
         ],
+    ],
+
+    'estado' => [
+        'activa'      => 'Active',
+        'en_revision' => 'En révision',
+        'aprobada'    => 'Approuvée',
+        'rechazada'   => 'Rejetée',
     ],
 
     'roles' => [

@@ -32,6 +32,8 @@ $usuarioId       = $usuarioId ?? null;
     </div>
   </aside>
 
+  <div class="civi-side-overlay" id="civiSideOverlay"></div>
+
   <section class="civi-main">
     <div class="civi-main-head">
       <button class="civi-side-toggle" id="civiSideToggle" aria-label="<?= __('civinsis.civi_pagina.conversaciones_titulo') ?>">

@@ -459,6 +459,13 @@ function aplicarCosmeticos(u) {
       hero.classList.add(fondo);
     }
   }
+
+  // fondos-gsap.js se auto-observa y reacciona solo a este cambio de clase,
+  // pero marcos-gsap.js no tiene observer propio: sin este empujón el marco
+  // (sobre todo los "premium", dibujados en SVG sin respaldo en CSS) se
+  // quedaba invisible hasta que el usuario abría el panel de cosméticos,
+  // que sí dispara este mismo reescaneo manualmente.
+  if (window.CosMarcos) window.CosMarcos.escanear();
 }
 
 // ── Guardar Perfil ────────────────────────────────────────
@@ -718,27 +725,40 @@ async function loadCiviAnalisis() {
       body: JSON.stringify({ accion: 'coach' }),
     });
     const d = await res.json();
+    const ta = (window.CIVI_I18N && CIVI_I18N.perfil) || {};
     if (!d || !d.success) {
-      box.innerHTML = '<div class="civi-an-loading">No se pudo cargar tu análisis ahora mismo. Vuelve a intentarlo en un momento.</div>';
+      box.innerHTML = '<div class="civi-an-loading">' + esc(ta.civi_an_error_no_cargo || 'No se pudo cargar tu análisis ahora mismo. Vuelve a intentarlo en un momento.') + '</div>';
       return;
     }
     _civiAnalisisCargado = true;
 
     const s = d.stats || {};
-    const estilos  = { comentarista: 'Comentarista', proponente: 'Proponente Innovador', debatiente: 'Debatiente Cívico', equilibrado: 'Ciudadano Equilibrado', nuevo: 'Explorador' };
-    const aspectos = { creativa: 'Creatividad', argumentada: 'Buenos Argumentos', comunidad: 'Enfoque Comunitario', factible: 'Propuestas Factibles', innovadora: 'Innovación' };
+    const estilos  = {
+      comentarista: ta.civi_an_estilo_comentarista || 'Comentarista',
+      proponente:   ta.civi_an_estilo_proponente   || 'Proponente Innovador',
+      debatiente:   ta.civi_an_estilo_debatiente   || 'Debatiente Cívico',
+      equilibrado:  ta.civi_an_estilo_equilibrado  || 'Ciudadano Equilibrado',
+      nuevo:        ta.civi_an_estilo_nuevo        || 'Explorador',
+    };
+    const aspectos = {
+      creativa:    ta.civi_an_aspecto_creativa    || 'Creatividad',
+      argumentada: ta.civi_an_aspecto_argumentada || 'Buenos Argumentos',
+      comunidad:   ta.civi_an_aspecto_comunidad   || 'Enfoque Comunitario',
+      factible:    ta.civi_an_aspecto_factible    || 'Propuestas Factibles',
+      innovadora:  ta.civi_an_aspecto_innovadora  || 'Innovación',
+    };
 
     const chips = [];
-    if (s.estilo) chips.push(`<span class="civi-an-chip"><i class="fas fa-user-tag"></i> Estilo: <b>${esc(estilos[s.estilo] || s.estilo)}</b></span>`);
-    if (s.categoria_favorita) chips.push(`<span class="civi-an-chip"><i class="fas fa-tag"></i> Tema fuerte: <b>${esc(s.categoria_favorita)}</b></span>`);
-    if (s.aspecto_fuerte) chips.push(`<span class="civi-an-chip"><i class="fas fa-star"></i> Destacas por: <b>${esc(aspectos[s.aspecto_fuerte] || s.aspecto_fuerte)}</b></span>`);
-    chips.push(`<span class="civi-an-chip"><i class="fas fa-arrow-trend-up"></i> Nivel <b>${s.nivel || 1}</b></span>`);
-    if (s.racha) chips.push(`<span class="civi-an-chip"><i class="fas fa-fire"></i> Racha <b>${s.racha} días</b></span>`);
+    if (s.estilo) chips.push(`<span class="civi-an-chip"><i class="fas fa-user-tag"></i> ${esc(ta.civi_an_label_estilo || 'Estilo:')} <b>${esc(estilos[s.estilo] || s.estilo)}</b></span>`);
+    if (s.categoria_favorita) chips.push(`<span class="civi-an-chip"><i class="fas fa-tag"></i> ${esc(ta.civi_an_label_tema_fuerte || 'Tema fuerte:')} <b>${esc(s.categoria_favorita)}</b></span>`);
+    if (s.aspecto_fuerte) chips.push(`<span class="civi-an-chip"><i class="fas fa-star"></i> ${esc(ta.civi_an_label_destacas_por || 'Destacas por:')} <b>${esc(aspectos[s.aspecto_fuerte] || s.aspecto_fuerte)}</b></span>`);
+    chips.push(`<span class="civi-an-chip"><i class="fas fa-arrow-trend-up"></i> ${esc(ta.civi_an_label_nivel || 'Nivel')} <b>${s.nivel || 1}</b></span>`);
+    if (s.racha) chips.push(`<span class="civi-an-chip"><i class="fas fa-fire"></i> ${esc(ta.civi_an_label_racha || 'Racha')} <b>${s.racha} ${esc(ta.civi_an_label_dias || 'días')}</b></span>`);
 
     const o = d.objetivo || {};
     const objHtml = o.titulo ? `
       <div style="margin-top:1.25rem">
-        <div class="civi-an-section-t">Tu objetivo ahora</div>
+        <div class="civi-an-section-t">${esc(ta.civi_an_objetivo_titulo || 'Tu objetivo ahora')}</div>
         <div class="civi-an-objetivo">
           <i class="fas fa-bullseye ic"></i>
           <div style="flex:1;min-width:0">
@@ -752,7 +772,7 @@ async function loadCiviAnalisis() {
     const prog = d.progreso || [];
     const progHtml = prog.length ? `
       <div style="margin-top:1.25rem">
-        <div class="civi-an-section-t">Tu progreso y habilidades</div>
+        <div class="civi-an-section-t">${esc(ta.civi_an_progreso_titulo || 'Tu progreso y habilidades')}</div>
         <div class="civi-an-progreso">
           ${prog.map((p) => `<div class="civi-an-prog-item"><i class="fas ${esc(p.icono || 'fa-circle-check')}"></i> ${esc(p.texto)}</div>`).join('')}
         </div>
@@ -762,8 +782,8 @@ async function loadCiviAnalisis() {
       <div class="civi-an-head">
         <div class="civi-an-ava"><i class="fas fa-robot"></i></div>
         <div>
-          <div class="civi-an-title">Análisis de CIVI · Coach Cívico</div>
-          <div class="civi-an-sub">${esc(d.saludo || 'Esto es lo que veo en tu progreso.')}</div>
+          <div class="civi-an-title">${esc(ta.civi_an_titulo || 'Análisis de CIVI · Coach Cívico')}</div>
+          <div class="civi-an-sub">${esc(d.saludo || ta.civi_an_saludo_default || 'Esto es lo que veo en tu progreso.')}</div>
         </div>
       </div>
       <div class="civi-an-parrafo">${esc(d.analisis || '')}</div>
@@ -772,7 +792,8 @@ async function loadCiviAnalisis() {
       ${progHtml}
     `;
   } catch (e) {
-    box.innerHTML = '<div class="civi-an-loading">No se pudo conectar con CIVI en este momento.</div>';
+    const ta = (window.CIVI_I18N && CIVI_I18N.perfil) || {};
+    box.innerHTML = '<div class="civi-an-loading">' + esc(ta.civi_an_error_conexion || 'No se pudo conectar con CIVI en este momento.') + '</div>';
   }
 }
 

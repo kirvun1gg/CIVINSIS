@@ -72,6 +72,7 @@ const Debates = {
 
     grid.innerHTML = res.debates.map(d => this.card(d)).join('');
     this.renderPagination(res.pagina, res.total_paginas);
+    if (window.CosMarcos) window.CosMarcos.escanear(grid);
   },
 
   card(d) {
@@ -100,9 +101,11 @@ const Debates = {
 
   /** Reutiliza el mismo markup/CSS que las tarjetas de propuestas (.card-author, .author-avatar, .label-nivel, .label-titulo). */
   authorHtml(d) {
+    const marcoClass = d.autor_marco || '';
+    const fxAttr = d.autor_efecto ? ` data-efecto="${d.autor_efecto}"` : '';
     const avaInner = (d.autor_avatar && d.autor_avatar.indexOf('data:') === 0)
-      ? `<img class="author-avatar" src="${d.autor_avatar}" alt="">`
-      : `<span class="author-avatar">${escHtml((d.autor || '?').charAt(0).toUpperCase())}</span>`;
+      ? `<span class="author-avatar ${marcoClass}"${fxAttr}><img src="${d.autor_avatar}" alt=""></span>`
+      : `<span class="author-avatar ${marcoClass}"${fxAttr}>${escHtml((d.autor || '?').charAt(0).toUpperCase())}</span>`;
     const nivelHtml = d.autor_nivel ? ` <span class="label-nivel">Nv.${d.autor_nivel}</span>` : '';
     const tituloHtml = d.autor_titulo
       ? `<div class="autor-titulo-row"><span class="label-titulo ${d.autor_titulo.rareza}" style="color:${d.autor_titulo.color};border-color:${d.autor_titulo.color}">${escHtml(d.autor_titulo.nombre)}</span></div>`
@@ -299,6 +302,19 @@ const DebateDetail = {
     const indexar = (lista) => (lista || []).forEach(r => { this._respuestas[r.id] = r; indexar(r.respuestas); });
     indexar(res.respuestas);
     list.innerHTML = res.respuestas.map(r => this.renderRespuesta(r)).join('');
+    // marcos-gsap.js no se auto-observa: hay que pedirle que reescanee
+    // tras insertar las respuestas por AJAX (mismo motivo que en app.js).
+    if (window.CosMarcos) window.CosMarcos.escanear(list);
+
+    const hash = location.hash;
+    if (hash && hash.startsWith('#respuesta-')) {
+      const el = document.querySelector(hash);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('comment-resaltado');
+        setTimeout(() => el.classList.remove('comment-resaltado'), 3000);
+      }
+    }
   },
 
   /** Alterna una respuesta entre su traducción y el original ya recibido (sin otra llamada a la API). */
@@ -322,11 +338,14 @@ const DebateDetail = {
 
     const hijosHtml = (r.respuestas || []).map(h => this.renderRespuesta(h, nivel + 1)).join('');
 
+    const marcoClass = r.autor_marco || '';
+    const fxAttr = r.autor_efecto ? ` data-efecto="${r.autor_efecto}"` : '';
+
     return `
-      <div class="respuesta-item ${r.destacada ? 'destacada' : ''}" style="margin-left:${Math.min(nivel, 3) * 28}px" data-id="${r.id}">
+      <div class="respuesta-item ${r.destacada ? 'destacada' : ''}" id="respuesta-${r.id}" style="margin-left:${Math.min(nivel, 3) * 28}px" data-id="${r.id}">
         ${r.destacada ? '<div class="respuesta-destacada-tag"><i class="fas fa-star"></i> Destacada por moderación</div>' : ''}
         <div style="display:flex;gap:.85rem">
-          <div class="comment-avatar" style="flex-shrink:0">${r.avatar ? `<img src="${escHtml(r.avatar)}">` : escHtml((r.autor || 'A').charAt(0))}</div>
+          <div class="comment-avatar ${marcoClass}" style="flex-shrink:0"${fxAttr}>${r.avatar ? `<img src="${escHtml(r.avatar)}">` : escHtml((r.autor || 'A').charAt(0))}</div>
           <div style="flex:1;min-width:0">
             <div class="respuesta-autor-row">
               <span class="respuesta-autor">${escHtml(r.autor)}</span>

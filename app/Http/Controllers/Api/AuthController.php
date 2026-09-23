@@ -130,6 +130,16 @@ class AuthController extends Controller
             'vistas_totales'  => $stats['vistas_totales'],
             'desafios_completados' => $stats['desafios_completados'],
             'fecha_registro'  => optional($u->created_at)->toDateTimeString(),
+            // $u->toArray() no incluye los accessors (getMarcoClaseAttribute,
+            // etc.) al no estar en $appends del modelo, así que sin esto el
+            // marco/efecto llegaban "undefined" aquí y perfil.js caía a una
+            // conversión ingenua (marco_equipado con "_" -> "-") que no
+            // siempre coincide con la clase real del catálogo de cosméticos
+            // — por eso el marco/fondo/efecto no se veían hasta abrir el
+            // panel de gamificación, que sí usa estos accessors.
+            'marco_clase'     => $u->marco_clase,
+            'efecto_clase'    => $u->efecto_clase,
+            'fondo_clase'     => $u->fondo_clase,
         ])]);
     }
 

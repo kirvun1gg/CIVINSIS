@@ -124,7 +124,7 @@ $esAdmin    = ($usuarioRol === 'admin' || $usuarioRol === 'moderador');
     </div>
 
     <div class="cards-grid" id="proposalsGrid"></div>
-    <div id="pagination"></div>
+    <div id="pagination" class="pagination"></div>
   </main>
 </div>
 

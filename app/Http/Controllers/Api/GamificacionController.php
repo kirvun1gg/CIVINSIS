@@ -51,8 +51,39 @@ class GamificacionController extends Controller
             'logros'         => $this->logros(),
             'ranking'        => $this->ranking($request),
             'historial_xp'   => $this->historialXP(),
+            'penalizaciones_pendientes' => $this->penalizacionesPendientes(),
             default          => $this->json(false, __('civinsis.toast.comunes.accion_no_valida')),
         };
+    }
+
+    /**
+     * Penalizaciones de reputación (censura de moderación) que el usuario
+     * todavía no ha visto. Se marcan como vistas al leerlas, así el modal de
+     * aviso ("perdiste reputación") solo aparece una vez por penalización.
+     */
+    private function penalizacionesPendientes()
+    {
+        $u = auth_user();
+        if (!$u) return $this->json(true, 'OK', ['penalizaciones' => []]);
+
+        $pendientes = DB::table('reputacion_historial')
+            ->where('usuario_id', $u->id)
+            ->where('visto', false)
+            ->where('puntos', '<', 0)
+            ->orderBy('created_at')
+            ->get(['id', 'puntos', 'razon', 'created_at']);
+
+        if ($pendientes->isEmpty()) return $this->json(true, 'OK', ['penalizaciones' => []]);
+
+        DB::table('reputacion_historial')
+            ->whereIn('id', $pendientes->pluck('id'))
+            ->update(['visto' => true]);
+
+        return $this->json(true, 'OK', ['penalizaciones' => $pendientes->map(fn ($p) => [
+            'puntos' => (int) $p->puntos,
+            'razon'  => $p->razon,
+            'fecha'  => (string) $p->created_at,
+        ])]);
     }
 
     private function perfil()

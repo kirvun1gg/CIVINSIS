@@ -800,13 +800,12 @@ async function loadAlertas(soloPendientes = false) {
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;flex-shrink:0">
             <span style="font-size:.75rem;color:var(--text-muted)">${a.fecha}</span>
             <div style="display:flex;gap:.4rem">
-              <a href="${a.tipo==='comentario'?'propuesta.php?id='+a.referencia_id:'propuesta.php?id='+a.referencia_id}"
-                 target="_blank" class="admin-action-btn edit" title="${escHtml(tA().ver_contenido || 'Ver contenido')}">
-                <i class="fas fa-eye"></i>
-              </a>
-              ${!a.revisado ? `<button onclick="marcarAlertaRevisada(${a.id})" class="admin-action-btn" style="background:#36c0a122;color:var(--verde)" title="${escHtml(tA().marcar_revisada_title || 'Marcar como revisada (dejar publicado)')}"><i class="fas fa-check"></i></button>` : ''}
-              ${!a.revisado ? `<button onclick="aprobarAlerta(${a.id})" class="admin-action-btn" style="background:#4a9eff22;color:#4a9eff" title="${escHtml(tA().aprobar_restaurar_title || 'Aprobar / restaurar contenido')}"><i class="fas fa-unlock"></i></button>` : ''}
-              ${!a.revisado ? `<button onclick="censurarAlerta(${a.id})" class="admin-action-btn" style="background:#e74c3c22;color:#e74c3c" title="${escHtml(tA().censurar_title || 'Censurar (ocultar contenido)')}"><i class="fas fa-ban"></i></button>` : ''}
+              ${a.existe && a.link
+                ? `<a href="${a.link}" target="_blank" class="admin-action-btn edit" title="${escHtml(tA().ver_contenido || 'Ver contenido')}"><i class="fas fa-eye"></i></a>`
+                : `<span class="admin-action-btn" style="opacity:.35;cursor:not-allowed" title="${escHtml(tA().contenido_eliminado || 'El contenido ya no existe')}"><i class="fas fa-eye-slash"></i></span>`}
+              ${!a.revisado ? `<button onclick="marcarAlertaRevisada(${a.id})" class="admin-action-btn" style="background:#94a3b822;color:#64748b" title="${escHtml(tA().descartar_alerta_title || 'Descartar alerta (dejar como está, sin restaurar ni penalizar)')}"><i class="fas fa-check"></i></button>` : ''}
+              ${!a.revisado ? `<button onclick="aprobarAlerta(${a.id})" class="admin-action-btn" style="background:#4a9eff22;color:#4a9eff" title="${escHtml(tA().aprobar_restaurar_title || 'Aprobar / restaurar contenido (la IA se equivocó)')}"><i class="fas fa-unlock"></i></button>` : ''}
+              ${!a.revisado ? `<button onclick="censurarAlerta(${a.id})" class="admin-action-btn" style="background:#e74c3c22;color:#e74c3c" title="${escHtml(tA().censurar_title || 'Confirmar censura y penalizar reputación del autor')}"><i class="fas fa-ban"></i></button>` : ''}
             </div>
           </div>
         </div>

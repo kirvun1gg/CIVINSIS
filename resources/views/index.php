@@ -106,7 +106,7 @@ $usuarioLogueado = $usuarioLogueado ?? false;
     </div>
 
     <div class="cards-grid animate-stagger" id="proposalsGrid" data-limite="5"></div>
-    <div id="pagination" style="margin-top:2rem"></div>
+    <div id="pagination" class="pagination" style="margin-top:2rem"></div>
 
     <div class="text-center" style="margin-top:2.5rem">
       <a href="dashboard.php" class="btn btn-outline btn-lg">

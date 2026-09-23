@@ -521,6 +521,9 @@ const Proposals = {
       this.renderPagination(res.pagina_actual, res.paginas);
     }
     this.attachCardEvents();
+    // El marco del autor lo dibuja marcos-gsap.js: no se auto-observa, hay
+    // que pedirle que reescanee tras insertar las tarjetas por AJAX.
+    if (window.CosMarcos) window.CosMarcos.escanear(this.container);
     Reveal.init();
   },
 
@@ -1069,16 +1072,38 @@ const ProposalDetail = {
       list.innerHTML = res.comentarios.map(c => this.commentHTML(c)).join('');
     }
     section.querySelector('.comments-count').textContent = res.total;
+
+    // Los marcos/efectos de avatar los monta este motor GSAP tras insertar
+    // el HTML: fondos-gsap.js se auto-observa y re-escanea solo, pero
+    // marcos-gsap.js no, así que hay que pedirle el reescaneo a mano.
+    if (window.CosMarcos) window.CosMarcos.escanear(list);
+
+    // Si venimos de un enlace con ancla (p. ej. desde el panel de admin al
+    // revisar una alerta de moderación), resaltar y centrar ese comentario.
+    const hash = location.hash;
+    if (hash && hash.startsWith('#comentario-')) {
+      const el = document.querySelector(hash);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('comment-resaltado');
+        setTimeout(() => el.classList.remove('comment-resaltado'), 3000);
+      }
+    }
   },
 
   commentHTML(c) {
-    const initials = c.autor.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+    const initials = (c.autor || '?').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+    const marcoClass = c.autor_marco || '';
+    const fxAttr = c.autor_efecto ? ' data-efecto="' + c.autor_efecto + '"' : '';
+    const avaInner = (c.avatar && c.avatar.indexOf('data:') === 0)
+      ? `<img src="${c.avatar}" alt="">`
+      : initials;
     const traduccionHtml = c.traducido
       ? `<div class="comment-traduccion"><i class="fas fa-language"></i> ${CIVI_I18N.traducido_corto} · <a href="#" onclick="ProposalDetail.toggleComentarioOriginal(event, ${c.id})">${CIVI_I18N.ver_original}</a></div>`
       : '';
     return `
-      <div class="comment">
-        <div class="comment-avatar">${initials}</div>
+      <div class="comment" id="comentario-${c.id}">
+        <div class="comment-avatar ${marcoClass}"${fxAttr}>${avaInner}</div>
         <div class="comment-content">
           <div>
             <span class="comment-author">${c.autor}</span>

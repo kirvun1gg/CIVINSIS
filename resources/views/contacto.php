@@ -128,6 +128,17 @@ $asunto_prefill = htmlspecialchars($_GET['asunto'] ?? '');
       </aside>
 
     </div>
+
+    <?php if ($usuarioLogueado): ?>
+    <div class="contacto-card reveal" style="margin-top:2.5rem" id="misMensajesSection">
+      <h2 class="contacto-card-title"><i class="fas fa-inbox"></i> <?= __('civinsis.contacto.mis_mensajes_titulo') ?></h2>
+      <p style="color:var(--text-muted);font-size:.88rem;margin:-.5rem 0 1.25rem"><?= __('civinsis.contacto.mis_mensajes_desc') ?></p>
+      <div id="misMensajesList">
+        <div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p><?= __('civinsis.contacto.mis_mensajes_cargando') ?></p></div>
+      </div>
+    </div>
+    <?php endif; ?>
+
   </div>
 </main>
 

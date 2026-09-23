@@ -145,6 +145,10 @@
 }
 .civi-main-input button:disabled { opacity: .55; cursor: not-allowed; }
 
+.civi-side-overlay {
+  display: none;
+}
+
 @media (max-width: 860px) {
   .civi-page { grid-template-columns: 1fr; position: relative; }
   .civi-side {
@@ -155,4 +159,15 @@
   .civi-side.open { transform: translateX(0); }
   .civi-side-toggle { display: flex; align-items: center; justify-content: center; }
   .civi-msgs .civi-msg { max-width: 88%; }
+
+  /* Fondo oscuro tras el panel: toca fuera para cerrarlo */
+  .civi-side-overlay {
+    display: block;
+    position: fixed; top: var(--nav-height); left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 39;
+    opacity: 0; pointer-events: none;
+    transition: opacity var(--trans);
+  }
+  .civi-side-overlay.visible { opacity: 1; pointer-events: all; }
 }

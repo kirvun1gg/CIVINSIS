@@ -12,9 +12,10 @@
 
   function t() { return (window.CIVI_I18N && CIVI_I18N.civi_pagina) || {}; }
 
-  const side       = document.getElementById('civiSide');
-  const sideList   = document.getElementById('civiSideList');
-  const sideToggle = document.getElementById('civiSideToggle');
+  const side        = document.getElementById('civiSide');
+  const sideList    = document.getElementById('civiSideList');
+  const sideToggle  = document.getElementById('civiSideToggle');
+  const sideOverlay = document.getElementById('civiSideOverlay');
   const nuevaBtn   = document.getElementById('civiNuevaBtn');
   const body       = document.getElementById('civiMainBody');
   const vacio      = document.getElementById('civiVacio');
@@ -135,7 +136,44 @@
     renderSide();
   }
 
-  function cerrarSideMovil() { side.classList.remove('open'); }
+  function cerrarSideMovil() {
+    side.classList.remove('open');
+    if (sideOverlay) sideOverlay.classList.remove('visible');
+  }
+
+  function abrirSideMovil() {
+    side.classList.add('open');
+    if (sideOverlay) sideOverlay.classList.add('visible');
+  }
+
+  /* ── Cerrar deslizando el dedo hacia la izquierda (móvil) ──────
+     Sin esto, en pantallas pequeñas el panel lateral solo se podía
+     cerrar volviendo a tocar el botón de hamburguesa (poco intuitivo
+     y a veces tapado por el propio panel). */
+  (function habilitarSwipeCierre() {
+    let x0 = null, y0 = null, arrastrando = false;
+
+    side.addEventListener('touchstart', (e) => {
+      if (!side.classList.contains('open') || e.touches.length !== 1) return;
+      x0 = e.touches[0].clientX;
+      y0 = e.touches[0].clientY;
+      arrastrando = true;
+    }, { passive: true });
+
+    side.addEventListener('touchmove', (e) => {
+      if (!arrastrando || x0 === null) return;
+      const dx = e.touches[0].clientX - x0;
+      const dy = e.touches[0].clientY - y0;
+      // Solo tratamos como swipe horizontal si el gesto es mas horizontal
+      // que vertical (si no, interferiria con el scroll de la lista).
+      if (Math.abs(dx) > Math.abs(dy) && dx < -50) {
+        arrastrando = false;
+        cerrarSideMovil();
+      }
+    }, { passive: true });
+
+    side.addEventListener('touchend', () => { arrastrando = false; x0 = null; y0 = null; });
+  })();
 
   function nuevaConversacion() {
     activaId = null;
@@ -228,7 +266,11 @@
 
   form.addEventListener('submit', enviar);
   nuevaBtn.addEventListener('click', nuevaConversacion);
-  sideToggle.addEventListener('click', () => side.classList.toggle('open'));
+  sideToggle.addEventListener('click', () => {
+    if (side.classList.contains('open')) cerrarSideMovil();
+    else abrirSideMovil();
+  });
+  if (sideOverlay) sideOverlay.addEventListener('click', cerrarSideMovil);
   sideList.addEventListener('click', (e) => {
     const edit = e.target.closest('[data-edit]');
     if (edit) { e.stopPropagation(); iniciarEdicionTitulo(parseInt(edit.dataset.edit, 10)); return; }

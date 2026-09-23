@@ -463,7 +463,7 @@ TXT;
         $query = ModeracionAlerta::orderByDesc('created_at');
         if ($soloSinRevisar) $query->where('revisado', false);
 
-        $alertas = $query->limit(100)->get()->map(fn ($a) => [
+        $alertas = $query->limit(100)->get()->map(fn ($a) => array_merge([
             'id'                 => $a->id,
             'tipo'               => $a->tipo,
             'referencia_id'      => $a->referencia_id,
@@ -473,11 +473,55 @@ TXT;
             'revisado'           => $a->revisado,
             'revisado_at'        => optional($a->revisado_at)->toDateTimeString(),
             'fecha'              => optional($a->created_at)->format('d/m/Y H:i'),
-        ]);
+        ], $this->enlaceYAutorAlerta($a)));
 
         $pendientes = ModeracionAlerta::where('revisado', false)->count();
 
         return $this->json(true, 'OK', ['alertas' => $alertas, 'pendientes' => $pendientes]);
+    }
+
+    /**
+     * Enlace correcto para "ver contenido" + autor real del ítem, según el
+     * tipo de alerta. Antes el front-end siempre enlazaba a
+     * "propuesta.php?id=<referencia_id>", pero para un comentario
+     * referencia_id es el ID del COMENTARIO, no el de la propuesta — de ahí
+     * que "ver" cayera en una propuesta random o inexistente. También se usa
+     * para saber a quién penalizar al censurar.
+     */
+    private function enlaceYAutorAlerta(ModeracionAlerta $a): array
+    {
+        switch ($a->tipo) {
+            case 'propuesta':
+                $item = Proposal::find($a->referencia_id);
+                return [
+                    'existe'    => (bool) $item,
+                    'link'      => $item ? 'propuesta.php?id=' . $item->id : null,
+                    'autor_id'  => $item->usuario_id ?? null,
+                ];
+            case 'comentario':
+                $item = Comentario::find($a->referencia_id);
+                return [
+                    'existe'    => (bool) $item,
+                    'link'      => $item ? 'propuesta.php?id=' . $item->propuesta_id . '#comentario-' . $item->id : null,
+                    'autor_id'  => $item->usuario_id ?? null,
+                ];
+            case 'debate':
+                $item = Debate::find($a->referencia_id);
+                return [
+                    'existe'    => (bool) $item,
+                    'link'      => $item ? 'debate.php?id=' . $item->id : null,
+                    'autor_id'  => $item->usuario_id ?? null,
+                ];
+            case 'debate_respuesta':
+                $item = DebateRespuesta::find($a->referencia_id);
+                return [
+                    'existe'    => (bool) $item,
+                    'link'      => $item ? 'debate.php?id=' . $item->debate_id . '#respuesta-' . $item->id : null,
+                    'autor_id'  => $item->usuario_id ?? null,
+                ];
+            default:
+                return ['existe' => false, 'link' => null, 'autor_id' => null];
+        }
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -1252,6 +1296,7 @@ TXT;
         if (!$alerta) return $this->json(false, __('civinsis.toast.ia.alerta_no_encontrada'));
 
         $razon = $alerta->razon ?: 'Contenido inapropiado';
+        $autorId = null;
 
         switch ($alerta->tipo) {
             case 'comentario':
@@ -1262,6 +1307,7 @@ TXT;
                 $item->censurado     = true;
                 $item->razon_censura = $razon;
                 $item->save();
+                $autorId = $item->usuario_id;
                 break;
 
             case 'debate_respuesta':
@@ -1272,6 +1318,7 @@ TXT;
                 $item->censurado     = true;
                 $item->razon_censura = $razon;
                 $item->save();
+                $autorId = $item->usuario_id;
                 break;
 
             case 'propuesta':
@@ -1281,6 +1328,7 @@ TXT;
                 $item->razon_censura = $razon;
                 $item->estado        = 'en_revision';
                 $item->save();
+                $autorId = $item->usuario_id;
                 break;
 
             case 'debate':
@@ -1289,10 +1337,27 @@ TXT;
                 $item->censurado     = true;
                 $item->razon_censura = $razon;
                 $item->save();
+                $autorId = $item->usuario_id;
                 break;
 
             default:
                 return $this->json(false, __('civinsis.toast.admin.tipo_no_soportado'));
+        }
+
+        // Penalización de reputación: la gravedad detectada por la IA decide
+        // cuánto pierde el autor. Queda registrada en reputacion_historial
+        // con visto=false para que el propio usuario reciba un aviso (modal)
+        // la próxima vez que use la plataforma — ver GamificacionController::
+        // penalizacionesPendientes().
+        $puntosPorSeveridad = ['baja' => -5, 'media' => -10, 'alta' => -20];
+        $penalizacion = $puntosPorSeveridad[$alerta->severidad] ?? -10;
+        if ($autorId) {
+            $autor = \App\Models\User::find($autorId);
+            if ($autor) {
+                app(\App\Services\GamificacionService::class)->otorgarReputacion(
+                    $autor, 'Contenido censurado: ' . $razon, $penalizacion, null, $alerta->referencia_id
+                );
+            }
         }
 
         $alerta->revisado     = true;

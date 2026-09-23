@@ -119,3 +119,4 @@ window.CIVI_I18N = <?= str_replace('</', '<\/', json_encode($civiI18n, JSON_UNES
 <link rel="stylesheet" href="css/civinsis-polish.css">
 <script src="js/civinsis-extra.js" defer></script>
 <script src="js/civinsis-polish.js" defer></script>
+<script src="js/reputacion-penalizacion.js" defer></script>

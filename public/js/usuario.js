@@ -74,6 +74,11 @@ function showPrivateState(esPrivado) {
       document.getElementById('publicHero').classList.add(fondoCls);
     }
 
+    // marcos-gsap.js no se auto-observa (a diferencia de fondos-gsap.js):
+    // sin este reescaneo manual, un marco recien anadido por clase se
+    // quedaba sin dibujar hasta la siguiente interaccion en la pagina.
+    if (window.CosMarcos) window.CosMarcos.escanear();
+
     // Título equipado
     let titleHtml = '';
     if (d.titulo) {

@@ -480,20 +480,37 @@ async function changeUserRole(userId, nuevoRol) {
 }
 
 // ── Confirm + Delete ──────────────────────────────────────
+// Modal único y reutilizable (#confirmModal): antes había un segundo modal
+// duplicado con el mismo id para las alertas de moderación, lo que rompía
+// este (getElementById siempre devuelve el primero) — se ve feo y el botón
+// de confirmar no hacía nada porque escribía en el modal equivocado.
 let pendingDelete = null;
 let _confirmCallback = null; // usado por openConfirm() para confirmaciones genéricas (no-delete)
+
+function setConfirmModalStyle(icon, color) {
+  const card = document.querySelector('#confirmModal .confirm-modal');
+  if (card) card.style.setProperty('--confirm-color', color || '#e74c3c');
+  const iconEl = document.getElementById('confirmModalIcon');
+  if (iconEl) iconEl.className = 'fas ' + (icon || 'fa-triangle-exclamation');
+}
+
 function confirmDelete(tipo, id, msg) {
   pendingDelete = { tipo, id };
+  _confirmCallback = null;
+  setConfirmModalStyle('fa-trash', '#e74c3c');
   document.getElementById('confirmTitle').textContent = tA().confirmar_eliminacion || 'Confirmar eliminación';
   document.getElementById('confirmMsg').textContent = (tA().confirmar_eliminar_msg || '¿Estás seguro de que deseas eliminar esto? {msg}. Esta acción no se puede deshacer.').replace('{msg}', msg);
+  document.getElementById('confirmBtn').textContent = tA().boton_si_eliminar || 'Sí, eliminar';
   document.getElementById('confirmModal').classList.add('open');
 }
-/** Confirmación genérica reutilizando el mismo modal (título + mensaje + callback). */
-function openConfirm(title, msg, onConfirm) {
+/** Confirmación genérica reutilizando el mismo modal (título + mensaje + callback + icono/color propios). */
+function openConfirm(title, msg, onConfirm, opts = {}) {
   pendingDelete = null;
   _confirmCallback = onConfirm;
+  setConfirmModalStyle(opts.icon, opts.color);
   document.getElementById('confirmTitle').textContent = title;
   document.getElementById('confirmMsg').textContent = msg;
+  document.getElementById('confirmBtn').textContent = opts.confirmText || tC().confirmar || 'Confirmar';
   document.getElementById('confirmModal').classList.add('open');
 }
 function closeConfirm() {
@@ -833,22 +850,6 @@ async function marcarAlertaRevisada(id) {
   } catch(e) { showToast(tComunAdmin().error_conexion || 'Error de conexión', 'error'); }
 }
 
-// ── Modal de confirmación genérico (estilo CIVINSIS, reemplaza confirm()) ──
-function closeConfirmModal() { document.getElementById('confirmModal').classList.remove('open'); }
-
-function showConfirmModal({ icon, confirmColor, title, message, confirmText, onConfirm }) {
-  document.querySelector('#confirmModal .confirm-modal').style.setProperty('--confirm-color', confirmColor);
-  document.getElementById('confirmModalIcon').className = 'fas ' + icon;
-  document.getElementById('confirmModalTitleText').textContent = title;
-  document.getElementById('confirmModalMessage').textContent = message;
-
-  const btn = document.getElementById('confirmModalBtn');
-  btn.textContent = confirmText;
-  btn.onclick = () => { closeConfirmModal(); onConfirm(); };
-
-  document.getElementById('confirmModal').classList.add('open');
-}
-
 // Texto del tipo de contenido con su artículo ("este comentario", "esta propuesta"...)
 // para que el mensaje del modal diga exactamente qué se va a moderar.
 function etiquetaTipoAlerta(tipo) {
@@ -863,14 +864,12 @@ function etiquetaTipoAlerta(tipo) {
 
 async function aprobarAlerta(id, tipo) {
   const item = etiquetaTipoAlerta(tipo);
-  showConfirmModal({
-    icon: 'fa-unlock',
-    title: tA().aprobar_titulo_modal || 'Restaurar contenido',
-    message: (tA().aprobar_confirm_din || '¿Estás seguro de que quieres restaurar y publicar {item}? Volverá a verse pese a la alerta de la IA.').replace('{item}', item),
-    confirmText: tA().aprobar_boton || 'Sí, restaurar',
-    confirmColor: '#4a9eff',
-    onConfirm: () => ejecutarAprobarAlerta(id),
-  });
+  openConfirm(
+    tA().aprobar_titulo_modal || 'Restaurar contenido',
+    (tA().aprobar_confirm_din || '¿Estás seguro de que quieres restaurar y publicar {item}? Volverá a verse pese a la alerta de la IA.').replace('{item}', item),
+    () => ejecutarAprobarAlerta(id),
+    { icon: 'fa-unlock', color: '#4a9eff', confirmText: tA().aprobar_boton || 'Sí, restaurar' }
+  );
 }
 
 async function ejecutarAprobarAlerta(id) {
@@ -892,14 +891,12 @@ async function ejecutarAprobarAlerta(id) {
 
 async function censurarAlerta(id, tipo) {
   const item = etiquetaTipoAlerta(tipo);
-  showConfirmModal({
-    icon: 'fa-lock',
-    title: tA().censurar_titulo_modal || 'Confirmar censura',
-    message: (tA().censurar_confirm_din || '¿Estás seguro de que quieres censurar {item}? Se ocultará a los usuarios y se penalizará la reputación de quien lo publicó.').replace('{item}', item),
-    confirmText: tA().censurar_boton || 'Sí, censurar',
-    confirmColor: '#e74c3c',
-    onConfirm: () => ejecutarCensurarAlerta(id),
-  });
+  openConfirm(
+    tA().censurar_titulo_modal || 'Confirmar censura',
+    (tA().censurar_confirm_din || '¿Estás seguro de que quieres censurar {item}? Se ocultará a los usuarios y se penalizará la reputación de quien lo publicó.').replace('{item}', item),
+    () => ejecutarCensurarAlerta(id),
+    { icon: 'fa-lock', color: '#e74c3c', confirmText: tA().censurar_boton || 'Sí, censurar' }
+  );
 }
 
 async function ejecutarCensurarAlerta(id) {

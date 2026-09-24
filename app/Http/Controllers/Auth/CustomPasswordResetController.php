@@ -74,7 +74,7 @@ class CustomPasswordResetController extends Controller
 
         DB::table('password_resets')->where('email', $request->email)->delete();
 
-        return redirect('/login')->with('status', 'Tu contraseña ha sido restablecida. Ya puedes iniciar sesión.');
+        return redirect()->route('login')->with('status', 'Tu contraseña ha sido restablecida. Ya puedes iniciar sesión.');
     }
 }
 

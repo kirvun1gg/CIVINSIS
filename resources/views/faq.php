@@ -1,8 +1,5 @@
 <?php
-// $usuarioLogueado y $categorias los inyecta el View Composer global en
-// TODAS las vistas (app/Providers/AppServiceProvider.php::boot()). El valor
-// por defecto de abajo nunca se usa en producción - solo evita que el IDE
-// marque la variable como indefinida y sirve de red de seguridad.
+// Sesión del usuario y categorías del menú, inyectadas globalmente para esta vista.
 $usuarioLogueado = $usuarioLogueado ?? false;
 $categorias      = $categorias ?? collect();
 $activeNav = 'faq';
@@ -20,7 +17,7 @@ $activeNav = 'faq';
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-<?php echo view('layouts.navbar')->render(); ?>
+<?php echo view('layouts.navbar', ['activeNav' => $activeNav])->render(); ?>
 
 <!-- Hero FAQ -->
 <section class="faq-hero">

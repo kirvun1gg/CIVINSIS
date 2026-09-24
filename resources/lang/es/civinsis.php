@@ -501,9 +501,9 @@ return [
         'tip1' => 'Define claramente el problema', 'tip2' => 'Propón soluciones concretas',
         'tip3' => 'Incluye el impacto esperado', 'tip4' => 'Usa lenguaje claro y accesible',
         'tip5' => 'Elige la categoría correcta',
-        'auris_titulo' => '¿Necesitas ayuda?',
-        'auris_desc' => 'AURIS puede ayudarte a estructurar y mejorar tu propuesta.',
-        'auris_hablar' => 'Hablar con AURIS',
+        'civi_ayuda_titulo' => '¿Necesitas ayuda?',
+        'civi_ayuda_desc' => 'CIVI puede ayudarte a estructurar y mejorar tu propuesta.',
+        'civi_ayuda_hablar' => 'Hablar con CIVI',
     ],
 
     'index' => [
@@ -678,6 +678,7 @@ return [
         'accion_suspender_usuario' => 'Suspender usuario',
         'confirmar_eliminacion' => 'Confirmar eliminación',
         'confirmar_eliminar_msg' => '¿Estás seguro de que deseas eliminar esto? {msg}. Esta acción no se puede deshacer.',
+        'boton_si_eliminar' => 'Sí, eliminar',
         'eliminar_propuesta_confirm' => 'Eliminar propuesta «{titulo}»',
         'eliminar_comentario_confirm' => 'Eliminar este comentario',
         'eliminar_usuario_confirm' => 'Eliminar usuario {nombre}',
@@ -1384,6 +1385,7 @@ return [
         'saludo_noche'  => 'Buenas noches',
         // Modal de celebración (subir de nivel / desbloquear logro) — ver public/js/civinsis-polish.js
         'celebra_subiste_nivel'      => 'Has subido de nivel',
+        'celebra_nivel_titulo'       => '¡Nivel {n}!',
         'celebra_nivel_texto'        => 'Tu participación está construyendo comunidad. Sigue así: cada aporte cuenta.',
         'celebra_logro_desbloqueado' => 'Logro desbloqueado',
         'celebra_nuevo_logro'        => '¡Nuevo logro!',
@@ -1528,6 +1530,14 @@ return [
             'debes_iniciar_sesion'     => 'Debes iniciar sesión',
             'propuesta_no_encontrada'  => 'Propuesta no encontrada',
             'email_invalido'           => 'Email inválido',
+            'auth_titulo_requiere_cuenta' => 'Necesitas una cuenta',
+            'auth_iniciar_sesion'      => 'Iniciar sesión',
+            'auth_crear_cuenta'        => 'Crear cuenta gratis',
+            'auth_msg_crear_propuesta' => 'Para crear una propuesta necesitas tener una cuenta en CIVINSIS. Es gratis y toma menos de un minuto.',
+            'auth_msg_crear_debate'    => 'Para iniciar un debate necesitas tener una cuenta en CIVINSIS. Es gratis y toma menos de un minuto.',
+            'auth_msg_comentar'        => 'Para comentar necesitas tener una cuenta en CIVINSIS. Es gratis y toma menos de un minuto.',
+            'auth_msg_aceptar_desafio' => 'Para aceptar este desafío necesitas tener una cuenta en CIVINSIS. Es gratis y toma menos de un minuto.',
+            'auth_msg_generico'        => 'Necesitas tener una cuenta en CIVINSIS para continuar.',
         ],
         'auth' => [
             'completa_campos'            => 'Completa todos los campos',

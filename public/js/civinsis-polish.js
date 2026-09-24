@@ -154,7 +154,7 @@
       const i18n = window.CIVI_I18N || {};
       this.celebrar({
         kicker: i18n.celebra_subiste_nivel || 'Has subido de nivel',
-        titulo: `¡Nivel ${nivel}!`,
+        titulo: (i18n.celebra_nivel_titulo || '¡Nivel {n}!').replace('{n}', nivel),
         texto: i18n.celebra_nivel_texto || 'Tu participación está construyendo comunidad. Sigue así: cada aporte cuenta.',
         icono: 'fa-arrow-trend-up', sonido: 'nivel',
       });

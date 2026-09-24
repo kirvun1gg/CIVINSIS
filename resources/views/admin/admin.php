@@ -220,19 +220,20 @@ $esAdmin   = ($usuarioRol === 'admin');
   </div>
 </main>
 
-<!-- Modal de confirmación -->
+<!-- Modal de confirmación genérico (eliminar, aprobar/censurar alertas, etc.) -->
 <div class="modal-backdrop" id="confirmModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 class="modal-title" id="confirmTitle"><?= __('civinsis.admin.confirmar_accion') ?></h3>
-      <button class="modal-close" onclick="closeConfirm()"><i class="fas fa-times"></i></button>
+  <div class="confirm-modal">
+    <button class="confirm-modal-close" onclick="closeConfirm()" aria-label="<?= __('civinsis.comun.cerrar') ?>"><i class="fas fa-times"></i></button>
+    <div class="confirm-modal-icon-ring">
+      <div class="confirm-modal-icon-wrap">
+        <i class="fas fa-triangle-exclamation" id="confirmModalIcon"></i>
+      </div>
     </div>
-    <div class="modal-body">
-      <p id="confirmMsg" style="color:var(--text-muted)"></p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeConfirm()"><?= __('civinsis.comun.cancelar') ?></button>
-      <button class="btn btn-danger" id="confirmBtn"><?= __('civinsis.comun.confirmar') ?></button>
+    <h3 class="confirm-modal-title" id="confirmTitle"><?= __('civinsis.admin.confirmar_accion') ?></h3>
+    <p class="confirm-modal-message" id="confirmMsg"></p>
+    <div class="confirm-modal-actions">
+      <button class="confirm-modal-btn confirm-modal-btn-ghost" onclick="closeConfirm()"><?= __('civinsis.comun.cancelar') ?></button>
+      <button class="confirm-modal-btn confirm-modal-btn-confirm" id="confirmBtn"><?= __('civinsis.comun.confirmar') ?></button>
     </div>
   </div>
 </div>
@@ -333,24 +334,6 @@ $esAdmin   = ($usuarioRol === 'admin');
     <div class="modal-footer">
       <button class="btn btn-outline btn-sm" onclick="gamCerrar()"><?= __('civinsis.comun.cancelar') ?></button>
       <button class="btn btn-primary btn-sm" onclick="gamGuardar()"><i class="fas fa-save"></i> <?= __('civinsis.comun.guardar') ?></button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de confirmación genérico (aprobar/censurar alertas, etc.) -->
-<div class="modal-backdrop" id="confirmModal">
-  <div class="confirm-modal">
-    <button class="confirm-modal-close" onclick="closeConfirmModal()" aria-label="<?= __('civinsis.comun.cerrar') ?>"><i class="fas fa-times"></i></button>
-    <div class="confirm-modal-icon-ring" id="confirmModalIconRing">
-      <div class="confirm-modal-icon-wrap" id="confirmModalIconWrap">
-        <i class="fas fa-triangle-exclamation" id="confirmModalIcon"></i>
-      </div>
-    </div>
-    <h3 class="confirm-modal-title" id="confirmModalTitleText"></h3>
-    <p class="confirm-modal-message" id="confirmModalMessage"></p>
-    <div class="confirm-modal-actions">
-      <button class="confirm-modal-btn confirm-modal-btn-ghost" onclick="closeConfirmModal()"><?= __('civinsis.comun.cancelar') ?></button>
-      <button class="confirm-modal-btn confirm-modal-btn-confirm" id="confirmModalBtn"></button>
     </div>
   </div>
 </div>

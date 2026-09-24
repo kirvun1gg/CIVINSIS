@@ -1186,6 +1186,111 @@ textarea.form-control { resize: vertical; min-height: 100px; overflow-wrap: anyw
 .modal-body { padding: 1.5rem 1.75rem; }
 .modal-footer { padding: 1rem 1.75rem 1.5rem; border-top: 1px solid var(--border); display: flex; gap: .75rem; justify-content: flex-end; }
 
+/* ══════════════════════════════════════════════════════════
+   MODAL DE CONFIRMACIÓN / AVISO (reemplaza confirm() nativo)
+   Usado por el panel de admin (aprobar/censurar/eliminar) y por el
+   aviso público de "necesitas una cuenta" — mismo backdrop que
+   .modal-backdrop, pero con su propia tarjeta: icono flotante con halo
+   de color, tipografía de marca y botones grandes en vez del layout
+   genérico header/body/footer.
+   ══════════════════════════════════════════════════════════ */
+.confirm-modal {
+  --confirm-color: var(--verde);
+  position: relative;
+  width: 100%; max-width: 400px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl, 28px);
+  box-shadow: 0 24px 70px rgba(0,0,0,.28), 0 0 0 1px rgba(255,255,255,.02) inset;
+  padding: 2.4rem 2rem 2rem;
+  text-align: center;
+  transform: scale(.88) translateY(24px);
+  opacity: 0;
+  transition: transform .4s cubic-bezier(.34,1.56,.64,1), opacity .3s ease;
+  overflow: hidden;
+}
+.modal-backdrop.open .confirm-modal { transform: scale(1) translateY(0); opacity: 1; }
+
+/* Resplandor decorativo de fondo, del color de la acción */
+.confirm-modal::before {
+  content: '';
+  position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+  width: 260px; height: 200px;
+  background: radial-gradient(closest-side, var(--confirm-color), transparent 75%);
+  opacity: .16; pointer-events: none; z-index: 0;
+}
+
+.confirm-modal-close {
+  position: absolute; top: 14px; right: 14px; z-index: 2;
+  width: 32px; height: 32px; border-radius: 50%; border: none;
+  background: var(--surface); color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: var(--trans);
+}
+.confirm-modal-close:hover { background: rgba(239,68,68,.12); color: #ef4444; transform: rotate(90deg); }
+
+.confirm-modal-icon-ring {
+  position: relative; z-index: 1;
+  width: 84px; height: 84px; margin: 0 auto 1.35rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--confirm-color) 14%, transparent);
+  display: flex; align-items: center; justify-content: center;
+  animation: confirmModalPulse 2.4s ease-in-out infinite;
+}
+.confirm-modal-icon-wrap {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--confirm-color);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--confirm-color) 55%, transparent);
+  display: flex; align-items: center; justify-content: center;
+}
+.confirm-modal-icon-wrap i { color: #fff; font-size: 1.5rem; }
+
+@keyframes confirmModalPulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--confirm-color) 22%, transparent); }
+  50%      { box-shadow: 0 0 0 12px color-mix(in srgb, var(--confirm-color) 0%, transparent); }
+}
+
+.confirm-modal-title {
+  position: relative; z-index: 1;
+  font-family: var(--font-display); font-weight: 800; font-size: 1.3rem;
+  color: var(--text); margin: 0 0 .6rem;
+}
+.confirm-modal-message {
+  position: relative; z-index: 1;
+  font-size: .92rem; line-height: 1.65; color: var(--text-muted);
+  margin: 0 0 1.85rem; max-width: 320px; margin-left: auto; margin-right: auto;
+}
+
+.confirm-modal-actions {
+  position: relative; z-index: 1;
+  display: flex; gap: .7rem;
+}
+.confirm-modal-actions.stack { flex-direction: column; }
+.confirm-modal-btn {
+  flex: 1; padding: .8rem 1rem; border-radius: 14px;
+  font-family: var(--font-body); font-weight: 700; font-size: .88rem;
+  cursor: pointer; transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s, background .2s;
+  border: 1.5px solid transparent;
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+  text-decoration: none;
+}
+.confirm-modal-btn-ghost {
+  background: var(--surface); color: var(--text-2); border-color: var(--border);
+}
+.confirm-modal-btn-ghost:hover { background: var(--border); color: var(--text-2); }
+.confirm-modal-btn-confirm {
+  background: var(--confirm-color); color: #fff;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--confirm-color) 40%, transparent);
+}
+.confirm-modal-btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 10px 26px color-mix(in srgb, var(--confirm-color) 50%, transparent); color: #fff; }
+.confirm-modal-btn-confirm:active,
+.confirm-modal-btn-ghost:active { transform: scale(.97); }
+
+@media (max-width: 480px) {
+  .confirm-modal { padding: 2.1rem 1.4rem 1.6rem; }
+  .confirm-modal-actions:not(.stack) { flex-direction: column-reverse; }
+}
+
 /* ── Toast ────────────────────────────────────────────────── */
 .toast-container { position: fixed; bottom: 8.25rem; right: 1.5rem; z-index: 3000; display: flex; flex-direction: column; gap: .75rem; pointer-events: none; }
 .toast { display: flex; align-items: center; gap: .75rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: .85rem 1.25rem; box-shadow: var(--shadow-lg); min-width: 280px; max-width: 360px; pointer-events: all; animation: toastIn .4s cubic-bezier(.34,1.56,.64,1) both; }
@@ -1198,7 +1303,7 @@ textarea.form-control { resize: vertical; min-height: 100px; overflow-wrap: anyw
 @keyframes toastIn  { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 @keyframes toastOut { to   { transform: translateX(120%); opacity: 0; } }
 
-/* ── AURIS Chatbot ────────────────────────────────────────── */
+/* ── Chatbot (legacy, superado por el widget flotante de CIVI) ── */
 .chatbot-fab { position: fixed; bottom: 1.75rem; left: 1.75rem; z-index: 1500; }
 .chatbot-btn { width: 58px; height: 58px; border-radius: 50%; background: var(--grad-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 6px 24px rgba(54,192,161,.5); transition: var(--trans); }
 .chatbot-btn:hover { transform: scale(1.1) rotate(-10deg); }

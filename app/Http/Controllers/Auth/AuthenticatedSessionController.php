@@ -13,11 +13,18 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      *
+     * route('login') es a donde apunta el middleware "guest"/"auth" de
+     * Laravel (y cualquier redirect()->route('login') del framework), pero
+     * la página de login real de CIVINSIS es la pantalla split-screen de
+     * auth.php — no la plantilla por defecto de Breeze. Sin esto, cualquier
+     * redirección automática (reset de contraseña, sesión expirada, etc.)
+     * mandaba al usuario a esa plantilla vieja sin ningún estilo.
+     *
      * @return \Illuminate\View\View
      */
     public function create()
     {
-        return view('auth.login');
+        return view('auth.auth');
     }
 
     /**

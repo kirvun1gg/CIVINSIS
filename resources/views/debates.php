@@ -43,7 +43,7 @@ $categorias      = $categorias ?? collect();
         <i class="fas fa-plus"></i> <?= __('civinsis.debates.nuevo_debate') ?>
       </button>
       <?php else: ?>
-      <a href="auth.php" class="btn btn-primary"><i class="fas fa-sign-in-alt"></i> <?= __('civinsis.debates.inicia_sesion_debatir') ?></a>
+      <button type="button" class="btn btn-primary" onclick="CiviRequiereCuenta && CiviRequiereCuenta('crear_debate')"><i class="fas fa-sign-in-alt"></i> <?= __('civinsis.debates.inicia_sesion_debatir') ?></button>
       <?php endif; ?>
     </div>
 

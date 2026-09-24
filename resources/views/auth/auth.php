@@ -375,5 +375,12 @@ window.CIVI_I18N = <?= str_replace('</', '<\/', json_encode($authI18n, JSON_UNES
 </script>
 <script src="js/auth.js?v=2"></script>
 <script src="js/auth-forms.js"></script>
+<?php if (session('status')): ?>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.showAuthToast) showAuthToast(<?= json_encode(session('status'), JSON_UNESCAPED_UNICODE) ?>, 'success');
+  });
+</script>
+<?php endif; ?>
 </body>
 </html>

@@ -1196,6 +1196,10 @@ const CreateProposal = {
     if (!form) return;
     form.addEventListener('submit', async function(e) {
       e.preventDefault();
+      if (document.body.dataset.logueado !== 'true') {
+        if (window.CiviRequiereCuenta) CiviRequiereCuenta('crear_propuesta');
+        return;
+      }
       const btn = form.querySelector('[type=submit]');
       Auth.setLoading(btn, true);
 

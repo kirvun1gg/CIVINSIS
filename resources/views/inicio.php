@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="css/debates.css">
   <link rel="stylesheet" href="css/inicio.css">
 </head>
-<body>
+<body data-logueado="true">
 
 <?php echo view('layouts.navbar', ['activeNav' => 'inicio'])->render(); ?>
 

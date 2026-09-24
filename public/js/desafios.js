@@ -105,6 +105,10 @@ const Desafios = {
   },
 
   async aceptar(id) {
+    if (document.body.dataset.logueado !== 'true') {
+      if (window.CiviRequiereCuenta) CiviRequiereCuenta('aceptar_desafio');
+      return;
+    }
     const res = await API.post('php/desafios.php', { accion: 'aceptar', desafio_id: id });
     if (res.success) {
       Toast.show(res.message, 'success');

@@ -3,8 +3,9 @@
 // las vistas (app/Providers/AppServiceProvider.php::boot()). El valor por
 // defecto de abajo nunca se usa en producción - solo evita que el IDE marque
 // la variable como indefinida y sirve de red de seguridad.
-$usuarioNombre = $usuarioNombre ?? '';
-$categorias    = $categorias ?? collect();
+$usuarioNombre   = $usuarioNombre ?? '';
+$usuarioLogueado = $usuarioLogueado ?? false;
+$categorias      = $categorias ?? collect();
 $iniciales = civinsis_iniciales($usuarioNombre);
 ?>
 <!DOCTYPE html>
@@ -21,7 +22,7 @@ $iniciales = civinsis_iniciales($usuarioNombre);
   <link rel="stylesheet" href="css/desafios.css">
   <link rel="stylesheet" href="css/crear.css">
 </head>
-<body>
+<body data-logueado="<?= $usuarioLogueado ? 'true' : 'false' ?>">
 
 
 <?php echo view('layouts.navbar', ['activeNav' => 'crear'])->render(); ?>
@@ -394,14 +395,14 @@ $iniciales = civinsis_iniciales($usuarioNombre);
           </ul>
         </div>
 
-        <!-- AURIS -->
+        <!-- CIVI -->
         <div style="background:var(--verde-alpha);border:1px solid var(--verde-200);border-radius:var(--radius-lg);padding:1.25rem">
           <h4 style="font-family:var(--font-display);font-weight:700;font-size:.9rem;color:var(--verde-700);margin-bottom:.5rem">
-            <i class="fas fa-robot"></i> <?= __('civinsis.crear.auris_titulo') ?>
+            <i class="fas fa-robot"></i> <?= __('civinsis.crear.civi_ayuda_titulo') ?>
           </h4>
-          <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem"><?= __('civinsis.crear.auris_desc') ?></p>
-          <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center" onclick="Auris.togglePanel()">
-            <i class="fas fa-comments"></i> <?= __('civinsis.crear.auris_hablar') ?>
+          <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem"><?= __('civinsis.crear.civi_ayuda_desc') ?></p>
+          <button type="button" class="btn btn-outline btn-sm" style="width:100%;justify-content:center" onclick="document.getElementById('civiFab')?.click()">
+            <i class="fas fa-comments"></i> <?= __('civinsis.crear.civi_ayuda_hablar') ?>
           </button>
         </div>
       </div>
@@ -417,5 +418,12 @@ $iniciales = civinsis_iniciales($usuarioNombre);
 <script src="js/desafios.js"></script>
 <script src="js/crear-ia.js"></script>
 <script src="js/crear.js"></script>
+<?php if (!$usuarioLogueado): ?>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.CiviRequiereCuenta) CiviRequiereCuenta('crear_propuesta');
+  });
+</script>
+<?php endif; ?>
 </body>
 </html>

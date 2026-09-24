@@ -195,6 +195,9 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => toast.remove(), 350);
     }, 3200);
   }
+  // Expuesto para que auth.php pueda avisar de un session('status') del
+  // servidor (p. ej. "contraseña restablecida") con el mismo estilo de toast.
+  window.showAuthToast = showToast;
 
   // ════════════════════════════════════════════════
   // VALIDACIONES

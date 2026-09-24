@@ -88,7 +88,7 @@ $iniciales = civinsis_iniciales($usuarioNombre, $usuarioLogueado);
         <p style="font-size:.875rem;color:var(--verde-700);margin-bottom:.5rem">
           <i class="fas fa-info-circle"></i> <?= __('civinsis.debate.inicia_sesion_participar') ?>
         </p>
-        <a href="auth.php" class="btn btn-primary btn-sm"><?= __('civinsis.comun.iniciar_sesion') ?></a>
+        <button type="button" class="btn btn-primary btn-sm" onclick="CiviRequiereCuenta && CiviRequiereCuenta('comentar')"><?= __('civinsis.comun.iniciar_sesion') ?></button>
       </div>
       <?php endif; ?>
 
